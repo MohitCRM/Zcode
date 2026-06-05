@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
 const problemSchema = new Schema({
-    name : {
+    title : {
         type : String,
         required : true,
     },
@@ -54,6 +54,19 @@ const problemSchema = new Schema({
     ],
 
     startcode : [
+        {
+            language : {
+                type : String,
+                required : true
+            },
+            initialcode : {
+                type : String,
+                required : true
+            }
+        }
+    ],
+
+    referencesolution : [
         {
             language : {
                 type : String,

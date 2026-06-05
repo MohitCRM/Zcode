@@ -1,0 +1,26 @@
+
+
+const getlanguagebyid = (lang)=>{
+    const lanugage = {
+        "c++" : 54,
+        "java" : 62,
+        "python" : 71,
+        "javascript" : 63,
+        "ruby" : 72,
+        "go" : 60,
+        "c#" : 51,
+        "php" : 68,
+        "swift" : 83,
+        "kotlin" : 78,
+        "c" : 50
+    }
+    return lanugage[lang.toLowerCase()];
+    
+}
+
+const submitbatch =  async (submission) => {
+    
+}
+
+
+module.exports = {getlanguagebyid, submitbatch};
