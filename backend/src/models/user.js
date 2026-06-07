@@ -33,7 +33,12 @@ const userSchema = new Schema({
         default : 'user'
     },
     problemsolved : {
-        type : [String]
+        type : [
+            {
+                type : Schema.Types.ObjectId,
+                ref : "problem"
+            }
+        ]
     },
     password : {
         type : String,
@@ -44,6 +49,6 @@ const userSchema = new Schema({
     timestamps : true
 });
 
-const user = mongoose.model("user", userSchema);
+const User = mongoose.model("user", userSchema);
 
-model.exports = user;
+module.exports = User;

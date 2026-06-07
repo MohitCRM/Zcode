@@ -1,5 +1,6 @@
 const { redisClient } = require('../config/redis');
-const user = require('../models/user');
+const User = require('../models/user');
+const Submission = require("../models/Submission");
 const validate = require('../utils/validate');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
@@ -12,7 +13,7 @@ const register = async (req,res)=>{
         const {firstname, emailId, password} = req.body;
         req.body.user = 'user';
         //checking if emailId alredy exists
-        const isExisting = await user.exists({ emailId });
+        const isExisting = await User.exists({ emailId });
         if (isExisting) {
             throw new Error("Email Id already exists");
         }
@@ -20,7 +21,7 @@ const register = async (req,res)=>{
         //Bcrypting hash
         req.body.password = await bcrypt.hash(password,10);
 
-        const newUser = await user.create(req.body);
+        const newUser = await User.create(req.body);
 
         //Creating a JWT when a user is registered at the time , also can do later when login in if not here
         const token = jwt.sign(
@@ -51,7 +52,7 @@ const login = async (req,res)=>{
         if(!password)
             throw new Error("Invalid Credentials");
 
-        const usr = await user.findOne({emailId});
+        const usr = await User.findOne({emailId});
         if(!usr)
             throw new Error("Invalid Credentials");
 
@@ -97,7 +98,7 @@ const adminregister = async(req,res)=>{
         const {firstname, emailId, password} = req.body;
         req.body.user = 'admin';
         //checking if emailId alredy exists
-        const isExisting = await user.exists({ emailId });
+        const isExisting = await User.exists({ emailId });
         if (isExisting) {
             throw new Error("Email Id already exists");
         }
@@ -105,7 +106,7 @@ const adminregister = async(req,res)=>{
         //Bcrypting hash
         req.body.password = await bcrypt.hash(password,10);
 
-        const newUser = await user.create(req.body);
+        const newUser = await User.create(req.body);
 
         //Creating a JWT when a user is registered at the time , also can do later when login in if not here
         const token = jwt.sign(
@@ -125,4 +126,21 @@ const adminregister = async(req,res)=>{
         res.status(400).send("Error: " + err.message);
     }
 }
-module.exports = {register,login,logout,adminregister};
+
+const deleteprofile = async (req,res)=>{
+    
+    try{
+        const userid = req.result._id;
+
+        await User.findByIdAndDelete(userid);
+
+        await Submission.deleteMany({userid});
+
+        res.status(200).send("Profile Deleted Successfully");
+    }
+    catch(err)
+    {
+        res.status(500).send("Error: " + err.message);
+    }
+}
+module.exports = {register,login,logout,adminregister,deleteprofile};
