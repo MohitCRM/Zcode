@@ -1,5 +1,5 @@
 const express = require('express');
-const { userauth } = require('../middleware/user');
+const  userauth  = require('../middleware/usermiddleware');
 const router = express.Router();
 const { submitcode, runcode } = require('../controllers/usersubmission');
 

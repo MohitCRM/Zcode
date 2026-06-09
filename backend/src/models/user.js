@@ -5,14 +5,13 @@ const userSchema = new Schema({
     firstName : {
         type : String,
         required : true,
-        minLenght : 3,
-        maxLenght : 20
+        minLength : 3,
+        maxLength : 20
     },
     lastName : {
         type : String,
-        required : true,
-        minLenght : 2,
-        maxLenght : 20
+        minLength : 2,
+        maxLength : 20
     },
     emailId : {
         type : String ,

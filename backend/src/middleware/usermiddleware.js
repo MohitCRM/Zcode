@@ -35,4 +35,4 @@ catch(err){
 }
 }
 
-module.exports= {userauth};
+module.exports= userauth;

@@ -2,7 +2,7 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const {redisClient} = require("../config/redis");
 
-const userauth = async (req,res,next)=>{
+const adminauth = async (req,res,next)=>{
     try{
     const {token} = req.cookies;
 
@@ -39,4 +39,4 @@ catch(err)
 }
 }
 
-module.exports= {adminauth};
+module.exports= adminauth;

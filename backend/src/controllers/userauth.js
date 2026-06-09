@@ -10,7 +10,7 @@ const register = async (req,res)=>{
     try{
         //validating the message sent by user
         validate(req.body);
-        const {firstname, emailId, password} = req.body;
+        const {firstName, emailId, password} = req.body;
         req.body.user = 'user';
         //checking if emailId alredy exists
         const isExisting = await User.exists({ emailId });
@@ -23,6 +23,11 @@ const register = async (req,res)=>{
 
         const newUser = await User.create(req.body);
 
+        const reply = {
+            firstName: newUser.firstName,
+            emailId : newUser.emailId,
+            _id : newUser._id
+        }
         //Creating a JWT when a user is registered at the time , also can do later when login in if not here
         const token = jwt.sign(
             { _id: newUser._id, emailId: newUser.emailId, role: 'user' },
@@ -35,7 +40,10 @@ const register = async (req,res)=>{
             maxAge: 24 * 60 * 60 * 1000 
         });
 
-        res.status(201).send("User Registered Succesfully");
+        res.status(201).json({
+            user : reply,
+            message : "Registered Succesfully"
+        });
     }
     catch(err){
         res.status(400).send("Error: " + err.message);
@@ -62,10 +70,19 @@ const login = async (req,res)=>{
         if(!match)
             throw new Error("Invalid Credentials");
 
+        const reply = {
+            firstname: usr.firstName,
+            emailId : usr.emailId,
+            _id : usr._id
+        }
+
         //generating a jwt token to relogin later
         const token = jwt.sign({_id:usr._id , emailId:emailId, role : usr.role},process.env.JWT_KEY, {expiresIn : 60*60*24});
         res.cookie('token', token , {maxAge : 60 * 60 * 1000 * 24});
-        res.status(200).send("Logged in Successfully");
+        res.status(200).json({
+            user: reply,
+            message : "Logged in Successfully"
+        });
     }
     catch(err){
         res.status(400).send("Error: " + err.message);
@@ -83,7 +100,7 @@ const logout = async (req,res)=>{
         await redisClient.expireAt(`token:${token}`,payload.exp);
 
         res.cookie("token",null,{expires : new Date(Date.now())});
-        res.send("Logged out Succesfully");
+        res.status(200).send("Logged out Succesfully");
 
     }
     catch(err){
@@ -143,4 +160,17 @@ const deleteprofile = async (req,res)=>{
         res.status(500).send("Error: " + err.message);
     }
 }
-module.exports = {register,login,logout,adminregister,deleteprofile};
+
+const checkauth = async (req,res)=>{
+    const reply = {
+        firstName : req.result.firstName,
+        emailId : req.result.emailId,
+        _id : req.result._id
+    }
+
+    res.status(200).json({
+        user : reply,
+        message : "Valid User"
+    })
+}
+module.exports = {register,login,logout,adminregister,deleteprofile,checkauth};

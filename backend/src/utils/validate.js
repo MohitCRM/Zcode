@@ -1,6 +1,6 @@
-const validator = requre("validator")
+const validator = require("validator")
 const validate = (data)=>{
-    const mandatoryfield = ['password','emailId','firstname']
+    const mandatoryfield = ['password','emailId','firstName']
 
     const isallowed = mandatoryfield.every((k)=>Object.keys(data).includes(k));
 

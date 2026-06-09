@@ -1,7 +1,8 @@
 const express = require("express");
-const {register,login,logout,adminregister,deleteprofile} = require("../controllers/userauth");
-const usermiddleware = require('../middleware/user');
-const adminmiddleware = require('../middleware/adminpower');
+const {register,login,logout,adminregister,deleteprofile,checkauth} = require("../controllers/userauth");
+const usermiddleware = require('../middleware/usermiddleware');
+const adminmiddleware = require('../middleware/adminmiddleware');
+
 
 const router = express.Router();
 
@@ -14,5 +15,7 @@ router.post('/logout',usermiddleware, logout);
 router.post('/admin/register', adminmiddleware,adminregister);
 
 router.delete('/profile/delete',usermiddleware,deleteprofile);
+
+router.get('/checkauth',usermiddleware,checkauth);
 
 module.exports = router;
