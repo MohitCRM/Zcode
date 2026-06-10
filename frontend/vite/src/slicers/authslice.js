@@ -77,7 +77,7 @@ const authslicer = createSlice({
         })
         .addCase(registerUser.rejected, (state,action)=>{
             state.loading = false;
-            state.error = action.payload?.message || 'Some error has occured';
+            state.error = action.payload?.message;
             state.isauth = false;
             state.user = null;
         })

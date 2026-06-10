@@ -11,7 +11,7 @@ const register = async (req,res)=>{
         //validating the message sent by user
         validate(req.body);
         const {firstName, emailId, password} = req.body;
-        req.body.user = 'user';
+        req.body.role = 'user';
         //checking if emailId alredy exists
         const isExisting = await User.exists({ emailId });
         if (isExisting) {
@@ -112,8 +112,8 @@ const adminregister = async(req,res)=>{
     try{
         //validating the message sent by user
         validate(req.body);
-        const {firstname, emailId, password} = req.body;
-        req.body.user = 'admin';
+        const {firstName, emailId, password} = req.body;
+        req.body.role = 'admin';
         //checking if emailId alredy exists
         const isExisting = await User.exists({ emailId });
         if (isExisting) {

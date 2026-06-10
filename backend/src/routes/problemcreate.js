@@ -9,7 +9,7 @@ const {createproblem, problemfetch, allproblemfetch, problemupdate, problemdelet
 router.post('/create',adminmiddleware,createproblem); //Need admin access
 //Fetch
 router.get('/:id',usermiddleware,problemfetch);
-router.get('/',allproblemfetch);
+router.get('/getallproblems',allproblemfetch);
 //Update
 router.put("/update/:id",adminmiddleware,problemupdate); //Need admin access
 //Delete
