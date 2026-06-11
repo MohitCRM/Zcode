@@ -1,51 +1,45 @@
 const mongoose = require("mongoose");
 const {Schema} = mongoose;
+const Seasonalstats = require('../models/seasonalstats');
 
 const userSchema = new Schema({
-    firstName : {
-        type : String,
-        required : true,
-        minLength : 3,
-        maxLength : 20
+    firstName: {
+        type: String,
+        required: true,
+        trim: true,
+        minLength: 3,
+        maxLength: 20
     },
-    lastName : {
-        type : String,
-        minLength : 2,
-        maxLength : 20
+    lastName: {
+        type: String,
+        trim: true,
+        minLength: 2,
+        maxLength: 20
     },
-    emailId : {
-        type : String ,
-        required : true,
-        trim : true,
-        lowercase : true,
-        immutable : true,
-        unique : true
+    emailId: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+        immutable: true,
+        unique: true
     },
-    age : {
-        type : Number,
-        minLenght : 5,
-        maxLenght : 80
+    age: {
+        type: Number,
+        min: 5,   
+        max: 80   
     },
-    role : {
-        type : String,
-        enum : ['user','admin'],
-        default : 'user'
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
     },
-    problemsolved : {
-        type : [
-            {
-                type : Schema.Types.ObjectId,
-                ref : "problem"
-            }
-        ]
+    password: {
+        type: String,
+        required: true
     },
-    password : {
-        type : String,
-        required : true
-
-    }
-},{
-    timestamps : true
+}, {
+    timestamps: true
 });
 
 const User = mongoose.model("user", userSchema);

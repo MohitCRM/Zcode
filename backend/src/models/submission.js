@@ -3,46 +3,63 @@ const {Schema} = moongoose;
 
 const submissionSchema = new Schema({
     userId: {
-        type :String,
-        ref : "user",
-        required : true
+        type: Schema.Types.ObjectId,
+        ref: "user",
+        required: true,
+        index: true 
     },
-    problemId : {
+    problemId: {
+        type: Schema.Types.ObjectId,
+        ref: "problem",
+        required: true,
+        index: true 
+    },
+    seasonId: {
+        type: Number,
+        required: true,
+        index: true
+    },
+    language: {
         type: String,
-        ref : "problem",
-        required : true
+        required: true,
+        enum: ["C++", "Java", "Python", "Javascript", "Ruby", "Go", "C#", "PHP", "Swift", "Kotlin", "C"]
     },
-    language : {
-        type : String,
-        required : true,
-        enum : ["C++","Java","Python","Javascript","Ruby","Go","C#","PHP","Swift","Kotlin","C"]
+    code: {
+        type: String,
+        required: true
     },
-    code : {
-        type : String,
-        required : true
+    status: {
+        type: String,
+        enum: ["Accepted", "Wrong Answer", "Time Limit Exceeded", "Compilation Error", "Runtime Error", "Pending"],
+        default: "Pending"
     },
-    status : {
-        type : String,
-        enum : ["Accepted","Wrong Answer","Time Limit Exceeded","Compilation Error","Runtime Error","Pending"],
-        default : "Pending"
+    eloChange: {
+        type: Number,
+        default: 0
     },
-    memory : {
-        type :Number,
-        default : 0
+    wasSameDaySolve: {
+        type: Boolean,
+        default: false
     },
-    runtime : {
-        type : Number,
-        default : 0
+    memory: {
+        type: Number, // Judge0 returns memory in KB
+        default: 0
     },
-    testcases : {
-        type : Number,
+    runtime: {
+        type: Number, // Judge0 returns time in seconds (float) or milliseconds
+        default: 0
     },
-    passedtestcases : {
-        type : Number,
+    totalTestCases: {
+        type: Number,
+        default: 0
     },
-    errormessage : {
-        type : String,
-        default : ""
+    passedTestCases: {
+        type: Number,
+        default: 0
+    },
+    errorMessage: {
+        type: String,
+        default: ""
     }
 },{timestamps : true});
 

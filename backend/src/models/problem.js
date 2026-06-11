@@ -1,126 +1,91 @@
 const mongoose = require('mongoose');
-const {Schema} = mongoose;
+const { Schema } = mongoose;
 
 const leetcodeTags = [
-  // --- Core Data Structures ---
-  "Array", "String", "Hash Table", "Linked List", "Tree", "Binary Tree", 
-  "Binary Search Tree", "Graph", "Matrix", "Stack", "Queue", "Heap (Priority Queue)", 
-  "Trie", "Monotonic Stack", "Monotonic Queue",
-
-  // --- Core Algorithms & Techniques ---
-  "Two Pointers", "Sliding Window", "Binary Search", "Sorting", "Prefix Sum", 
-  "Recursion", "Backtracking", "Divide and Conquer", "Greedy", "Bit Manipulation",
-
-  // --- Graph / Tree Traversals ---
-  "Depth-First Search", "Breadth-First Search", "Union Find", "Topological Sort", 
-  "Shortest Path", "Minimum Spanning Tree", "Eulerian Circuit", 
-  "Biconnected Component", "Strongly Connected Component",
-
-  // --- Dynamic Programming & Advanced Math ---
-  "Dynamic Programming", "Memoization", "Math", "Bitmask", "Combinatorics", 
-  "Probability and Statistics", "Geometry", "Number Theory", "Game Theory",
-
-  // --- Specialized Data Structures ---
-  "Segment Tree", "Binary Indexed Tree", "Line Sweep", "Ordered Set", 
-  "Data Stream", "String Matching", "Rolling Hash", "Suffix Array",
-
-  // --- System Design & Miscellaneous ---
-  "Design", "Database", "Database (SQL)", "Shell", "Concurrency", 
-  "Brainteaser", "Simulation", "Counting", "Radix Sort", "Bucket Sort", 
-  "Merge Sort", "Quickselect", "Interactive"
+  // ... (Keep your tag array exactly as you have it)
 ];
 
 const problemSchema = new Schema({
-    title : {
-        type : String,
-        required : true,
+    title: {
+        type: String,
+        required: true,
+        trim: true
     },
-    description : {
-        type : String,
-        required : true
+    description: {
+        type: String,
+        required: true
     },
-    difficulty : {
-        type : String,
-        enum : ['easy','medium','hard'],
-        required : true
+    difficulty: {
+        type: String,
+        enum: ['easy', 'medium', 'hard'],
+        required: true
     },
-    tags : {
-        type : String,
-        required : true,
-        enum : leetcodeTags
+    tags: [{
+        type: String,
+        enum: leetcodeTags,
+        required: true
+    }],
+
+    baseEloReward: {
+        type: Number,
+        required: true,
+        default: 100 
     },
-    visibleTestCases : [
+    penaltyWrongAnswer: { type: Number, default: 10 },
+    penaltyTimeLimitExceeded: { type: Number, default: 10 },
+    penaltyRuntimeError: { type: Number, default: 10 },
+    penaltyCompilationError: { type: Number, default: 0 }, 
+
+    seasonId: {
+        type: Number,
+        required: true,
+        index: true 
+    },
+    releaseDay: {
+        type: Number,
+        required: true, 
+        min: 1,
+        max: 25
+    },
+    unlocksAt: {
+        type: Date,
+        required: true
+    },
+
+    visibleTestCases: [
         {
-            input : {
-                type :String,
-                required : true
-            },
-            output : {
-                type : String,
-                required : true,
-            },
-            explaination :{
-                type : String ,
-                requried : true 
-            }
+            input: { type: String, required: true },
+            output: { type: String, required: true },
+            explanation: { type: String } 
         }
     ],
-    hiddenTestCases : [
+    hiddenTestCases: [
         {
-            input : {
-                type :String,
-                required : true
-            },
-            output : {
-                type : String,
-                required : true,
-            },
-            explaination :{
-                type : String ,
-                requried : true 
-            }
+            input: { type: String, required: true },
+            output: { type: String, required: true }
         }
     ],
 
-    startcode : [
+    startcode: [
         {
-            language : {
-                type : String,
-                required : true
-            },
-            initialcode : {
-                type : String,
-                required : true
-            }
+            language: { type: String, required: true },
+            initialcode: { type: String, required: true }
         }
     ],
-
-    referencesolution : [
+    referencesolution: [
         {
-            language : {
-                type : String,
-                required : true
-            },
-            initialcode : {
-                type : String,
-                required : true
-            }
+            language: { type: String, required: true },
+            code: { type: String, required: true } 
         }
     ],
-
-    problemcreator : {
-        type : Schema.Types.ObjectId,
-        ref : 'user', //This is the ref of user schema for the above line (user is name of that schema)
-        required : true
+    problemcreator: {
+        type: Schema.Types.ObjectId,
+        ref: 'user', 
+        required: true
     }
-
-},
-{
+}, {
     timestamps: true
-})
-
-
-
+});
 
 const Problem = mongoose.model('problem', problemSchema);
 module.exports = Problem;
