@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const {Schema} = mongoose;
-const Seasonalstats = require('../models/seasonalstats');
+const Seasonalstats = require('./leaderboard');
 
 const userSchema = new Schema({
     firstName: {

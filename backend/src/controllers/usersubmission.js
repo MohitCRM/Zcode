@@ -118,11 +118,7 @@ const runcode = async (req,res)=>{
         {
             return res.status(404).send("Problem not found");
         }
-
-        //I will first store the submission in the database in peding state, and i will rerun the pedning state if any error by judge0
-
-        
-        
+   
         //submitting code to judge0
         const languageid = getLanguageId(language);
 

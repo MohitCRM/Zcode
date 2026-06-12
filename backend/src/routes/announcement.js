@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.router();
+const router = express.Router();
 const userauth = require('../middleware/usermiddleware');
 const adminauth = require('../middleware/adminmiddleware');
 const {getallannouncements,createannouncement,updateannouncement,deleteannouncement} = require('../controllers/announcement');

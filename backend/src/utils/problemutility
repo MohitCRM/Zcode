@@ -82,7 +82,7 @@ async function submittoken(tokens)
 
     await waiting(2000);
     
-    return await submitToken(tokens);
+    return await submittoken(tokens);
 }
 
 module.exports = {getlanguagebyid, submitbatch, submittoken};

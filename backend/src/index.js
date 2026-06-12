@@ -6,6 +6,7 @@ const cookieparser = require("cookie-parser");
 const authrouter = require("./routes/userauth");
 const problemrouter = require("./routes/problemcreate");
 const submitrouter = require("./routes/submit");
+const leaderboardrouter = require('./routes/leaderboard');
 const announcementrouter = require("./routes/announcement");
 const cors = require('cors');
 
@@ -17,6 +18,7 @@ app.use(cors({
 }))
 app.use(express.json());
 app.use(cookieparser());
+app.use('/leaderboard',leaderboardrouter);
 app.use('/announcement',announcementrouter);
 app.use('/problem', problemrouter);
 app.use('/submit', submitrouter);
