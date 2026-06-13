@@ -1,5 +1,5 @@
-const moongoose = require("mongoose");
-const {Schema} = moongoose;
+const mongoose = require("mongoose");
+const {Schema} = mongoose;
 
 const submissionSchema = new Schema({
     userId: {
@@ -22,7 +22,7 @@ const submissionSchema = new Schema({
     language: {
         type: String,
         required: true,
-        enum: ["C++", "Java", "Python", "Javascript", "Ruby", "Go", "C#", "PHP", "Swift", "Kotlin", "C"]
+        enum: ["c++", "java", "python", "javascript", "ruby", "go", "c#", "php", "swift", "kotlin", "c"]
     },
     code: {
         type: String,

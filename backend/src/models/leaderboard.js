@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-const tierdata = require('../utils/tiersystem')
+const tierdata = require('../utils/tiersystem');
 
 const leaderboardSchema = new Schema({
     userId: {
@@ -32,7 +32,6 @@ const leaderboardSchema = new Schema({
         type: Number,
         default: 0
     },
-    // Array of unique calendar strings (e.g., ["2026-06-11", "2026-06-12"])
     checkInDays: [String],
     problemsSolved: [
         {
@@ -40,14 +39,27 @@ const leaderboardSchema = new Schema({
             ref: "problem"
         }
     ]
-}, { timestamps: true, 
-    toJSON : {virtuals : true},
-    toObject : {virtuals : true}
+}, { 
+    timestamps: true, 
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
+
+leaderboardSchema.index({ userId: 1, seasonId: 1 }, { unique: true });
 
 leaderboardSchema.virtual("tierDetails").get(function() {
     return tierdata(this.elo);
 });
 
-const Leaderboard = mongoose.model('seasonalstats',leaderboardSchema);
+leaderboardSchema.pre('save', function(next) {
+    if (this.isModified('elo')) {
+        const details = tierdata(this.elo);
+        if (details && details.title) {
+            this.rank = details.title; 
+        }
+    }
+    next();
+});
+
+const Leaderboard = mongoose.model('seasonalstats', leaderboardSchema);
 module.exports = Leaderboard;

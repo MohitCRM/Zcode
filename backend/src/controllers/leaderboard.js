@@ -9,7 +9,7 @@ const showallseasons = async (req,res)=>{
         const seasons = allseasons.map(sid =>({
             seasonId : sid,
             name : `Season ${sid}`,
-            status : sid === 1 ? 'Active' : 'Done'
+            status : sid === 1 ? 'Active' : 'Ended'
         }))
 
         return res.status(200).json(formattedSeasons);

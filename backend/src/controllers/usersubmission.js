@@ -11,7 +11,7 @@ const submitcode = async (req,res)=>{
 
         if(!code || !language || !problemid || !userid)
         {
-            return res.status(400).send("missing fields");
+            return res.status(400).send("Missing fields");
         }
 
         const problems = await Problem.findById(problemid);

@@ -41,17 +41,20 @@ const problemSchema = new Schema({
         required: true,
         index: true 
     },
+    round: {
+        type: Number,
+        enum: [1, 2],
+        required: true,
+        index: true
+    },
     releaseDay: {
         type: Number,
         required: true, 
         min: 1,
-        max: 25
+        max: 25,
+        index: true
     },
-    unlocksAt: {
-        type: Date,
-        required: true
-    },
-
+    
     visibleTestCases: [
         {
             input: { type: String, required: true },
@@ -86,6 +89,8 @@ const problemSchema = new Schema({
 }, {
     timestamps: true
 });
+
+problemSchema.index({ seasonId: 1, round: 1, releaseDay: 1 });
 
 const Problem = mongoose.model('problem', problemSchema);
 module.exports = Problem;
