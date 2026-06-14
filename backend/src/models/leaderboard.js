@@ -54,8 +54,8 @@ leaderboardSchema.virtual("tierDetails").get(function() {
 leaderboardSchema.pre('save', function(next) {
     if (this.isModified('elo')) {
         const details = tierdata(this.elo);
-        if (details && details.title) {
-            this.rank = details.title; 
+        if (details && details.currentRank) {
+            this.rank = details.currentRank.name; 
         }
     }
     next();

@@ -8,6 +8,7 @@ const problemrouter = require("./routes/problemcreate");
 const submitrouter = require("./routes/submit");
 const leaderboardrouter = require('./routes/leaderboard');
 const announcementrouter = require("./routes/announcement");
+const solutionrouter = require("./routes/solution");
 const cors = require('cors');
 
 const app = express();
@@ -19,10 +20,11 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieparser());
 app.use('/leaderboard',leaderboardrouter);
-app.use('/announcement',announcementrouter);
+app.use('/announcement',announcementrouter); 
 app.use('/problem', problemrouter);
 app.use('/submit', submitrouter);
 app.use('/user', authrouter);
+app.use('/solution', solutionrouter);
 
 const initialiseconnection = async ()=>{
     try{

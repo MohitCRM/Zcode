@@ -19,7 +19,7 @@ router.delete('/delete/:pid', adminmiddleware, problemdelete);
 
 router.get('/:pid', usermiddleware, phasemiddleware(['Round1', 'Round2', 'Round1Solution', 'Round2Solution']), problemfetch);
 
-router.get('/', usermiddleware, allproblemfetch);
+router.get('/', usermiddleware, phasemiddleware(['Round1' , 'Round2']) ,allproblemfetch);
 
 router.get('/user', usermiddleware, solvedproblems);
 router.get("/submittedProblem/:pid", usermiddleware, sumbittedproblem);

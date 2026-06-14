@@ -38,6 +38,10 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    problemsolved: [{
+        type: Schema.Types.ObjectId,
+        ref: 'problem'
+    }],
 }, {
     timestamps: true
 });

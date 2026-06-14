@@ -32,7 +32,7 @@ const createannouncement = async (req,res)=>{
             content,
             category,
             isPinned,
-            author: req.user._id 
+            author: req.result._id 
         });
 
         await newAnnouncement.save();

@@ -12,7 +12,7 @@ const showallseasons = async (req,res)=>{
             status : sid === 1 ? 'Active' : 'Ended'
         }))
 
-        return res.status(200).json(formattedSeasons);
+        return res.status(200).json(seasons);
     }
     catch(err)
     {
@@ -25,8 +25,8 @@ const getleaderboard = async (req,res)=>{
         const {sid} = req.params;
         const seasonId = parseInt(sid);
 
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        let page = parseInt(req.query.page) || 1;
+        let limit = parseInt(req.query.limit) || 20;
 
         page = Math.max(1,page);
         limit = Math.min(100,limit);
@@ -58,7 +58,7 @@ const getleaderboard = async (req,res)=>{
         }))
 
         return res.status(200).json({
-            seasonId: requestedSeason,
+            seasonId: seasonId,
             pagination: {
                 totalpages,
                 totalpages,

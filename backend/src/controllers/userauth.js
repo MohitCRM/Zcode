@@ -1,6 +1,6 @@
 const { redisClient } = require('../config/redis');
 const User = require('../models/user');
-const Submission = require("../models/Submission");
+const Submission = require("../models/submission");
 const validate = require('../utils/validate');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
@@ -71,7 +71,7 @@ const login = async (req,res)=>{
             throw new Error("Invalid Credentials");
 
         const reply = {
-            firstname: usr.firstName,
+            firstName: usr.firstName,
             emailId : usr.emailId,
             _id : usr._id
         }
@@ -151,7 +151,7 @@ const deleteprofile = async (req,res)=>{
 
         await User.findByIdAndDelete(userid);
 
-        await Submission.deleteMany({userid});
+        await Submission.deleteMany({ userId: userid });
 
         res.status(200).send("Profile Deleted Successfully");
     }

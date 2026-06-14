@@ -1,104 +1,100 @@
-const Problem = require("../models/Problem")
-const Submission = require("../models/Submission");
-const {getLanguageId , submitbatch, submittoken } = require("../utils/problemutility");
+const Problem = require("../models/problem")
+const Submission = require("../models/submission");
+const { getlanguagebyid, submitbatch, submittoken } = require("../utils/problemutility");
+const { CURRENT_SEASON_ID } = require("../utils/dates");
 
-const submitcode = async (req,res)=>{
-
-    try{
+const submitcode = async (req, res) => {
+    const session = await mongoose.startSession();
+    
+    try {
+        const { id: problemid } = req.params;
+        const { code, language } = req.body;
         const userid = req.result._id;
-        const problemid = req.params.id;
-        const {code, language} = req.body;
 
-        if(!code || !language || !problemid || !userid)
-        {
-            return res.status(400).send("Missing fields");
-        }
+        if (!code || !language || !problemid) throw new Error("Missing required fields");
 
-        const problems = await Problem.findById(problemid);
+        const problem = await Problem.findById(problemid).lean();
+        if (!problem) return res.status(404).json({ error: "Problem not found" });
 
-        if(!problems)
-        {
-            return res.status(404).send("Problem not found");
-        }
-
-        //I will first store the submission in the database in peding state, and i will rerun the pedning state if any error by judge0
-
-        const submittedresult = await Submission.create({
-            userid,
-            problemid,
+        const [pendingSubmission] = await Submission.create([{
+            userId: userid,
+            problemId: problemid,
+            seasonId: req.season?.seasonId ?? CURRENT_SEASON_ID,
             code,
             language,
-            passestestcases : 0,
-            testcases : problems.hiddenTestCases.length,
-            status:"pending"
-        })
-        
-        //submitting code to judge0
-        const languageid = getLanguageId(language);
+            status: "Pending"
+        }], { session });
 
-        const submissions = problems.hiddenTestCases.map((testcase)=>({
-            source_code : code,
-            language_id : languageid,
-            stdin : testcase.input,
-            expected_output : testcase.output
-        }))
+        const languageId = getlanguagebyid(language);
+        const submissions = problem.hiddenTestCases.map(tc => ({
+            source_code: Buffer.from(code).toString('base64'),
+            language_id: languageId,
+            stdin: Buffer.from(tc.input).toString('base64'),
+            expected_output: Buffer.from(tc.output).toString('base64')
+        }));
 
-        const tokenresult = await submitbatch(submissions);
+        const tokenResult = await submitbatch(submissions);
+        const finalResult = await submittoken(tokenResult.map(r => r.token));
 
-        const tokens = tokenresult.map((res)=> res.token);
-
-        const finalresult = await submittoken(tokens); //in the form of array
-
-        //Updating
-        let testcasepassed  = 0;
-        let runtime = 0;
-        let memory = 0;
+        let passedCount = 0, runtime = 0, memory = 0;
         let status = "Accepted";
-        let errormessage = null;
+        let errorMessage = null;
 
-        for(const test of finalresult)
-        {
-            if(test.status_id == 3)
-            {
-                testcasepassed++;
-                runtime = runtime + parseFloat(test.time);
-                memory = Math.max(memory, test.memory);
-            }
-            else {
-                if(test.status_id == 4)
-                {
-                    status = "Compilation Error";
-                    errormessage = test.stderr;
-                }
-                else {
-                    status = "Wrong Answer";
-                    errormessage = test.stderr;
-                }
+        for (const test of finalResult) {
+            if (test.status_id === 3) {
+                passedCount++;
+                runtime += parseFloat(test.time || 0);
+                memory = Math.max(memory, parseFloat(test.memory || 0));
+            } else {
+                status = test.status_id === 4 ? "Compilation Error" : "Wrong Answer";
+                errorMessage = test.stderr;
+                break;
             }
         }
 
-        //Updating the submission in database
-        submittedresult.status = status;
-        submittedresult.runtime = runtime;
-        submittedresult.memory = memory;
-        submittedresult.passedtestcases = testcasepassed;
-        submittedresult.errormessage = errormessage;
+        const isAccepted = status === "Accepted";
+        const today = req.season?.getActiveSeasonDay() ?? 1;
+        const bonus = (isAccepted && today === problem.releaseDay) ? (problem.baseEloReward * 0.3) : 0;
+        const eloChange = isAccepted ? (problem.baseEloReward + bonus) : -problem.penaltyWrongAnswer;
 
-        await submittedresult.save();
+        await session.withTransaction(async () => {
+            await Submission.updateOne(
+                { _id: pendingSubmission._id },
+                { 
+                    $set: { 
+                        status, runtime, memory, errorMessage, eloChange,
+                        passedTestCases: passedCount,
+                        totalTestCases: problem.hiddenTestCases.length 
+                    } 
+                }, 
+                { session }
+            );
 
-        if(!req.result.problemsolved.includes(problemid))
-        {
-            req.result.problemsolved.push(problemid);
-            await req.result.save();
-        }
+            if (isAccepted) {
+                await User.updateOne({ _id: userid }, { $addToSet: { problemsolved: problemid } }, { session });
+            }
 
-        res.status(201).send("Code Submitted Successfully");
+            const updatedLB = await Leaderboard.findOneAndUpdate(
+                { userId: userid, seasonId: req.season?.seasonId ?? CURRENT_SEASON_ID },
+                { 
+                    $inc: { elo: eloChange, acceptedSubmissionsCount: isAccepted ? 1 : 0, wrongSubmissionsCount: isAccepted ? 0 : 1 },
+                    $addToSet: isAccepted ? { problemsSolved: problemid } : {}
+                },
+                { session, upsert: true, new: true }
+            );
 
-    }catch(err)
-    {
-        res.status(400).send("Internal Server Error : " + err.message);
+            const tier = tierdata(updatedLB.elo);
+            await Leaderboard.updateOne({ _id: updatedLB._id }, { $set: { rank: tier.currentRank.name } }, { session });
+        });
+
+        res.status(201).json({ status, eloChange, message: "Submission processed" });
+
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    } finally {
+        session.endSession();
     }
-}
+};
 
 const runcode = async (req,res)=>{
 
@@ -120,7 +116,7 @@ const runcode = async (req,res)=>{
         }
    
         //submitting code to judge0
-        const languageid = getLanguageId(language);
+        const languageid = getlanguagebyid(language);
 
         const submissions = problems.visibleTestCases.map((testcase)=>({
             source_code : code,

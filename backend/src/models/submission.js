@@ -63,6 +63,6 @@ const submissionSchema = new Schema({
     }
 },{timestamps : true});
 
-const Submission = moongoose.model("submission",submissionSchema);
+const Submission = mongoose.model("submission",submissionSchema);
 module.exports = Submission;
 

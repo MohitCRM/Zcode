@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const userauth = require('../middleware/usermiddleware');
 const restrictToPhase = require('../middleware/phaseguard');
-const { getSolutionDashboard } = require('../controllers/solutionController');
+const { getSolutionsHub } = require('../controllers/solution');
 
-router.get('/', userauth, restrictToPhase(['Round1Solution', 'Round2Solution']), getSolutionDashboard);
+router.get('/', userauth, restrictToPhase(['Round1Solution', 'Round2Solution']), getSolutionsHub);
 
 module.exports = router;

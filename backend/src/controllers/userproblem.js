@@ -1,8 +1,8 @@
 const { getlanguagebyid, submitbatch, submittoken } = require('../utils/problemutility'); 
 const { CURRENT_SEASON_ID } = require("../utils/dates"); 
-const Problem = require('../models/Problem'); 
+const Problem = require('../models/problem');
 const User = require('../models/user');
-const Submission = require('../models/Submission');
+const Submission = require('../models/submission');
 
 const createproblem = async (req, res) => {
     try {
