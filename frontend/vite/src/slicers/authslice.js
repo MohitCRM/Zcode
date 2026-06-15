@@ -51,7 +51,7 @@ export const logoutUser = createAsyncThunk(
     'auth/logout',
     async (_,{rejectWithValue}) =>{
         try{
-            await axiosClient.post('/logout');
+            await axiosClient.post('/user/logout');
             return null;
         }
         catch (error){
@@ -123,8 +123,9 @@ const authslicer = createSlice({
         })
         .addCase(logoutUser.fulfilled , (state,action)=>{
             state.loading = false;
-            state.isauth = !!action.payload;
-            state.user = action.payload;
+            state.isauth = false;
+            state.error = null;
+            state.user = {};
         })
         .addCase(logoutUser.rejected, (state,action)=>{
             state.loading = false;

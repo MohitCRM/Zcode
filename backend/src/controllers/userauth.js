@@ -1,6 +1,7 @@
 const { redisClient } = require('../config/redis');
 const User = require('../models/user');
 const Submission = require("../models/submission");
+const Leaderboard = require("../models/leaderboard");
 const validate = require('../utils/validate');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
@@ -26,7 +27,8 @@ const register = async (req,res)=>{
         const reply = {
             firstName: newUser.firstName,
             emailId : newUser.emailId,
-            _id : newUser._id
+            _id : newUser._id,
+            role : newUser.role
         }
         //Creating a JWT when a user is registered at the time , also can do later when login in if not here
         const token = jwt.sign(
@@ -73,7 +75,8 @@ const login = async (req,res)=>{
         const reply = {
             firstName: usr.firstName,
             emailId : usr.emailId,
-            _id : usr._id
+            _id : usr._id,
+            role : usr.role
         }
 
         //generating a jwt token to relogin later
@@ -161,16 +164,29 @@ const deleteprofile = async (req,res)=>{
     }
 }
 
-const checkauth = async (req,res)=>{
-    const reply = {
-        firstName : req.result.firstName,
-        emailId : req.result.emailId,
-        _id : req.result._id
-    }
+const checkauth = async (req, res) => {
+    try {
+        const userId = req.result._id;
 
-    res.status(200).json({
-        user : reply,
-        message : "Valid User"
-    })
+        // Fetch all seasonal records for this user
+        const participationHistory = await Leaderboard.find({ userId: userId })
+            .select("seasonId elo rank acceptedSubmissionsCount")
+            .sort({ seasonId: -1 }); // Latest seasons first
+
+        const reply = {
+            firstName: req.result.firstName,
+            emailId: req.result.emailId,
+            _id: userId,
+            role : req.result.role,
+            participationHistory: participationHistory
+        };
+
+        res.status(200).json({
+            user: reply,
+            message: "Valid User"
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch user context", details: err.message });
+    }
 }
 module.exports = {register,login,logout,adminregister,deleteprofile,checkauth};

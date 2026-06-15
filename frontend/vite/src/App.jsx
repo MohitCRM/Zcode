@@ -1,7 +1,14 @@
 import { Navigate, Route, Routes } from "react-router";
-import Homepage from "./pages/Homepage";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import Problems from "./pages/problemshow/problems";
+import Standings from "./pages/standings/standings";
+import Solutions from  "./pages/solutions/solutions";
+import UserRank from "./pages/userrank/userRank";
+import UserProfile from "./pages/userprofile/UserProfile";
+import AdminPanel from "./pages/admin/adminpanel";
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
+import Announcement from "./pages/announcement/announcement";
+import Layout from "./pages/layout";
 import {checkauth} from "./slicers/authslice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
@@ -26,9 +33,37 @@ export default function App()
   return (
     <>
       <Routes>
-        <Route path ="/" element = {isauth ? <Homepage></Homepage> : <Navigate to="/signup" />}></Route>
         <Route path ="/login" element ={isauth ? <Navigate to="/" /> : <Login></Login>} ></Route>
         <Route path ="/signup" element ={isauth ? <Navigate to="/" /> : <Signup></Signup>}></Route>
+
+        <Route path="/" element={isauth ? <Layout /> : <Navigate to="/login" />}>
+        <Route index element={<Navigate to="/announcements" />} />
+        <Route path="announcements" element={<Announcement />} />
+
+        <Route path="problems" element={<Problems />} />
+
+        <Route path="standings" element={<Standings />} />
+
+        <Route path="solutions" element={<Solutions />} />
+
+        <Route path="userRank" element={<UserRank />} />
+
+        <Route path="/userprofile" element={<UserProfile />} />
+
+        <Route path="admin" element={<AdminPanel />}>
+
+        <Route index element={<AdminDashboardSummary />} />
+        <Route path="create-problem" element={<CreateProblem />} />
+        <Route path="update-problem/:id" element={<UpdateProblem />} />
+        <Route path="delete-problem" element={<DeleteProblem />} />
+  
+        <Route path="create-announcement" element={<CreateAnnouncement />} />
+        <Route path="update-announcement/:id" element={<UpdateAnnouncement />} />
+        <Route path="delete-announcement" element={<DeleteAnnouncement />} />
+      </Route>
+
+      </Route>
+
       </Routes>
     </>
   )
