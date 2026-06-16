@@ -26,6 +26,7 @@ const register = async (req,res)=>{
 
         const reply = {
             firstName: newUser.firstName,
+            lastName : newUser.lastName,
             emailId : newUser.emailId,
             _id : newUser._id,
             role : newUser.role
@@ -74,6 +75,7 @@ const login = async (req,res)=>{
 
         const reply = {
             firstName: usr.firstName,
+            lastName : usr.lastName,
             emailId : usr.emailId,
             _id : usr._id,
             role : usr.role

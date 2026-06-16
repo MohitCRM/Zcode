@@ -3,6 +3,7 @@ const Submission = require("../models/submission");
 const { getlanguagebyid, submitbatch, submittoken } = require("../utils/problemutility");
 const { CURRENT_SEASON_ID } = require("../utils/dates");
 
+
 const submitcode = async (req, res) => {
     const session = await mongoose.startSession();
     
@@ -118,12 +119,12 @@ const runcode = async (req,res)=>{
         //submitting code to judge0
         const languageid = getlanguagebyid(language);
 
-        const submissions = problems.visibleTestCases.map((testcase)=>({
-            source_code : code,
-            language_id : languageid,
-            stdin : testcase.input,
-            expected_output : testcase.output
-        }))
+        const submissions = problems.visibleTestCases.map((testcase) => ({
+    source_code: Buffer.from(code).toString('base64'),
+    language_id: languageid,
+    stdin: Buffer.from(testcase.input).toString('base64'),
+    expected_output: Buffer.from(testcase.output).toString('base64')
+}));
 
         const tokenresult = await submitbatch(submissions);
 

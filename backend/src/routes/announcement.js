@@ -6,8 +6,8 @@ const {getallannouncements,createannouncement,updateannouncement,deleteannouncem
 
 
 router.get('/all', userauth,getallannouncements);
-router.post('admin/create',adminauth,createannouncement);
-router.put('admin/update/:aid',adminauth,updateannouncement);
-router.delete('admin/delete/:aid',adminauth,deleteannouncement);
+router.post('/create',adminauth,createannouncement);
+router.put('/update/:aid',adminauth,updateannouncement);
+router.delete('/delete/:aid',adminauth,deleteannouncement);
 
 module.exports =router;

@@ -12,6 +12,15 @@ import Layout from "./pages/layout";
 import {checkauth} from "./slicers/authslice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
+import CreateAnnouncement from "./pages/admin/CreateAnnouncement";
+import CreateProblem from "./pages/admin/CreateProblem";
+import CreateSeason from "./pages/admin/CreateSeason";
+import UpdateAnnouncement from "./pages/admin/UpdateAnnouncement";
+import UpdateProblem from "./pages/admin/UpdateProblem";
+import UpdateSeason from "./pages/admin/UpdateSeason";
+import DeleteAnnouncement from "./pages/admin/DeleteAnnouncement";
+import DeleteProblem from "./pages/admin/DeleteProblem";
+import DeleteSeason from "./pages/admin/DeleteSeason";
 
 export default function App()
 {
@@ -51,15 +60,18 @@ export default function App()
         <Route path="/userprofile" element={<UserProfile />} />
 
         <Route path="admin" element={<AdminPanel />}>
-
-        <Route index element={<AdminDashboardSummary />} />
+        
         <Route path="create-problem" element={<CreateProblem />} />
         <Route path="update-problem/:id" element={<UpdateProblem />} />
-        <Route path="delete-problem" element={<DeleteProblem />} />
+        <Route path="delete-problem/:id" element={<DeleteProblem />} />
   
         <Route path="create-announcement" element={<CreateAnnouncement />} />
         <Route path="update-announcement/:id" element={<UpdateAnnouncement />} />
-        <Route path="delete-announcement" element={<DeleteAnnouncement />} />
+        <Route path="delete-announcement/:id" element={<DeleteAnnouncement />} />
+        
+        <Route path="create-season" element={<CreateSeason/>} />
+        <Route path="update-season/:id" element={<UpdateSeason/>} />
+        <Route path="delete-season/:id" element={<DeleteSeason/>} /> 
       </Route>
 
       </Route>

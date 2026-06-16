@@ -9,6 +9,7 @@ const submitrouter = require("./routes/submit");
 const leaderboardrouter = require('./routes/leaderboard');
 const announcementrouter = require("./routes/announcement");
 const solutionrouter = require("./routes/solution");
+const seasonsrouter = require('./routes/seasons');
 const cors = require('cors');
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(cors({
 }))
 app.use(express.json());
 app.use(cookieparser());
+app.use('/seasons',seasonsrouter);
 app.use('/leaderboard',leaderboardrouter);
 app.use('/announcement',announcementrouter); 
 app.use('/problem', problemrouter);
