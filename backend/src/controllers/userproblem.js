@@ -5,6 +5,7 @@ const User = require('../models/user');
 const Submission = require('../models/submission');
 
 const createproblem = async (req, res) => {
+
     try {
         const { referencesolution, visibleTestCases, hiddenTestCases, round, releaseDay } = req.body;
 
@@ -19,16 +20,19 @@ const createproblem = async (req, res) => {
             const id = getlanguagebyid(language);
             
             const submission = totaltestcases.map((testcase) => ({
-                source_code: Buffer.from(code).toString('base64'),
+                source_code: code,
                 language_id: id,
-                stdin: Buffer.from(testcase.input).toString('base64'),
-                expected_output: Buffer.from(testcase.output).toString('base64')
+                stdin: testcase.input,
+                expected_output: testcase.output
             }));
 
             const submissionResult = await submitbatch(submission);
+
+
             const resultToken = submissionResult.map((res) => res.token); 
 
             const testResult = await submittoken(resultToken);
+
 
             for (const test of testResult) {
                 if (parseInt(test.status_id) !== 3) {
