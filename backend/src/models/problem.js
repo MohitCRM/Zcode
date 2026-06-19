@@ -124,6 +124,12 @@ const problemSchema = new Schema({
         max: 25,
         index: true
     },
+
+    drivercode:{
+        type: String,
+        required : true,
+        defualt : ""
+    },
     
     visibleTestCases: [
         {

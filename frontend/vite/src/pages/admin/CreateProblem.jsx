@@ -107,6 +107,7 @@ const leetcodeTags = [
       explanation: z.string().optional(),
     })
   ),
+  drivercode : z.string().min(1,"Driver code is required"),
   
   hiddenTestCases: z.array(
     z.object({
@@ -147,6 +148,7 @@ export default function CreateProblem() {
       seasonId: 1,
       round: 1,
       releaseDay: 1,
+      drivercode : "std::vector<int> data = parseVector(input_line); Solution sol; std::cout << sol.maxArea(data) << std::endl;",
       visibleTestCases: [{ input: "", output: "", explanation: "" }],
       hiddenTestCases: [{ input: "", output: "" }],
       startcode: [{ language: "javascript", initialcode: "" }],
@@ -267,8 +269,8 @@ export default function CreateProblem() {
     <h3 className="text-white font-semibold mb-3">Visible Test Cases</h3>
     {vtFields.map((field, index) => (
       <div key={field.id} className="grid grid-cols-4 gap-2 mb-2">
-        <input {...register(`visibleTestCases.${index}.input`)} placeholder="Input" className="bg-[#121826] border border-slate-800 p-2 rounded text-white" />
-        <input {...register(`visibleTestCases.${index}.output`)} placeholder="Output" className="bg-[#121826] border border-slate-800 p-2 rounded text-white" />
+        <textarea {...register(`visibleTestCases.${index}.input`)} placeholder="Input" className="bg-[#121826] border border-slate-800 p-2 rounded text-white min-h-[40px]" rows="2" />
+        <textarea {...register(`visibleTestCases.${index}.output`)} placeholder="Output" className="bg-[#121826] border border-slate-800 p-2 rounded text-white min-h-[40px]" rows="2" />
         <input {...register(`visibleTestCases.${index}.explanation`)} placeholder="Explanation" className="bg-[#121826] border border-slate-800 p-2 rounded text-white" />
         <button type="button" onClick={() => removeVT(index)} className="text-red-400">Remove</button>
       </div>
@@ -281,8 +283,8 @@ export default function CreateProblem() {
     <h3 className="text-rose-400 font-semibold mb-3">Hidden Test Cases</h3>
     {htFields.map((field, index) => (
       <div key={field.id} className="grid grid-cols-3 gap-2 mb-2">
-        <input {...register(`hiddenTestCases.${index}.input`)} placeholder="Input" className="bg-[#121826] border border-slate-800 p-2 rounded text-white" />
-        <input {...register(`hiddenTestCases.${index}.output`)} placeholder="Output" className="bg-[#121826] border border-slate-800 p-2 rounded text-white" />
+        <textarea {...register(`hiddenTestCases.${index}.input`)} placeholder="Input" className="bg-[#121826] border border-slate-800 p-2 rounded text-white min-h-[40px]" rows="2" />
+        <textarea {...register(`hiddenTestCases.${index}.output`)} placeholder="Output" className="bg-[#121826] border border-slate-800 p-2 rounded text-white min-h-[40px]" rows="2" />
         <button type="button" onClick={() => removeHT(index)} className="text-red-400">Remove</button>
       </div>
     ))}
@@ -314,6 +316,21 @@ export default function CreateProblem() {
       ))}
       <button type="button" onClick={() => appendRS({ language: "", code: "" })} className="text-indigo-400 text-sm">+ Add Solution</button>
     </section>
+
+    <section className="mt-8">
+  <h3 className="text-white font-semibold mb-3">Driver Code (C++ Wrapper)</h3>
+  <textarea 
+    {...register("drivercode")} 
+    placeholder="Enter the dynamic driver code here..." 
+    className="w-full bg-[#121826] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none h-40 font-mono" 
+  />
+  {errors.drivercode && (
+    <p className="text-rose-400 text-xs mt-1">{errors.drivercode.message}</p>
+  )}
+  <p className="text-slate-500 text-xs mt-2 italic">
+    This code will be injected into the main() function to parse input and call the user's solution class.
+  </p>
+</section>
   </div>
 </div>
 

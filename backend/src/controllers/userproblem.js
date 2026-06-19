@@ -1,57 +1,101 @@
-const { getlanguagebyid, submitbatch, submittoken } = require('../utils/problemutility'); 
-const { CURRENT_SEASON_ID } = require("../utils/dates"); 
+const { getLanguageConfig } = require('../utils/problemutility'); 
+const { CURRENT_SEASON_ID } = require("../utils/dates");
 const Problem = require('../models/problem');
 const User = require('../models/user');
 const Submission = require('../models/submission');
+const { Sandbox } = require('e2b');
+
+
 
 const createproblem = async (req, res) => {
-
     try {
-        const { referencesolution, visibleTestCases, hiddenTestCases, round, releaseDay } = req.body;
+        const { referencesolution, visibleTestCases, hiddenTestCases, round, releaseDay, drivercode } = req.body;
 
+        if(!drivercode)
+            throw new Error("Driver code is required");
         if (!round || !releaseDay) {
-            return res.status(400).send("Missing timeline parameters: 'round' and 'releaseDay' are required.");
+            return res.status(400).send("Missing timeline parameters.");
         }
 
-        const totaltestcases = [...visibleTestCases, ...hiddenTestCases];
+        const totalTestCases = [...visibleTestCases, ...hiddenTestCases];
 
         for (const ele of referencesolution) {
             const { language, code } = ele;
-            const id = getlanguagebyid(language);
+            const config = getLanguageConfig(language);
             
-            const submission = totaltestcases.map((testcase) => ({
-                source_code: code,
-                language_id: id,
-                stdin: testcase.input,
-                expected_output: testcase.output
-            }));
+            const fullCode = `
+                    #include <iostream>
+                    #include <vector>
+                    #include <string>
+                    #include <sstream>
+                    #include <algorithm>
+                    
+                    std::vector<int> parseVector(const std::string& input) {
+                        std::vector<int> result;
+                        std::string s = input;
+                        s.erase(std::remove(s.begin(), s.end(), '['), s.end());
+                        s.erase(std::remove(s.begin(), s.end(), ']'), s.end());
+                        std::stringstream ss(s);
+                        std::string item;
+                        while (std::getline(ss, item, ',')) {
+                            item.erase(std::remove(item.begin(), item.end(), ' '), item.end());
+                            if (!item.empty()) {
+                                result.push_back(std::stoi(item));
+                            }
+                        }
+                        return result;
+                    }
 
-            const submissionResult = await submitbatch(submission);
+                    ${code} 
+                    
+                    int main() {
+                        std::string input_line;
+                        if (std::getline(std::cin, input_line)) {
+                            ${drivercode} 
+                        }
+                        return 0;
+                    }
+                `;
 
+            // 1. Create one sandbox per reference solution
+            const sandbox = await Sandbox.create();
 
-            const resultToken = submissionResult.map((res) => res.token); 
-
-            const testResult = await submittoken(resultToken);
-
-
-            for (const test of testResult) {
-                if (parseInt(test.status_id) !== 3) {
-                    return res.status(400).send(`Reference Solution validation failed. Judge0 status code: ${test.status_id}`);
+            try {
+                // 2. Setup the environment
+                await sandbox.files.write(`main.${config.ext}`, fullCode);
+                if (config.compile) {
+                    const compile = await sandbox.commands.run(config.compile);
+                    if (compile.exitCode !== 0) throw new Error(`Compilation failed: ${compile.stderr}`);
                 }
+
+                // 3. Run all test cases in the SAME sandbox
+                for (const testCase of totalTestCases) {
+                    await sandbox.files.write('input.txt', testCase.input);
+                    const run = await sandbox.commands.run(`${config.run} < input.txt`, { timeout: 5 });
+                    
+                    if (run.exitCode !== 0 || run.stdout.trim() !== testCase.output.trim()) {
+                        throw new Error(`Reference solution failed on test case input ${testCase.input} : Expected Output ${testCase.output} but got ${run.stdout}`);
+                    }
+                }
+            } finally {
+                // 4. Always close the sandbox!
+                await sandbox.kill();
             }
         }
 
+        // 5. Save to database
         await Problem.create({
             ...req.body,
-            seasonId: req.seasonConfig ? req.seasonConfig.seasonId : CURRENT_SEASON_ID, 
+            seasonId: req.seasonId ? req.seasonId : CURRENT_SEASON_ID, 
             problemcreator: req.result._id
         });
 
         res.status(200).send("Problem Created Successfully");
     } catch (err) {
         res.status(400).send("Error: " + err.message);
+
     }
-};
+}
 
 const problemupdate = async (req, res) => {
     const { pid } = req.params;
@@ -62,41 +106,80 @@ const problemupdate = async (req, res) => {
         if (!problem) return res.status(404).send("Problem not found");
 
         const { referencesolution, visibleTestCases, hiddenTestCases } = req.body;
-        const totaltestcases = [...visibleTestCases, ...hiddenTestCases];
+        const drivercode = problem.drivercode;
+        const totalTestCases = [...visibleTestCases, ...hiddenTestCases];
 
-        if (referencesolution && totaltestcases.length > 0) {
+        // Only validate if solution or test cases were provided
+        if (referencesolution && totalTestCases.length > 0) {
             for (const ele of referencesolution) {
                 const { language, code } = ele;
-                const langId = getlanguagebyid(language);
-
-                const submission = totaltestcases.map((testcase) => ({
-                    source_code: Buffer.from(code).toString('base64'),
-                    language_id: langId,
-                    stdin: Buffer.from(testcase.input).toString('base64'),
-                    expected_output: Buffer.from(testcase.output).toString('base64')
-                }));
-
-                const submissionResult = await submitbatch(submission);
-                const resultToken = submissionResult.map((res) => res.token); 
-
-                const testResult = await submittoken(resultToken);
-
-                for (const test of testResult) {
-                    if (parseInt(test.status_id) !== 3) {
-                        return res.status(400).send("Updated Reference Solution failed pipeline checks.");
+                const config = getLanguageConfig(language); // Ensure this helper is defined
+                
+                const fullCode = `
+                    #include <iostream>
+                    #include <vector>
+                    #include <string>
+                    #include <sstream>
+                    #include <algorithm>
+                    
+                    std::vector<int> parseVector(const std::string& input) {
+                        std::vector<int> result;
+                        std::string s = input;
+                        s.erase(std::remove(s.begin(), s.end(), '['), s.end());
+                        s.erase(std::remove(s.begin(), s.end(), ']'), s.end());
+                        std::stringstream ss(s);
+                        std::string item;
+                        while (std::getline(ss, item, ',')) {
+                            item.erase(std::remove(item.begin(), item.end(), ' '), item.end());
+                            if (!item.empty()) {
+                                result.push_back(std::stoi(item));
+                            }
+                        }
+                        return result;
                     }
+
+                    ${code} // The user's solution
+                    
+                    int main() {
+                        std::string input_line;
+                        if (std::getline(std::cin, input_line)) {
+                            ${drivercode} // The logic from your DB/Frontend
+                        }
+                        return 0;
+                    }
+                `;
+                const sandbox = await Sandbox.create();
+                try {
+                    console.log("Sandbox is created");
+                    await sandbox.files.write(`main.${config.ext}`, fullCode);
+                    if (config.compile) {
+                        const compile = await sandbox.commands.run(config.compile);
+                        if (compile.exitCode !== 0) throw new Error(`Compile error: ${compile.stderr}`);
+                    }
+
+                    for (const testCase of totalTestCases) {
+                        await sandbox.files.write('input.txt', testCase.input);
+                        const run = await sandbox.commands.run(`${config.run} < input.txt`, { timeout: 2 });
+                        
+                        if (run.exitCode !== 0 || run.stdout.trim() !== testCase.output.trim()) {
+                            throw new Error("Reference solution failed on updated test cases.");
+                        }
+                    }
+                } finally {
+                    console.log("Sandbox is killed")
+                    await sandbox.kill();
                 }
             }
         }
 
-        const newproblem = await Problem.findByIdAndUpdate(pid, {
+        const newProblem = await Problem.findByIdAndUpdate(pid, {
             ...req.body,
             problemcreator: req.result._id
         }, { runValidators: true, new: true });
 
-        res.status(200).send(newproblem);
+        res.status(200).send(newProblem);
     } catch (err) {
-        return res.status(400).send("Error Occured during updates: " + err.message);
+        return res.status(400).send("Error Occurred during updates: " + err.message);
     }
 };
 

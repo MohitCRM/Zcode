@@ -56,7 +56,7 @@ const tierdata = (currelo) =>{
     if (currtierindex !== -1 && currtierindex < TIERS.length - 1) {
         nexttier = TIERS[currtierindex + 1];
         
-        const tierRange = currtier.minElo - currtier.minElo;
+        const tierRange = nexttier.minElo - currtier.minElo;
         const currprogress = currelo - currtier.minElo;
         
         progresspercentage = Math.min(100, Math.max(0, parseFloat(((currprogress / tierRange) * 100).toFixed(1))));
