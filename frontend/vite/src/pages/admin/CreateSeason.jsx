@@ -29,15 +29,28 @@ const seasonschema = z.object({
 });
 
 const onSubmit = async (data) => {
+
+  const formattedData = {
+        ...data,
+        launchDate: new Date(data.launchDate).toISOString(),
+        round1Start: new Date(data.round1Start).toISOString(),
+        round1End: new Date(data.round1End).toISOString(),
+        r1SolutionStart: new Date(data.r1SolutionStart).toISOString(),
+        r1SolutionEnd: new Date(data.r1SolutionEnd).toISOString(),
+        round2Start: new Date(data.round2Start).toISOString(),
+        round2End: new Date(data.round2End).toISOString(),
+        r2SolutionStart: new Date(data.r2SolutionStart).toISOString(),
+        r2SolutionEnd: new Date(data.r2SolutionEnd).toISOString(),
+    };
     try {
-        const response = await axiosClient.post('/seasons/create', data);
-        
+        const response = await axiosClient.post('/seasons/create', formattedData);
         if (response.status === 201) {
             alert("Season created successfully!");
-            // navigate('/admin'); 
+            navigate('/admin'); 
         }
     } catch (err) {
         console.error("Submission failed:", err.response?.data?.message || err.message);
+        console.log("Submission failed:", err.response?.data?.message || err.message);
         alert(err.response?.data?.message || "Failed to create season");
     }
 }

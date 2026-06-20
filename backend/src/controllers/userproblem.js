@@ -9,18 +9,23 @@ const { Sandbox } = require('e2b');
 
 const createproblem = async (req, res) => {
     try {
-        const { referencesolution, visibleTestCases, hiddenTestCases, round, releaseDay, drivercode } = req.body;
+        const { referencesolution, visibleTestCases, hiddenTestCases, round, releaseDay, drivercode ,constraints} = req.body;
 
         if(!drivercode)
             throw new Error("Driver code is required");
         if (!round || !releaseDay) {
             return res.status(400).send("Missing timeline parameters.");
         }
+        if(!constraints)
+        {
+            throw new Error("Problem constraints are required");
+        }
 
         const totalTestCases = [...visibleTestCases, ...hiddenTestCases];
 
         for (const ele of referencesolution) {
             const { language, code } = ele;
+            if(language === 'cpp') language = 'c++';
             const config = getLanguageConfig(language);
             
             const fullCode = `
@@ -71,14 +76,13 @@ const createproblem = async (req, res) => {
                 // 3. Run all test cases in the SAME sandbox
                 for (const testCase of totalTestCases) {
                     await sandbox.files.write('input.txt', testCase.input);
-                    const run = await sandbox.commands.run(`${config.run} < input.txt`, { timeout: 5 });
+                    const run = await sandbox.commands.run(`${config.run} < input.txt`, { timeout: constraints.timeLimit });
                     
                     if (run.exitCode !== 0 || run.stdout.trim() !== testCase.output.trim()) {
                         throw new Error(`Reference solution failed on test case input ${testCase.input} : Expected Output ${testCase.output} but got ${run.stdout}`);
                     }
                 }
             } finally {
-                // 4. Always close the sandbox!
                 await sandbox.kill();
             }
         }
@@ -105,7 +109,7 @@ const problemupdate = async (req, res) => {
         const problem = await Problem.findById(pid);
         if (!problem) return res.status(404).send("Problem not found");
 
-        const { referencesolution, visibleTestCases, hiddenTestCases } = req.body;
+        const { referencesolution, visibleTestCases, hiddenTestCases} = req.body;
         const drivercode = problem.drivercode;
         const totalTestCases = [...visibleTestCases, ...hiddenTestCases];
 
@@ -113,6 +117,7 @@ const problemupdate = async (req, res) => {
         if (referencesolution && totalTestCases.length > 0) {
             for (const ele of referencesolution) {
                 const { language, code } = ele;
+                if(language === 'cpp') language = 'c++';
                 const config = getLanguageConfig(language); // Ensure this helper is defined
                 
                 const fullCode = `
@@ -228,7 +233,7 @@ const problemfetch = async (req, res) => {
             return res.status(404).send("Problem not found, locked behind a future round, or unreleased!");
         }
 
-        return res.status(200).send(problem);
+        return res.status(200).json({problem});
     } catch (err) {
         return res.status(400).send("Error Occured: " + err.message);
     }
@@ -264,7 +269,7 @@ const allproblemfetch = async (req, res) => {
             round: targetRound,
             releaseDay: { $lte: currentSeasonDay }
         })
-        .select("title difficulty tags baseEloReward releaseDay penaltyWrongAnswer") 
+        .select(" _id title difficulty tags baseEloReward releaseDay penaltyWrongAnswer") 
         .sort({ releaseDay: 1 });
 
         return res.status(200).json({

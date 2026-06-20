@@ -87,6 +87,11 @@ const leetcodeTags = [
     .refine((items) => items.every(item => leetcodeTags.includes(item)), {
       message: "One or more selected tags are invalid",
     }),
+    constraints: z.object({
+    timeLimit: z.coerce.number().min(0.1).default(1.0),
+    memoryLimit: z.coerce.number().min(64).default(256),
+    inputConstraints: z.string().min(1, "Input constraints are required"),
+  }),
   
   baseEloReward: z.coerce.number().min(0),
   penaltyWrongAnswer: z.coerce.number().min(0),
@@ -149,6 +154,11 @@ export default function CreateProblem() {
       round: 1,
       releaseDay: 1,
       drivercode : "std::vector<int> data = parseVector(input_line); Solution sol; std::cout << sol.maxArea(data) << std::endl;",
+      constraints: {
+      timeLimit: 1.0,
+      memoryLimit: 256,
+      inputConstraints: "2 <= nums.length <= 10^4, -10^9 <= nums[i] <= 10^9"
+      },
       visibleTestCases: [{ input: "", output: "", explanation: "" }],
       hiddenTestCases: [{ input: "", output: "" }],
       startcode: [{ language: "javascript", initialcode: "" }],
@@ -167,10 +177,16 @@ export default function CreateProblem() {
     try {
       const payload = {
         ...data,
-        round: Number(data.round),
-        seasonId: Number(data.seasonId),
-        releaseDay: Number(data.releaseDay),
-      };
+        constraints: {
+        timeLimit: Number(data.constraints.timeLimit),
+        memoryLimit: Number(data.constraints.memoryLimit),
+        inputConstraints: data.constraints.inputConstraints
+      },
+      round: Number(data.round),
+      seasonId: Number(data.seasonId),
+      releaseDay: Number(data.releaseDay),
+    };
+
 
       console.log(payload);
 
@@ -330,6 +346,47 @@ export default function CreateProblem() {
   <p className="text-slate-500 text-xs mt-2 italic">
     This code will be injected into the main() function to parse input and call the user's solution class.
   </p>
+</section>
+    <section className="space-y-4">
+  <h3 className="text-white font-semibold">Problem Constraints</h3>
+  <div className="bg-[#121826] p-6 rounded-xl border border-slate-800 space-y-6">
+    
+    {/* Time and Memory (Side by Side) */}
+    <div className="grid grid-cols-2 gap-6">
+      <div>
+        <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Time Limit (s)</label>
+        <input 
+          type="number" 
+          step="0.1" 
+          {...register("constraints.timeLimit", { valueAsNumber: true })} 
+          className="w-full bg-[#0C1220] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none" 
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Memory Limit (MB)</label>
+        <input 
+          type="number" 
+          {...register("constraints.memoryLimit", { valueAsNumber: true })} 
+          className="w-full bg-[#0C1220] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none" 
+        />
+      </div>
+    </div>
+
+    {/* Input Constraints (Full Width & Larger) */}
+    <div>
+      <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">
+        Input Constraints Description
+      </label>
+      <textarea 
+        {...register("constraints.inputConstraints")} 
+        placeholder="e.g. 2 <= nums.length <= 10^4&#10;-10^9 <= nums[i] <= 10^9" 
+        className="w-full bg-[#0C1220] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none h-32 resize-y" 
+      />
+      {errors.constraints?.inputConstraints && (
+        <p className="text-rose-400 text-xs mt-1">{errors.constraints.inputConstraints.message}</p>
+      )}
+    </div>
+  </div>
 </section>
   </div>
 </div>

@@ -8,6 +8,7 @@ import AdminPanel from "./pages/admin/adminpanel";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Announcement from "./pages/announcement/announcement";
+import ProblemDetail from "./pages/problemdetails/problemdetail"
 import Layout from "./pages/layout";
 import {checkauth} from "./slicers/authslice";
 import { useDispatch, useSelector } from "react-redux";
@@ -49,7 +50,10 @@ export default function App()
         <Route index element={<Navigate to="/announcements" />} />
         <Route path="announcements" element={<Announcement />} />
 
-        <Route path="problems" element={<Problems />} />
+        <Route path="problems" >
+          <Route index element={<Problems />} />
+          <Route path=":problemId" element={<ProblemDetail />} />
+        </Route>
 
         <Route path="standings" element={<Standings />} />
 

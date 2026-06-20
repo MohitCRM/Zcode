@@ -128,8 +128,24 @@ const problemSchema = new Schema({
     drivercode:{
         type: String,
         required : true,
-        defualt : ""
+        default : ""
     },
+    constraints: {
+    timeLimit: { 
+        type: Number, 
+        required: true, 
+        default: 1.0 
+    },
+    memoryLimit: { 
+        type: Number, 
+        required: true, 
+        default: 256 
+    },
+    inputConstraints: {
+        type: String, 
+        default: "2 <= nums.length <= 10^4, -10^9 <= nums[i] <= 10^9"
+    }
+},
     
     visibleTestCases: [
         {

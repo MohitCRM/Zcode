@@ -17,9 +17,12 @@ const submitcode = async (req, res) => {
         const userid = req.result._id;
 
         if (!code || !language || !problemid) throw new Error("Missing required fields");
+        if(language === 'cpp') language = 'c++';
 
         const problem = await Problem.findById(problemid).lean();
         if (!problem) return res.status(404).json({ error: "Problem not found" });
+
+        const { timeLimit = 1.0, memoryLimit = 256 } = problem.constraints || {};
 
         const [pendingSubmission] = await Submission.create([{
             userId: userid,
@@ -89,7 +92,7 @@ const submitcode = async (req, res) => {
             if (status === "Accepted") {
                 for (const tc of problem.hiddenTestCases) {
                     await sandbox.files.write('input.txt', tc.input);
-                    const run = await sandbox.commands.run(`${config.run} < input.txt`, { timeout: 2 });
+                    const run = await sandbox.commands.run(`${config.run} < input.txt`, { timeout: timeLimit });
                     
                     if (run.exitCode !== 0) {
                         status = run.exitCode === 124 ? "Time Limit Exceeded" : "Runtime Error";
@@ -153,8 +156,11 @@ const submitcode = async (req, res) => {
 const runcode = async (req, res) => {
     try {
         const { code, language } = req.body;
-        const problem = await Problem.findById(req.params.id);
+        const problem = await Problem.findById(req.params.id).lean();
         if (!problem) return res.status(404).send("Problem not found");
+        if(language === 'cpp') language = 'c++';
+
+        const { timeLimit = 1.0, memoryLimit = 256 } = problem.constraints || {};
 
         const config = getLanguageConfig(language);
         const sandbox = await Sandbox.create();
@@ -206,14 +212,16 @@ const runcode = async (req, res) => {
 
             for (const tc of problem.visibleTestCases) {
                 await sandbox.files.write('input.txt', tc.input);
-                const run = await sandbox.commands.run(`${config.run} < input.txt`, { timeout: 2 });
+                const run = await sandbox.commands.run(`${config.run} < input.txt`, { timeout: timeLimit });
+
+                const isTimedOut = run.exitCode === 124;
                 const isCorrect = run.exitCode === 0 && run.stdout.trim() === tc.output.trim();
                 
                 results.push({
                     input: tc.input,
                     expected: tc.output,
                     actual: run.stdout.trim(),
-                    status: isCorrect ? "Success" : (run.exitCode === 0 ? "Wrong Answer" : "Runtime Error"),
+                    status: isTimedOut ? "Time Limit Exceeded" : (isCorrect ? "Success" : (run.exitCode === 0 ? "Wrong Answer" : "Runtime Error")),
                     stderr: run.stderr
                 });
             }
