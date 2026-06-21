@@ -1,5 +1,19 @@
 const Season = require('../models/season');
 
+const showallseasons = async (req,res)=>{
+    try{
+        const allseasons = (await Season.find()).toSorted({seasonId:-1});
+        if(!allseasons || allseasons.length === 0)
+        {
+            return res.status(404).json({error:"No seasons found"});
+        }
+        res.status(200).json({seasons : allseasons});
+    }catch(err)
+    {
+        res.status(400).json({error:err.message});
+    }
+}
+
 const createseason = async (req, res) => {
     try {
         const { seasonId, isActive, launchDate, round1Start, round1End, r1SolutionStart, r1SolutionEnd, round2Start, round2End, r2SolutionStart, r2SolutionEnd } = req.body;
@@ -12,7 +26,7 @@ const createseason = async (req, res) => {
             seasonId, isActive, launchDate, round1Start, round1End, r1SolutionStart, r1SolutionEnd, round2Start, round2End, r2SolutionStart, r2SolutionEnd
         });
 
-        res.status(201).json({ message: "Season created successfully", newSeason });
+        res.status(201).json({ message: "Season created successfully", season : newSeason });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -20,18 +34,18 @@ const createseason = async (req, res) => {
 
 const updateseason = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { sid } = req.params;
         const updateData = req.body;
 
         if (updateData.isActive === true) {
-            await Season.updateMany({ _id: { $ne: id } }, { isActive: false });
+            await Season.updateMany({ _id: { $ne: sid } }, { isActive: false });
         }
 
-        const updatedSeason = await Season.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+        const updatedSeason = await Season.findByIdAndUpdate(sid, updateData, { new: true, runValidators: true });
         
         if (!updatedSeason) return res.status(404).json({ error: "Season not found" });
 
-        res.status(200).json({ message: "Season updated", updatedSeason });
+        res.status(200).json({ message: "Season updated", season : updatedSeason });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -39,8 +53,8 @@ const updateseason = async (req, res) => {
 
 const deleteseason = async (req, res) => {
     try {
-        const { id } = req.params;
-        const deletedSeason = await Season.findByIdAndDelete(id);
+        const { sid } = req.params;
+        const deletedSeason = await Season.findByIdAndDelete(sid);
         
         if (!deletedSeason) return res.status(404).json({ error: "Season not found" });
         
@@ -50,4 +64,27 @@ const deleteseason = async (req, res) => {
     }
 };
 
-module.exports = {createseason,updateseason,deleteseason};
+const getcurrentseason = async (req,res)=>{
+    try{
+        const currentseason = await Season.findOne({isActive:true});
+        if(!currentseason) return res.status(404).json({error:"No current season found"});
+        res.status(200).json({season : currentseason});
+    }catch(err)
+    {
+        res.status(400).json({error:err.message});
+    }
+}
+
+const getseasonbyid = async (req,res)=>{
+    try{
+        const {sid} = req.query;
+        const season = await Season.findById({seasonId : sid});
+        if(!season)
+            return res.status(404).json({error:"No season found"});
+        res.status(200).json({season});
+    }catch(err){
+        res.status(400).json({error:err.message});
+    }
+}
+
+module.exports = {createseason,updateseason,deleteseason,showallseasons,getcurrentseason,getseasonbyid};

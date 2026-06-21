@@ -10,19 +10,21 @@ const {
     problemupdate, 
     problemdelete, 
     solvedproblems,
-    sumbittedproblem
+    sumbittedproblem,
+    adminfetchallproblems
 } = require('../controllers/userproblem');
 
 router.get('/getproblems', usermiddleware, phasemiddleware(['Round1', 'Round2']), allproblemfetch);
-router.get('/user', usermiddleware, solvedproblems);
+router.get('/profile/solvedproblems', usermiddleware, solvedproblems);
 
 
-router.get("/submittedProblem/:pid", usermiddleware, sumbittedproblem);
+router.get("/submittedproblem/:pid", usermiddleware, sumbittedproblem);
 router.get('/getproblembyid/:pid', usermiddleware, phasemiddleware(['Round1', 'Round2', 'Round1Solution', 'Round2Solution']), problemfetch);
 
 // Admin routes
 router.post('/create', adminmiddleware, createproblem);
 router.put("/update/:pid", adminmiddleware, problemupdate);
 router.delete('/delete/:pid', adminmiddleware, problemdelete);
+router.get('/fetchallproblems/:sid',adminmiddleware,adminfetchallproblems);
 
 module.exports = router;

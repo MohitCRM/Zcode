@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { getcurrentseason } from "../../slicers/seasonslice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { registerUser } from "../../slicers/authslice";
+
 
 // Schema for sign up form validation remains unchanged
 const signupschema = z.object({
@@ -32,7 +34,11 @@ export default function Signup() {
   }, [isauth, navigate]);
 
   const onsubmit = (data) => {
-    dispatch(registerUser(data));
+    dispatch(registerUser(data)
+    .unwrap()
+    .then(()=>{
+      dispatch(getcurrentseason());
+    }));
   };
 
   return (

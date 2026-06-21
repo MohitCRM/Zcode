@@ -12,22 +12,22 @@ const submitcode = async (req, res) => {
     const session = await mongoose.startSession();
     
     try {
-        const { id: problemid } = req.params;
+        const { pid } = req.params;
         const { code, language } = req.body;
         const userid = req.result._id;
 
-        if (!code || !language || !problemid) throw new Error("Missing required fields");
+        if (!code || !language || !pid) throw new Error("Missing required fields");
         if(language === 'cpp') language = 'c++';
 
-        const problem = await Problem.findById(problemid).lean();
+        const problem = await Problem.findById(pid).lean();
         if (!problem) return res.status(404).json({ error: "Problem not found" });
 
         const { timeLimit = 1.0, memoryLimit = 256 } = problem.constraints || {};
 
         const [pendingSubmission] = await Submission.create([{
             userId: userid,
-            problemId: problemid,
-            seasonId: req.season?.seasonId ?? CURRENT_SEASON_ID,
+            problemId: pid,
+            seasonId: req.season?.seasonId ,
             code,
             language,
             status: "Pending"
@@ -156,8 +156,8 @@ const submitcode = async (req, res) => {
 const runcode = async (req, res) => {
     try {
         const { code, language } = req.body;
-        const problem = await Problem.findById(req.params.id).lean();
-        if (!problem) return res.status(404).send("Problem not found");
+        const problem = await Problem.findById(req.params.pid).lean();
+        if (!problem) return res.status(404).json({ error : "Problem not found"});
         if(language === 'cpp') language = 'c++';
 
         const { timeLimit = 1.0, memoryLimit = 256 } = problem.constraints || {};
@@ -206,7 +206,7 @@ const runcode = async (req, res) => {
             if (config.compile) {
                 const compile = await sandbox.commands.run(config.compile);
                 if (compile.exitCode !== 0) {
-                    return res.status(200).send([{ status: "Compilation Error", stderr: compile.stderr }]);
+                    return res.status(200).json({ status: "Compilation Error", stderr: compile.stderr });
                 }
             }
 
@@ -228,9 +228,9 @@ const runcode = async (req, res) => {
         } finally {
             await sandbox.kill();
         }
-        res.status(200).json(results);
+        res.status(200).json({results : results});
     } catch (err) {
-        res.status(500).send(err.message);
+        res.status(500).json({error : err.message});
     }
 };
 module.exports = {submitcode, runcode};

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../../slicers/authslice";
+import { getcurrentseason } from "../../slicers/seasonslice";
 
 // Schema for login form validation remains unchanged
 const loginschema = z.object({
@@ -31,7 +32,11 @@ export default function Login() {
   }, [isauth, navigate]);
 
   const onsubmit = (data) => {
-    dispatch(loginUser(data));
+    dispatch(loginUser(data))
+    .unwrap()
+    .then(()=>{
+      dispatch(getcurrentseason());
+    });
   };
 
   return (

@@ -49,7 +49,7 @@ const register = async (req,res)=>{
         });
     }
     catch(err){
-        res.status(400).send("Error: " + err.message);
+        res.status(400).json({error : err.message});
     }
 }
 
@@ -90,7 +90,7 @@ const login = async (req,res)=>{
         });
     }
     catch(err){
-        res.status(400).send("Error: " + err.message);
+        res.status(400).json({error : err.message});
     }
 }
 
@@ -105,11 +105,11 @@ const logout = async (req,res)=>{
         await redisClient.expireAt(`token:${token}`,payload.exp);
 
         res.cookie("token",null,{expires : new Date(Date.now())});
-        res.status(200).send("Logged out Succesfully");
+        res.status(200).json({message : "Logged out Succesfully"});
 
     }
     catch(err){
-        res.status(503).send("Error: " + err.message);
+        res.status(503).json({error : err.message});
     }
 }
 
@@ -142,10 +142,10 @@ const adminregister = async(req,res)=>{
             maxAge: 24 * 60 * 60 * 1000 
         });
 
-        res.status(201).send("User Registered Successfully");
+        res.status(201).json({message : "User Registered Successfully"});
     }
     catch(err){
-        res.status(400).send("Error: " + err.message);
+        res.status(400).json({error : err.message});
     }
 }
 
@@ -158,11 +158,11 @@ const deleteprofile = async (req,res)=>{
 
         await Submission.deleteMany({ userId: userid });
 
-        res.status(200).send("Profile Deleted Successfully");
+        res.status(200).json({message : "Profile Deleted Successfully"});
     }
     catch(err)
     {
-        res.status(500).send("Error: " + err.message);
+        res.status(500).json({error : err.message});
     }
 }
 

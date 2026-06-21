@@ -12,7 +12,7 @@ const getallannouncements = async (req,res)=>{
             createdAt : -1
         });
 
-        return res.status(200).json(announcements);
+        return res.status(200).json({announcements : announcements});
     }catch(err)
     {
         return res.status(500).json({error : "Failed to load announcements",details : err.message});
@@ -45,10 +45,10 @@ const createannouncement = async (req,res)=>{
 
 const updateannouncement = async (req,res)=>{
     try{
-        const { id } = req.params;
+        const { aid } = req.params;
         
         const updatedAnnouncement = await Announcement.findByIdAndUpdate(
-            id,
+            aid,
             { $set: req.body },
             { new: true, runValidators: true } 
         );
@@ -67,9 +67,9 @@ const updateannouncement = async (req,res)=>{
 
 const deleteannouncement = async (req,res)=>{
     try{
-        const {id} = req.params;
+        const {aid} = req.params;
 
-        const deletedAnnouncement = await Announcement.findByIdAndDelete(id);
+        const deletedAnnouncement = await Announcement.findByIdAndDelete(aid);
         if (!deletedAnnouncement) {
             return res.status(404).json({ error: "Announcement not found." });
         }

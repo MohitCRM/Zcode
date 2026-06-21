@@ -5,7 +5,32 @@ const User = require('../models/user');
 const Submission = require('../models/submission');
 const { Sandbox } = require('e2b');
 
+const adminfetchallproblems = async (req, res) => {
+    try {
+        const { sid } = req.query;
 
+        if (!sid) {
+            return res.status(400).json({ success: false, message: "Season ID is required" });
+        }
+
+        const problems = await Problem.find({ seasonId: Number(sid) });
+
+        if (problems.length === 0) {
+            return res.status(404).json({ success: false, message: "No problems found for this season" });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Problems fetched successfully",
+            problems : problems
+        });
+    } catch (err) {
+        res.status(500).json({ 
+            success: false,
+            message: err.message
+        });
+    }
+};
 
 const createproblem = async (req, res) => {
     try {
@@ -14,11 +39,11 @@ const createproblem = async (req, res) => {
         if(!drivercode)
             throw new Error("Driver code is required");
         if (!round || !releaseDay) {
-            return res.status(400).send("Missing timeline parameters.");
+            return res.status(400).json({ error : "Missing timeline parameters."});
         }
         if(!constraints)
         {
-            throw new Error("Problem constraints are required");
+            return res.status(400).json({error : "Constraints are required"});
         }
 
         const totalTestCases = [...visibleTestCases, ...hiddenTestCases];
@@ -94,9 +119,9 @@ const createproblem = async (req, res) => {
             problemcreator: req.result._id
         });
 
-        res.status(200).send("Problem Created Successfully");
+        res.status(200).json({error : "Problem Created Successfully"});
     } catch (err) {
-        res.status(400).send("Error: " + err.message);
+        res.status(400).json({error : "Error: " + err.message});
 
     }
 }
@@ -104,10 +129,10 @@ const createproblem = async (req, res) => {
 const problemupdate = async (req, res) => {
     const { pid } = req.params;
     try {
-        if (!pid) return res.status(400).send("Missing pid field");
+        if (!pid) return res.status(400).json({ error:  "Missing pid field"});
 
         const problem = await Problem.findById(pid);
-        if (!problem) return res.status(404).send("Problem not found");
+        if (!problem) return res.status(404).json({error : "Problem not found"});
 
         const { referencesolution, visibleTestCases, hiddenTestCases} = req.body;
         const drivercode = problem.drivercode;
@@ -182,34 +207,34 @@ const problemupdate = async (req, res) => {
             problemcreator: req.result._id
         }, { runValidators: true, new: true });
 
-        res.status(200).send(newProblem);
+        res.status(200).json({problem : newProblem});
     } catch (err) {
-        return res.status(400).send("Error Occurred during updates: " + err.message);
+        return res.status(400).json({error : "Error Occurred during updates: " + err.message});
     }
 };
 
 const problemdelete = async (req, res) => {
     const { pid } = req.params;
     try {
-        if (!pid) return res.status(400).send("Missing pid field");
+        if (!pid) return res.status(400).json({ error : "Missing pid field"});
 
         const deletedprobem = await Problem.findByIdAndDelete(pid);
-        if (!deletedprobem) return res.status(404).send("Problem not found");
+        if (!deletedprobem) return res.status(404).json({error : "Problem not found"});
 
-        res.status(200).send("Problem Deleted Successfully");
+        res.status(200).json({message : "Problem Deleted Successfully"});
     } catch (err) {
-        return res.status(400).send("Error Occured");
+        return res.status(400).json({error : "Error Occured"});
     }
 };
 
 const problemfetch = async (req, res) => {
     const { pid } = req.params;
     try {
-        if (!pid) return res.status(400).send("Missing pid field");
+        if (!pid) return res.status(400).json({error : "Missing pid field"});
 
         const currentSeason = req.seasonConfig || req.season; 
         if (!currentSeason) {
-            return res.status(500).send("Configuration error: Season context missing.");
+            return res.status(500).json({error : "Configuration error: Season context missing."});
         }
 
         const activePhase = currentSeason.getCurrentPhase();
@@ -227,15 +252,15 @@ const problemfetch = async (req, res) => {
             seasonId: currentSeason.seasonId,
             round: allowedRound,
             releaseDay: { $lte: currentSeasonDay } 
-        }).select("-hiddenTestCases -__v -createdAt -updatedAt -problemcreator");
+        }).select("-hiddenTestCases -__v -createdAt -updatedAt -problemcreator -drivercode ");
 
         if (!problem) {
-            return res.status(404).send("Problem not found, locked behind a future round, or unreleased!");
+            return res.status(404).json({error : "Problem not found, locked behind a future round, or unreleased!"});
         }
 
-        return res.status(200).json({problem});
+        return res.status(200).json({problem : problem});
     } catch (err) {
-        return res.status(400).send("Error Occured: " + err.message);
+        return res.status(400).json({error : "Error Occured: " + err.message});
     }
 };
 
@@ -293,9 +318,9 @@ const solvedproblems = async (req, res) => {
             select: "_id title difficulty tags"
         });
 
-        res.status(200).send(user.problemsolved);
+        res.status(200).json({ problemsolved : user.problemsolved});
     } catch (err) {
-        return res.status(400).send("Error Occured: " + err.message);
+        return res.status(400).json({error : err.message});
     }
 };
 
@@ -307,12 +332,12 @@ const sumbittedproblem = async (req, res) => {
         const submissions = await Submission.find({ userId: userid, problemId: problemid }).sort({ createdAt: -1 });
 
         if (submissions.length === 0) {
-            return res.status(404).send("No submissions found");
+            return res.status(404).json({ error :"No submissions found"});
         }
         
-        res.status(200).send(submissions);
+        res.status(200).json({submissions : submissions});
     } catch (err) {
-        return res.status(400).send("Error Occured: " + err.message);
+        return res.status(400).json({error : err.message});
     }
 };
 
@@ -323,5 +348,6 @@ module.exports = {
     problemupdate, 
     problemdelete, 
     solvedproblems, 
-    sumbittedproblem 
+    sumbittedproblem ,
+    adminfetchallproblems
 };

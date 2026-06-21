@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const adminmiddleware = require('../middleware/adminmiddleware');
-const {createseason,updateseason,deleteseason} = require('../controllers/seasons');
+const usermiddleware = require('../middleware/usermiddleware')
+const {showallseasons,createseason,updateseason,deleteseason,getcurrentseason,getseasonbyid} = require('../controllers/seasons');
 
 router.post('/create',adminmiddleware,createseason);
-router.put('/update/:id',adminmiddleware,updateseason);
-router.delete('/delete/:id',adminmiddleware,deleteseason);
+router.put('/update/:sid',adminmiddleware,updateseason);
+router.delete('/delete/:sid',adminmiddleware,deleteseason);
+router.get('/getallseasons',usermiddleware,showallseasons);
+router.get('/getcurrentseason',usermiddleware,getcurrentseason);
+router.get('/getseasonbyid/:sid',usermiddleware,getseasonbyid);
 
 module.exports = router;

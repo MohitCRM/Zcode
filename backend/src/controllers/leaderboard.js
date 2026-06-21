@@ -1,6 +1,6 @@
 const Leaderboard = require('../models/leaderboard');
 
-const showallseasons = async (req,res)=>{
+const showallseasonid = async (req,res)=>{
     try{
         const allseasons = await Leaderboard.distinct('seasonId');
 
@@ -12,7 +12,7 @@ const showallseasons = async (req,res)=>{
             status : sid === 1 ? 'Active' : 'Ended'
         }))
 
-        return res.status(200).json(seasons);
+        return res.status(200).json({seasons : seasons});
     }
     catch(err)
     {
@@ -67,7 +67,7 @@ const getleaderboard = async (req,res)=>{
                 hasNextPage: page < totalpages,
                 hasPrevPage: page > 1
             },
-            standings
+            standings : standings
         });
     }catch(err)
     {
@@ -75,4 +75,4 @@ const getleaderboard = async (req,res)=>{
     }
 }
 
-module.exports = {showallseasons,getleaderboard};
+module.exports = {showallseasonid,getleaderboard};
