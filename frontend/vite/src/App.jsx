@@ -11,8 +11,11 @@ import Announcement from "./pages/announcement/announcement";
 import ProblemDetail from "./pages/problemdetails/problemdetail"
 import Layout from "./pages/layout";
 import {checkauth} from "./slicers/authslice";
+import { getcurrentseason } from "./slicers/seasonslice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
+import Showallproblems from "./pages/admin/showallproblems";
+import Showallseasons from "./pages/admin/showalleasons";
 import CreateAnnouncement from "./pages/admin/CreateAnnouncement";
 import CreateProblem from "./pages/admin/CreateProblem";
 import CreateSeason from "./pages/admin/CreateSeason";
@@ -25,14 +28,17 @@ import DeleteSeason from "./pages/admin/DeleteSeason";
 
 export default function App()
 {
-  const {isauth,loading} = useSelector((state) => state.auth);
+  const {isauth,loading:authloading} = useSelector((state) => state.auth);
+  const {loading:seasonloading} = useSelector((state)=>state.season);
   const dispatch = useDispatch();
 
   useEffect(()=>{
-    dispatch(checkauth())
-  },[]);
+    dispatch(checkauth()).then(()=>{
+      dispatch(getcurrentseason());
+    })
+  },[dispatch]);
 
-  if(loading)
+  if(authloading || seasonloading)
   {
     return(
       <div className="min-h-screen flex items-center justify-center" >
@@ -63,20 +69,22 @@ export default function App()
 
         <Route path="/userprofile" element={<UserProfile />} />
 
-        <Route path="admin" element={<AdminPanel />}>
+        <Route path="admin" element={<AdminPanel />}></Route>
         
-        <Route path="create-problem" element={<CreateProblem />} />
-        <Route path="update-problem/:id" element={<UpdateProblem />} />
-        <Route path="delete-problem/:id" element={<DeleteProblem />} />
+        <Route path="/admin/create-problem" element={<CreateProblem />} />
+        <Route path="/admin/showallproblems/:sid" element={<Showallproblems />} />
+        <Route path="/admin/update-problem/:id" element={<UpdateProblem />} />
+        <Route path="/admin/delete-problem/:id" element={<DeleteProblem />} />
   
-        <Route path="create-announcement" element={<CreateAnnouncement />} />
-        <Route path="update-announcement/:id" element={<UpdateAnnouncement />} />
-        <Route path="delete-announcement/:id" element={<DeleteAnnouncement />} />
+        <Route path="/admin/create-announcement" element={<CreateAnnouncement />} />
+        <Route path="/admin/update-announcement/:id" element={<UpdateAnnouncement />} />
+        <Route path="/admin/delete-announcement/:id" element={<DeleteAnnouncement />} />
         
-        <Route path="create-season" element={<CreateSeason/>} />
-        <Route path="update-season/:id" element={<UpdateSeason/>} />
-        <Route path="delete-season/:id" element={<DeleteSeason/>} /> 
-      </Route>
+        <Route path="/admin/create-season" element={<CreateSeason/>} />
+        <Route path="/admin/showallseasons" element={<Showallseasons/>} />
+        <Route path="/admin/update-season/:id" element={<UpdateSeason/>} />
+        <Route path="/admin/delete-season/:id" element={<DeleteSeason/>} /> 
+      
 
       </Route>
 

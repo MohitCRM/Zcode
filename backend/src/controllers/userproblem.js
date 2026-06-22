@@ -1,9 +1,11 @@
-const { getLanguageConfig } = require('../utils/problemutility'); 
+const { getLanguageConfig, generateCppFullCode } = require('../utils/problemutility'); 
 const { CURRENT_SEASON_ID } = require("../utils/dates");
 const Problem = require('../models/problem');
 const User = require('../models/user');
 const Submission = require('../models/submission');
 const { Sandbox } = require('e2b');
+const path = require('path');
+const fs = require('fs');
 
 const adminfetchallproblems = async (req, res) => {
     try {
@@ -34,6 +36,7 @@ const adminfetchallproblems = async (req, res) => {
 
 const createproblem = async (req, res) => {
     try {
+        console.log("--- REQUEST RECEIVED ---")
         const { referencesolution, visibleTestCases, hiddenTestCases, round, releaseDay, drivercode ,constraints} = req.body;
 
         if(!drivercode)
@@ -49,64 +52,59 @@ const createproblem = async (req, res) => {
         const totalTestCases = [...visibleTestCases, ...hiddenTestCases];
 
         for (const ele of referencesolution) {
-            const { language, code } = ele;
+            let { language, code } = ele;
             if(language === 'cpp') language = 'c++';
             const config = getLanguageConfig(language);
             
-            const fullCode = `
-                    #include <iostream>
-                    #include <vector>
-                    #include <string>
-                    #include <sstream>
-                    #include <algorithm>
-                    
-                    std::vector<int> parseVector(const std::string& input) {
-                        std::vector<int> result;
-                        std::string s = input;
-                        s.erase(std::remove(s.begin(), s.end(), '['), s.end());
-                        s.erase(std::remove(s.begin(), s.end(), ']'), s.end());
-                        std::stringstream ss(s);
-                        std::string item;
-                        while (std::getline(ss, item, ',')) {
-                            item.erase(std::remove(item.begin(), item.end(), ' '), item.end());
-                            if (!item.empty()) {
-                                result.push_back(std::stoi(item));
-                            }
-                        }
-                        return result;
-                    }
+            const fullCode = generateCppFullCode(code, drivercode);
 
-                    ${code} 
-                    
-                    int main() {
-                        std::string input_line;
-                        if (std::getline(std::cin, input_line)) {
-                            ${drivercode} 
-                        }
-                        return 0;
-                    }
-                `;
+            const jsonLib = fs.readFileSync(path.join(__dirname, "../../libs/json.hpp"), 'utf-8');
 
-            // 1. Create one sandbox per reference solution
             const sandbox = await Sandbox.create();
-
             try {
-                // 2. Setup the environment
-                await sandbox.files.write(`main.${config.ext}`, fullCode);
-                if (config.compile) {
-                    const compile = await sandbox.commands.run(config.compile);
-                    if (compile.exitCode !== 0) throw new Error(`Compilation failed: ${compile.stderr}`);
-                }
+                // Write the single main.cpp file
+                await Promise.all([
+                sandbox.files.write('/home/user/main.cpp', fullCode),
+                sandbox.files.write('/home/user/json.hpp', jsonLib)
+            ]);
+            console.log("Environment ready: main.cpp and json.hpp exist.");
 
-                // 3. Run all test cases in the SAME sandbox
+                // Compile: using -std=c++17 for modern C++ support
+                const compile = await sandbox.commands.run("cd /home/user && g++ -O2 -std=c++17 main.cpp -o main 2>&1", { 
+    timeout: 30 
+});
+
+if (compile.exitCode !== 0) {
+    // This will print the EXACT reason why the compiler failed
+    console.error("--- COMPILER FAILED ---");
+    console.error("EXIT CODE:", compile.exitCode);
+    console.error("STDOUT/STDERR:", compile.stdout); // This contains the error
+    throw new Error("Compilation failed. Check the server terminal for details.");
+}
+
+                // Run Test Cases
                 for (const testCase of totalTestCases) {
-                    await sandbox.files.write('input.txt', testCase.input);
-                    const run = await sandbox.commands.run(`${config.run} < input.txt`, { timeout: constraints.timeLimit });
-                    
-                    if (run.exitCode !== 0 || run.stdout.trim() !== testCase.output.trim()) {
-                        throw new Error(`Reference solution failed on test case input ${testCase.input} : Expected Output ${testCase.output} but got ${run.stdout}`);
-                    }
-                }
+    await sandbox.files.write('/home/user/input.txt', testCase.input);
+    const run = await sandbox.commands.run("cd /home/user && ./main < input.txt", { 
+        timeout: constraints.timeLimit 
+    });
+
+    if (run.exitCode !== 0) {
+        throw new Error(`Runtime Error: ${run.stderr}`);
+    }
+
+    if (!run.stdout.trim().startsWith('[')) {
+    throw new Error("Wrong Answer: Output must be a valid JSON array.");
+}
+    // --- FIX: Normalize both JSON strings ---
+    const expected = JSON.parse(testCase.output.trim());
+    const actual = JSON.parse(run.stdout.trim());
+
+    // Compare the parsed objects
+    if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+        throw new Error(`Wrong Answer: Expected ${JSON.stringify(expected)}, Got ${JSON.stringify(actual)}`);
+    }
+}
             } finally {
                 await sandbox.kill();
             }
@@ -119,7 +117,7 @@ const createproblem = async (req, res) => {
             problemcreator: req.result._id
         });
 
-        res.status(200).json({error : "Problem Created Successfully"});
+        res.status(200).json({message : "Problem Created Successfully"});
     } catch (err) {
         res.status(400).json({error : "Error: " + err.message});
 
@@ -129,74 +127,58 @@ const createproblem = async (req, res) => {
 const problemupdate = async (req, res) => {
     const { pid } = req.params;
     try {
-        if (!pid) return res.status(400).json({ error:  "Missing pid field"});
+        if (!pid) return res.status(400).json({ error: "Missing pid field" });
 
         const problem = await Problem.findById(pid);
-        if (!problem) return res.status(404).json({error : "Problem not found"});
+        if (!problem) return res.status(404).json({ error: "Problem not found" });
 
-        const { referencesolution, visibleTestCases, hiddenTestCases} = req.body;
+        const { referencesolution, visibleTestCases, hiddenTestCases } = req.body;
         const drivercode = problem.drivercode;
+        const constraints = problem.constraints; 
         const totalTestCases = [...visibleTestCases, ...hiddenTestCases];
 
-        // Only validate if solution or test cases were provided
         if (referencesolution && totalTestCases.length > 0) {
+            const jsonLib = fs.readFileSync(path.join(__dirname, "../../libs/json.hpp"), 'utf-8');
+
             for (const ele of referencesolution) {
-                const { language, code } = ele;
-                if(language === 'cpp') language = 'c++';
-                const config = getLanguageConfig(language); // Ensure this helper is defined
-                
-                const fullCode = `
-                    #include <iostream>
-                    #include <vector>
-                    #include <string>
-                    #include <sstream>
-                    #include <algorithm>
-                    
-                    std::vector<int> parseVector(const std::string& input) {
-                        std::vector<int> result;
-                        std::string s = input;
-                        s.erase(std::remove(s.begin(), s.end(), '['), s.end());
-                        s.erase(std::remove(s.begin(), s.end(), ']'), s.end());
-                        std::stringstream ss(s);
-                        std::string item;
-                        while (std::getline(ss, item, ',')) {
-                            item.erase(std::remove(item.begin(), item.end(), ' '), item.end());
-                            if (!item.empty()) {
-                                result.push_back(std::stoi(item));
-                            }
-                        }
-                        return result;
-                    }
+                let { language, code } = ele;
+                if (language === 'cpp') language = 'c++';
 
-                    ${code} // The user's solution
-                    
-                    int main() {
-                        std::string input_line;
-                        if (std::getline(std::cin, input_line)) {
-                            ${drivercode} // The logic from your DB/Frontend
-                        }
-                        return 0;
-                    }
-                `;
+                const fullCode = generateCppFullCode(code, drivercode);
                 const sandbox = await Sandbox.create();
+                
                 try {
-                    console.log("Sandbox is created");
-                    await sandbox.files.write(`main.${config.ext}`, fullCode);
-                    if (config.compile) {
-                        const compile = await sandbox.commands.run(config.compile);
-                        if (compile.exitCode !== 0) throw new Error(`Compile error: ${compile.stderr}`);
+                    // 1. Sync Files
+                    await Promise.all([
+                        sandbox.files.write('/home/user/main.cpp', fullCode),
+                        sandbox.files.write('/home/user/json.hpp', jsonLib)
+                    ]);
+
+                    // 2. Compile with debug feedback
+                    const compile = await sandbox.commands.run("cd /home/user && g++ -O2 -std=c++17 main.cpp -o main 2>&1");
+                    if (compile.exitCode !== 0) {
+                        throw new Error(`Compile error: ${compile.stdout}`);
                     }
 
+                    // 3. Run and Normalize
                     for (const testCase of totalTestCases) {
-                        await sandbox.files.write('input.txt', testCase.input);
-                        const run = await sandbox.commands.run(`${config.run} < input.txt`, { timeout: 2 });
+                        await sandbox.files.write('/home/user/input.txt', testCase.input);
+                        const run = await sandbox.commands.run("cd /home/user && ./main < input.txt", { 
+                            timeout: constraints.timeLimit || 2 
+                        });
+
+                        if (run.exitCode !== 0) throw new Error(`Runtime Error: ${run.stderr}`);
                         
-                        if (run.exitCode !== 0 || run.stdout.trim() !== testCase.output.trim()) {
-                            throw new Error("Reference solution failed on updated test cases.");
+                        if (!run.stdout.trim().startsWith('[')) throw new Error("Output must be valid JSON.");
+                        
+                        const expected = JSON.parse(testCase.output.trim());
+                        const actual = JSON.parse(run.stdout.trim());
+
+                        if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+                            throw new Error(`Wrong Answer: Expected ${JSON.stringify(expected)}, Got ${JSON.stringify(actual)}`);
                         }
                     }
                 } finally {
-                    console.log("Sandbox is killed")
                     await sandbox.kill();
                 }
             }
@@ -207,9 +189,9 @@ const problemupdate = async (req, res) => {
             problemcreator: req.result._id
         }, { runValidators: true, new: true });
 
-        res.status(200).json({problem : newProblem});
+        res.status(200).json({ message: "Problem Updated Successfully", problem: newProblem });
     } catch (err) {
-        return res.status(400).json({error : "Error Occurred during updates: " + err.message});
+        return res.status(400).json({ error: "Error Occurred during updates: " + err.message });
     }
 };
 

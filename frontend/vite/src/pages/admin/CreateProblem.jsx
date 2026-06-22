@@ -78,6 +78,15 @@ const leetcodeTags = [
     "Union Find"
 ];
 
+const jsonSchema = z.string().refine((val) => {
+  try {
+    JSON.parse(val);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}, { message: "Input must be valid JSON (e.g., [1, 2, 3] or { \"nums\": [1, 2] })" });
+
  const problemschema = z.object({
   title: z.string().min(1, "Title is required").trim(),
   description: z.string().min(1, "Description is required"),
@@ -107,8 +116,8 @@ const leetcodeTags = [
   
   visibleTestCases: z.array(
     z.object({
-      input: z.string().min(1, "Input is required"),
-      output: z.string().min(1, "Output is required"),
+      input: jsonSchema,
+      output: jsonSchema,
       explanation: z.string().optional(),
     })
   ),
@@ -116,8 +125,8 @@ const leetcodeTags = [
   
   hiddenTestCases: z.array(
     z.object({
-      input: z.string().min(1, "Input is required"),
-      output: z.string().min(1, "Output is required"),
+      input: jsonSchema,
+      output: jsonSchema,
     })
   ),
   
@@ -161,8 +170,8 @@ export default function CreateProblem() {
       },
       visibleTestCases: [{ input: "", output: "", explanation: "" }],
       hiddenTestCases: [{ input: "", output: "" }],
-      startcode: [{ language: "javascript", initialcode: "" }],
-      referencesolution: [{ language: "javascript", code: "" }],
+      startcode: [{ language: "c++", initialcode: "" }],
+      referencesolution: [{ language: "c++", code: "" }],
       problemcreator: "" 
     }
   });
@@ -175,22 +184,9 @@ export default function CreateProblem() {
 
   const onSubmit = async (data) => {
     try {
-      const payload = {
-        ...data,
-        constraints: {
-        timeLimit: Number(data.constraints.timeLimit),
-        memoryLimit: Number(data.constraints.memoryLimit),
-        inputConstraints: data.constraints.inputConstraints
-      },
-      round: Number(data.round),
-      seasonId: Number(data.seasonId),
-      releaseDay: Number(data.releaseDay),
-    };
+      console.log(data);
 
-
-      console.log(payload);
-
-      const response = await axiosClient.post("/problem/create", payload);
+      const response = await axiosClient.post("/problem/create", data);
       alert("Problem created successfully!");
     } catch (error) {
       console.error("Failed to create problem:", error);
@@ -281,31 +277,67 @@ export default function CreateProblem() {
 
           <div className="space-y-10">
   {/* Visible Test Cases */}
-  <section>
-    <h3 className="text-white font-semibold mb-3">Visible Test Cases</h3>
-    {vtFields.map((field, index) => (
-      <div key={field.id} className="grid grid-cols-4 gap-2 mb-2">
-        <textarea {...register(`visibleTestCases.${index}.input`)} placeholder="Input" className="bg-[#121826] border border-slate-800 p-2 rounded text-white min-h-[40px]" rows="2" />
-        <textarea {...register(`visibleTestCases.${index}.output`)} placeholder="Output" className="bg-[#121826] border border-slate-800 p-2 rounded text-white min-h-[40px]" rows="2" />
-        <input {...register(`visibleTestCases.${index}.explanation`)} placeholder="Explanation" className="bg-[#121826] border border-slate-800 p-2 rounded text-white" />
-        <button type="button" onClick={() => removeVT(index)} className="text-red-400">Remove</button>
-      </div>
-    ))}
-    <button type="button" onClick={() => appendVT({ input: "", output: "", explanation: "" })} className="text-indigo-400 text-sm">+ Add Visible Case</button>
-  </section>
+<section>
+  <h3 className="text-white font-semibold mb-3">Visible Test Cases</h3>
+  {vtFields.map((field, index) => (
+    <div key={field.id} className="grid grid-cols-4 gap-2 mb-2 items-center">
+      <textarea 
+        {...register(`visibleTestCases.${index}.input`)} 
+        placeholder='{"list1": [1,2,4]}' 
+        className="bg-[#121826] border border-slate-800 p-2 rounded text-indigo-300 font-mono text-xs min-h-[60px]" 
+      />
+      <textarea 
+        {...register(`visibleTestCases.${index}.output`)} 
+        placeholder='[1,1,2,3,4,4]' 
+        className="bg-[#121826] border border-slate-800 p-2 rounded text-emerald-300 font-mono text-xs min-h-[60px]" 
+      />
+      <input {...register(`visibleTestCases.${index}.explanation`)} placeholder="Explanation" className="bg-[#121826] border border-slate-800 p-2 rounded text-white text-xs" />
+      <button type="button" onClick={() => removeVT(index)} className="text-red-400 text-xs">Remove</button>
+    </div>
+  ))}
+  <button type="button" onClick={() => appendVT({ input: "{}", output: "{}" })} className="text-indigo-400 text-sm">+ Add Visible Case</button>
+</section>
 
   {/* Hidden Test Cases */}
-  <section>
-    <h3 className="text-rose-400 font-semibold mb-3">Hidden Test Cases</h3>
-    {htFields.map((field, index) => (
-      <div key={field.id} className="grid grid-cols-3 gap-2 mb-2">
-        <textarea {...register(`hiddenTestCases.${index}.input`)} placeholder="Input" className="bg-[#121826] border border-slate-800 p-2 rounded text-white min-h-[40px]" rows="2" />
-        <textarea {...register(`hiddenTestCases.${index}.output`)} placeholder="Output" className="bg-[#121826] border border-slate-800 p-2 rounded text-white min-h-[40px]" rows="2" />
-        <button type="button" onClick={() => removeHT(index)} className="text-red-400">Remove</button>
+<section>
+  <h3 className="text-rose-400 font-semibold mb-3">Hidden Test Cases</h3>
+  {htFields.map((field, index) => (
+    <div key={field.id} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 border border-slate-800 rounded-xl bg-[#0C1220]">
+      <div className="flex flex-col">
+        <label className="text-[10px] text-slate-500 uppercase mb-1">Input (JSON)</label>
+        <textarea 
+          {...register(`hiddenTestCases.${index}.input`)} 
+          placeholder='{"list1": [1,2,4], "list2": [1,3,4]}' 
+          className="bg-[#121826] border border-slate-800 p-3 rounded text-indigo-300 font-mono text-xs w-full min-h-[80px]" 
+        />
       </div>
-    ))}
-    <button type="button" onClick={() => appendHT({ input: "", output: "" })} className="text-indigo-400 text-sm">+ Add Hidden Case</button>
-  </section>
+      <div className="flex flex-col">
+        <label className="text-[10px] text-slate-500 uppercase mb-1">Output (JSON/Array)</label>
+        <textarea 
+          {...register(`hiddenTestCases.${index}.output`)} 
+          placeholder="[1,1,2,3,4,4]" 
+          className="bg-[#121826] border border-slate-800 p-3 rounded text-emerald-300 font-mono text-xs w-full min-h-[80px]" 
+        />
+      </div>
+      <div className="flex items-center justify-end">
+        <button 
+          type="button" 
+          onClick={() => removeHT(index)} 
+          className="text-red-400 hover:text-red-300 text-xs px-3 py-1 border border-red-900 rounded"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  ))}
+  <button 
+    type="button" 
+    onClick={() => appendHT({ input: '{"list1": [], "list2": []}', output: "[]" })} 
+    className="text-indigo-400 text-sm font-medium hover:underline"
+  >
+    + Add Hidden Case
+  </button>
+</section>
 
   {/* Start Code & Reference Solution */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

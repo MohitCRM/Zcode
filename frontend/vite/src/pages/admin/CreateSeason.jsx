@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
 import {z} from 'zod';
 import axiosClient from "../../utils/axiosClient";
 
@@ -29,7 +30,7 @@ const seasonschema = z.object({
 });
 
 const onSubmit = async (data) => {
-
+  const navigate = useNavigate();
   const formattedData = {
         ...data,
         launchDate: new Date(data.launchDate).toISOString(),
