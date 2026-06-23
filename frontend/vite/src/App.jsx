@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router";
 import Problems from "./pages/problemshow/problems";
 import Standings from "./pages/standings/standings";
+import ThisSeason from "./pages/standings/eachseason";
 import Solutions from  "./pages/solutions/solutions";
 import UserRank from "./pages/userrank/userRank";
 import UserProfile from "./pages/userprofile/UserProfile";
@@ -61,7 +62,10 @@ export default function App()
           <Route path=":problemId" element={<ProblemDetail />} />
         </Route>
 
-        <Route path="standings" element={<Standings />} />
+        <Route path="standings">
+          <Route index element={<Standings />} />
+          <Route path=":sid" element={<ThisSeason />} />
+        </Route>
 
         <Route path="solutions" element={<Solutions />} />
 

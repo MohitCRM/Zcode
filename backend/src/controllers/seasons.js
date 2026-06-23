@@ -2,7 +2,7 @@ const Season = require('../models/season');
 
 const showallseasons = async (req,res)=>{
     try{
-        const allseasons = (await Season.find()).toSorted({seasonId:-1});
+        const allseasons = await Season.find().sort({ seasonId: -1 });
         if(!allseasons || allseasons.length === 0)
         {
             return res.status(404).json({error:"No seasons found"});
@@ -41,7 +41,7 @@ const updateseason = async (req, res) => {
             await Season.updateMany({ _id: { $ne: sid } }, { isActive: false });
         }
 
-        const updatedSeason = await Season.findByIdAndUpdate(sid, updateData, { new: true, runValidators: true });
+        const updatedSeason = await Season.findByIdAndUpdate(sid, updateData, { returnDocument: 'after', runValidators: true });
         
         if (!updatedSeason) return res.status(404).json({ error: "Season not found" });
 
@@ -81,7 +81,7 @@ const getseasonbyid = async (req,res)=>{
         const season = await Season.findById({seasonId : sid});
         if(!season)
             return res.status(404).json({error:"No season found"});
-        res.status(200).json({season});
+        res.status(200).json({season : season});
     }catch(err){
         res.status(400).json({error:err.message});
     }

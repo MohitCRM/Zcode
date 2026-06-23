@@ -29,8 +29,16 @@ const seasonschema = z.object({
   path: ["r1SolutionEnd"],
 });
 
-const onSubmit = async (data) => {
+
+
+export default function CreateSeason() {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(seasonschema)
+  });
+
   const navigate = useNavigate();
+
+const onSubmit = async (data) => {
   const formattedData = {
         ...data,
         launchDate: new Date(data.launchDate).toISOString(),
@@ -55,12 +63,6 @@ const onSubmit = async (data) => {
         alert(err.response?.data?.message || "Failed to create season");
     }
 }
-
-export default function CreateSeason() {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    resolver: zodResolver(seasonschema)
-  });
-
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="bg-[#0C1220] border border-slate-800 rounded-2xl p-8 shadow-2xl">

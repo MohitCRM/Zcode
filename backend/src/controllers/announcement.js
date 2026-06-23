@@ -50,7 +50,7 @@ const updateannouncement = async (req,res)=>{
         const updatedAnnouncement = await Announcement.findByIdAndUpdate(
             aid,
             { $set: req.body },
-            { new: true, runValidators: true } 
+            { returnDocument: 'after', runValidators: true } 
         );
 
         if (!updatedAnnouncement) {

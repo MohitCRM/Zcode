@@ -1,4 +1,6 @@
 const Leaderboard = require('../models/leaderboard');
+const Season = require('../models/season');
+const mongoose = require('mongoose');
 
 const showallseasonid = async (req,res)=>{
     try{
@@ -20,57 +22,59 @@ const showallseasonid = async (req,res)=>{
     }
 }
 
-const getleaderboard = async (req,res)=>{
-    try{
-        const {sid} = req.params;
-        const seasonId = parseInt(sid);
+const getleaderboard = async (req, res) => {
+    try {
+        const { sid } = req.params;
 
-        let page = parseInt(req.query.page) || 1;
-        let limit = parseInt(req.query.limit) || 20;
+        // 1. Validate ObjectId for the Season
+        if (!mongoose.Types.ObjectId.isValid(sid)) {
+            return res.status(400).json({ error: "Invalid Season ID format" });
+        }
 
-        page = Math.max(1,page);
-        limit = Math.min(100,limit);
-        limit = Math.max(1,limit);
+        // 2. Fetch the full season document to get the human-readable seasonId (Number)
+        const seasonDoc = await Season.findById(sid);
+        if (!seasonDoc) {
+            return res.status(404).json({ error: "Season not found" });
+        }
+        
+        // This is the number you need for your Leaderboard query
+        const numericSeasonId = seasonDoc.seasonId; 
 
-        const skipoffset = (page - 1)*limit;
+        // 3. Pagination setup
+        let page = Math.max(1, parseInt(req.query.page) || 1);
+        let limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+        const skipoffset = (page - 1) * limit;
 
-        const totalplayers = await Leaderboard.countDocuments({seasonId : seasonId});
-        const totalpages = Math.ceil(totalplayers/limit);
+        // 4. Query Leaderboard using the numeric seasonId
+        const totalplayers = await Leaderboard.countDocuments({ seasonId: numericSeasonId });
+        const totalpages = Math.ceil(totalplayers / limit);
 
-        const stats = await Leaderboard.find({seasonId : seasonId}).populate({
-            path : 'userId',
-            select : "firstName lastName"
-        })
-        .sort({elo : -1})
-        .skip(skipoffset)
-        .limit(limit)
+        const stats = await Leaderboard.find({ seasonId: numericSeasonId })
+            .populate({ path: 'userId', select: "firstName lastName" })
+            .sort({ elo: -1 })
+            .skip(skipoffset)
+            .limit(limit);
 
-        const standings = stats.map((stat,index) =>({
-            rank : skipoffset + index + 1,
-            userId : stat.userId ? stat.userId._id : null,
+        const standings = stats.map((stat, index) => ({
+            rank: skipoffset + index + 1,
+            userId: stat.userId ? stat.userId._id : null,
             name: stat.userId ? `${stat.userId.firstName} ${stat.userId.lastName}` : "Unknown person",
-            elo : stat.elo,
-            rankTier: {
-            name: stat.tierDetails.currentRank.name,
-            color: stat.tierDetails.currentRank.color,
-            badge: stat.tierDetails.currentRank.badgeUrl
-            }
-        }))
+            elo: stat.elo,
+            rankTier: stat.tierDetails // Accessing your virtual
+        }));
 
         return res.status(200).json({
-            seasonId: seasonId,
+            season: seasonDoc, // Full season object
             pagination: {
-                totalpages,
                 totalpages,
                 currentPage: page,
                 limit: limit,
                 hasNextPage: page < totalpages,
                 hasPrevPage: page > 1
             },
-            standings : standings
+            standings: standings
         });
-    }catch(err)
-    {
+    } catch (err) {
         return res.status(500).json({ error: "Failed to fetch standings", details: err.message });
     }
 }

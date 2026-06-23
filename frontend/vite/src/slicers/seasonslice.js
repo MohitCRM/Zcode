@@ -26,7 +26,7 @@ export  const getcurrentseason = createAsyncThunk(
 
 const seasonslicer = createSlice({
     name : 'season',
-    initialState : {season : null,loading:false,error:null},
+    initialState : {data : null,loading:false,error:null},
     reducers : {},
     extraReducers : (builder)=>{
         builder
@@ -40,7 +40,7 @@ const seasonslicer = createSlice({
         })
         .addCase(getcurrentseason.rejected, (state,action)=>{
             state.loading = false;
-            state.error = action.payload?.message;
+            state.error = action.payload;
             state.season = null;
         })
     }

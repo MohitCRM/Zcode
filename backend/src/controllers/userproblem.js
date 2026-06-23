@@ -187,7 +187,7 @@ const problemupdate = async (req, res) => {
         const newProblem = await Problem.findByIdAndUpdate(pid, {
             ...req.body,
             problemcreator: req.result._id
-        }, { runValidators: true, new: true });
+        }, { runValidators: true, returnDocument: 'after' });
 
         res.status(200).json({ message: "Problem Updated Successfully", problem: newProblem });
     } catch (err) {
