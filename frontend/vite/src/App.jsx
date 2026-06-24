@@ -8,7 +8,7 @@ import UserProfile from "./pages/userprofile/UserProfile";
 import AdminPanel from "./pages/admin/adminpanel";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
-import Announcement from "./pages/announcement/announcement";
+import Announcements from "./pages/announcement/announcements";
 import ProblemDetail from "./pages/problemdetails/problemdetail"
 import Layout from "./pages/layout";
 import {checkauth} from "./slicers/authslice";
@@ -55,7 +55,7 @@ export default function App()
 
         <Route path="/" element={isauth ? <Layout /> : <Navigate to="/login" />}>
         <Route index element={<Navigate to="/announcements" />} />
-        <Route path="announcements" element={<Announcement />} />
+        <Route path="announcements" element={<Announcements />} />
 
         <Route path="problems" >
           <Route index element={<Problems />} />
