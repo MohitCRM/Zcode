@@ -1,97 +1,114 @@
 const Problem = require('../models/problem');
 const Submission = require('../models/submission');
 
-const getSolutionsHub = async (req, res) => {
+const getProblemSolutionHub = async (req, res) => {
     try {
+        const { pid } = req.params; 
         const currentSeason = req.seasonConfig || req.season;
+        
         if (!currentSeason) {
-            return res.status(500).json({ error: "Configuration error: Tournament context missing." });
+            return res.status(500).json({ error: "Tournament context missing." });
         }
 
         const activePhase = currentSeason.getCurrentPhase();
-        let completedRound = 0;
+        const completedRound = activePhase === "Round1Solution" ? 1 : activePhase === "Round2Solution" ? 2 : null;
 
-        if (activePhase === "Round1Solution") {
-            completedRound = 1;
-        } else if (activePhase === "Round2Solution") {
-            completedRound = 2;
-        } else {
-            return res.status(403).json({
-                error: "Solutions Locked",
-                message: "The code review phase is closed. You can only access the Solutions Hub during designated Solution windows!"
-            });
+        if (!completedRound) {
+            return res.status(403).json({ error: "Solutions Locked", message: "Review window closed." });
         }
 
-        const problems = await Problem.find({
-            seasonId: currentSeason.seasonId,
-            round: completedRound
+        // 1. Fetch only the requested problem
+        const problem = await Problem.findOne({ 
+            _id: pid, 
+            seasonId: currentSeason.seasonId, 
+            round: completedRound 
         })
-        .select("title difficulty tags baseEloReward releaseDay referencesolution")
-        .sort({ releaseDay: 1 });
+        .select("title difficulty tags baseEloReward releaseDay referencesolution");
 
-        if (problems.length === 0) {
-            return res.status(200).json({
-                seasonId: currentSeason.seasonId,
-                activePhase,
-                message: "No problems were deployed during this tournament round.",
-                solutionsGrid: []
-            });
-        }
+        if (!problem) return res.status(404).json({ error: "Problem not found or solution access denied." });
 
-        const problemIds = problems.map(prob => prob._id);
-
+        // 2. Fetch submissions for this specific problem
         const communitySubmissions = await Submission.find({
-            problemId: { $in: problemIds },
+            problemId: pid,
             status: "Accepted"
         })
-        .select("userId problemId language code errorMessage createdAt")
+        .select("userId language code createdAt")
         .populate("userId", "firstName")
         .sort({ createdAt: -1 });
 
-        const solutionsGrid = problems.map(problem => {
-            const matchingSolutions = communitySubmissions.filter(
-                sub => sub.problemId.toString() === problem._id.toString()
-            );
+        // 3. Assemble the payload
+        const solutionData = {
+            problemId: problem._id,
+            title: problem.title,
+            difficulty: problem.difficulty,
+            tags: problem.tags,
+            baseEloReward: problem.baseEloReward,
+            
+            officialReferenceSolutions: problem.referencesolution.map(sol => ({
+                language: sol.language,
+                code: sol.code 
+            })),
 
-            return {
-                problemId: problem._id,
-                title: problem.title,
-                difficulty: problem.difficulty,
-                tags: problem.tags,
-                baseEloReward: problem.baseEloReward,
-                releaseDay: problem.releaseDay,
-                
-                officialReferenceSolutions: problem.referencesolution.map(sol => ({
-                    language: sol.language,
-                    code: sol.code 
-                })),
-
-                totalCommunitySolutions: matchingSolutions.length,
-                peerSolutions: matchingSolutions.map(sub => ({
-                    submissionId: sub._id,
-                    submittedBy: sub.userId ? sub.userId.firstName : "Anonymous Competitor",
-                    language: sub.language,
-                    code: sub.code,
-                    errorMessage: sub.errorMessage,
-                    timestamp: sub.createdAt
-                }))
-            };
-        });
+            totalCommunitySolutions: communitySubmissions.length,
+            peerSolutions: communitySubmissions.map(sub => ({
+                submissionId: sub._id,
+                submittedBy: sub.userId?.firstName || "Anonymous Competitor",
+                language: sub.language,
+                code: sub.code,
+                timestamp: sub.createdAt
+            }))
+        };
 
         return res.status(200).json({
             seasonId: currentSeason.seasonId,
             activePhase,
-            completedRound,
-            totalProblems: problems.length,
-            solutionsGrid
+            solutionData
         });
 
     } catch (err) {
-        return res.status(500).json({
-            error: "Failed to assemble the community Solutions Hub payload",
-            details: err.message
-        });
+        return res.status(500).json({ error: "Failed to fetch solutions", details: err.message });
     }
 };
 
-module.exports = { getSolutionsHub };
+const getthisroundsolutions = async (req,res)=>{
+    try {
+        const currentSeason = req.seasonConfig || req.season; 
+        if (!currentSeason) {
+            return res.status(500).json({ error: "Configuration error: Season context missing." });
+        }
+
+        const activePhase = currentSeason.getCurrentPhase();
+        let targetRound = 0;
+
+        if (activePhase === "Round1Solution") {
+            targetRound = 1;
+        } else if (activePhase === "Round2Solution") {
+            targetRound = 2;
+        } else {
+            return res.status(200).json({
+                seasonId: currentSeason.seasonId,
+                activePhase,
+                message: `Live competitive round is closed. Head over to the Solutions Hub to review peer submissions! 🔓`,
+                problems: []
+            });
+        }
+
+        const problems = await Problem.find({
+            seasonId: currentSeason.seasonId, 
+            round: targetRound,
+        })
+        .select(" _id title difficulty tags baseEloReward releaseDay penaltyWrongAnswer") 
+        .sort({ releaseDay: 1 });
+
+        return res.status(200).json({
+            seasonId: currentSeason.seasonId,
+            activePhase,
+            totalUnlocked: problems.length,
+            problems
+        });
+        
+    } catch (err) {
+        return res.status(500).json({ error: "Failed to retrieve active problem set", details: err.message });
+    }
+}
+module.exports = { getProblemSolutionHub , getthisroundsolutions};

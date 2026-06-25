@@ -2,7 +2,8 @@ import { Navigate, Route, Routes } from "react-router";
 import Problems from "./pages/problemshow/problems";
 import Standings from "./pages/standings/standings";
 import ThisSeason from "./pages/standings/eachseason";
-import Solutions from  "./pages/solutions/solutions";
+import Problemidsforsol from "./pages/solutions/problemidsforsol";
+import Solution from "./pages/solutions/solution";
 import UserRank from "./pages/userrank/userRank";
 import UserProfile from "./pages/userprofile/UserProfile";
 import AdminPanel from "./pages/admin/adminpanel";
@@ -16,7 +17,7 @@ import { getcurrentseason } from "./slicers/seasonslice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import Showallproblems from "./pages/admin/showallproblems";
-import Showallseasons from "./pages/admin/showalleasons";
+import Showallseasons from "./pages/admin/showallseasons";
 import CreateAnnouncement from "./pages/admin/CreateAnnouncement";
 import CreateProblem from "./pages/admin/CreateProblem";
 import CreateSeason from "./pages/admin/CreateSeason";
@@ -67,7 +68,10 @@ export default function App()
           <Route path=":sid" element={<ThisSeason />} />
         </Route>
 
-        <Route path="solutions" element={<Solutions />} />
+        <Route path="solutions" >
+          <Route index element={<Problemidsforsol />} />
+          <Route path=":pid" element={<Solution />} />
+        </Route>
 
         <Route path="userRank" element={<UserRank />} />
 

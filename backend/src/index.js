@@ -10,6 +10,7 @@ const leaderboardrouter = require('./routes/leaderboard');
 const announcementrouter = require("./routes/announcement");
 const solutionrouter = require("./routes/solution");
 const seasonsrouter = require('./routes/seasons');
+const videosolutionrouter = require('./routes/solutionvideo');
 const cors = require('cors');
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/problem', problemrouter);
 app.use('/submit', submitrouter);
 app.use('/user', authrouter);
 app.use('/solution', solutionrouter);
+app.use('/videosolution',videosolutionrouter);
 
 const initialiseconnection = async ()=>{
     try{
