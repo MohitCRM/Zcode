@@ -10,8 +10,7 @@ export default function ShowAllSeasons() {
     useEffect(() => {
         const fetchSeasons = async () => {
             try {
-                const response = await axiosClient.get('/season/all');
-                // Assuming backend returns { seasons: [...] }
+                const response = await axiosClient.get('/seasons/getallseasons');
                 setSeasons(response.data.seasons);
             } catch (err) {
                 console.error("Failed to fetch seasons:", err.message);
@@ -25,7 +24,7 @@ export default function ShowAllSeasons() {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure? Deleting a season is permanent.")) return;
         try {
-            await axiosClient.delete(`/season/delete/${id}`);
+            await axiosClient.delete(`/seasons/delete/${id}`);
             setSeasons(seasons.filter(s => s._id !== id));
         } catch (err) {
             console.error("Delete failed:", err);

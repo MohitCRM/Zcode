@@ -18,15 +18,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import Showallproblems from "./pages/admin/showallproblems";
 import Showallseasons from "./pages/admin/showallseasons";
+import Showallannouncements from "./pages/admin/showallannouncements";
 import CreateAnnouncement from "./pages/admin/CreateAnnouncement";
 import CreateProblem from "./pages/admin/CreateProblem";
 import CreateSeason from "./pages/admin/CreateSeason";
 import UpdateAnnouncement from "./pages/admin/UpdateAnnouncement";
 import UpdateProblem from "./pages/admin/UpdateProblem";
 import UpdateSeason from "./pages/admin/UpdateSeason";
-import DeleteAnnouncement from "./pages/admin/DeleteAnnouncement";
-import DeleteProblem from "./pages/admin/DeleteProblem";
-import DeleteSeason from "./pages/admin/DeleteSeason";
+
 
 export default function App()
 {
@@ -77,23 +76,20 @@ export default function App()
 
         <Route path="/userprofile" element={<UserProfile />} />
 
-        <Route path="admin" element={<AdminPanel />}></Route>
-        
-        <Route path="/admin/create-problem" element={<CreateProblem />} />
-        <Route path="/admin/showallproblems/:sid" element={<Showallproblems />} />
-        <Route path="/admin/update-problem/:id" element={<UpdateProblem />} />
-        <Route path="/admin/delete-problem/:id" element={<DeleteProblem />} />
+        <Route path="admin" element={<AdminPanel />}>
+          {/* Nested routes will now render inside the AdminPanel's <Outlet /> */}
+          <Route path="showallproblems" element={<Showallproblems />} />
+          <Route path="showallannouncements" element={<Showallannouncements />} />
+          <Route path="showallseasons" element={<Showallseasons />} />
   
-        <Route path="/admin/create-announcement" element={<CreateAnnouncement />} />
-        <Route path="/admin/update-announcement/:id" element={<UpdateAnnouncement />} />
-        <Route path="/admin/delete-announcement/:id" element={<DeleteAnnouncement />} />
-        
-        <Route path="/admin/create-season" element={<CreateSeason/>} />
-        <Route path="/admin/showallseasons" element={<Showallseasons/>} />
-        <Route path="/admin/update-season/:id" element={<UpdateSeason/>} />
-        <Route path="/admin/delete-season/:id" element={<DeleteSeason/>} /> 
-      
-
+          <Route path="create-announcement" element={<CreateAnnouncement />} />
+          <Route path="create-problem" element={<CreateProblem />} />
+          <Route path="create-season" element={<CreateSeason />} />
+  
+          <Route path="update-announcement/:aid" element={<UpdateAnnouncement />} />
+          <Route path="update-problem/:pid" element={<UpdateProblem />} />
+            <Route path="update-season/:sid" element={<UpdateSeason />} />
+        </Route>
       </Route>
 
       </Routes>

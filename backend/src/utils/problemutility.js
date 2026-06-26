@@ -20,8 +20,15 @@ const generateCppFullCode = (code, drivercode) => {
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <unordered_set>
+#include <unordered_map>
+#include <climits>
+#include <queue>
+#include <cmath>
 #include "json.hpp"
+
 using json = nlohmann::json;
+using namespace std;
 
 // --- DATA STRUCTURE DEFINITIONS ---
 struct ListNode {
@@ -32,13 +39,18 @@ struct ListNode {
     ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
-// --- UNIVERSAL BRIDGE FUNCTIONS ---
-// Converts JSON array to C++ Vector
-std::vector<int> jsonToVector(const json& j) {
-    return j.get<std::vector<int>>();
-}
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+};
 
-// Converts JSON array to Linked List
+// --- UNIVERSAL BRIDGE FUNCTIONS ---
+std::vector<int> jsonToVector(const json& j) { return j.get<std::vector<int>>(); }
+
 ListNode* jsonToList(const json& j) {
     if (j.is_null() || j.empty()) return nullptr;
     ListNode* head = new ListNode(j[0]);
@@ -50,11 +62,68 @@ ListNode* jsonToList(const json& j) {
     return head;
 }
 
-// Converts Linked List to JSON array
 json listToJson(ListNode* head) {
     json j = json::array();
     while (head) { j.push_back(head->val); head = head->next; }
     return j;
+}
+
+// Converts JSON array (Level Order) to Binary Tree
+TreeNode* jsonToTree(const json& j) {
+    if (j.is_null() || j.empty() || j[0].is_null()) return nullptr;
+    TreeNode* root = new TreeNode(j[0]);
+    queue<TreeNode*> q;
+    q.push(root);
+    size_t i = 1;
+    while (!q.empty() && i < j.size()) {
+        TreeNode* curr = q.front(); q.pop();
+        if (i < j.size() && !j[i].is_null()) {
+            curr->left = new TreeNode(j[i]);
+            q.push(curr->left);
+        }
+        i++;
+        if (i < j.size() && !j[i].is_null()) {
+            curr->right = new TreeNode(j[i]);
+            q.push(curr->right);
+        }
+        i++;
+    }
+    return root;
+}
+
+json treeToJson(TreeNode* root) {
+    if (!root) return json::array();
+    json j = json::array();
+    queue<TreeNode*> q;
+    q.push(root);
+    while (!q.empty()) {
+        TreeNode* curr = q.front(); q.pop();
+        if (curr) {
+            j.push_back(curr->val);
+            q.push(curr->left);
+            q.push(curr->right);
+        } else {
+            j.push_back(nullptr);
+        }
+    }
+    while (j.size() > 0 && j.back().is_null()) {
+        j.erase(j.size() - 1);
+    }
+    return j;
+}
+
+// Converts JSON 2D array to C++ 2D vector
+std::vector<std::vector<char>> jsonToGrid(const json& j) {
+    std::vector<std::vector<char>> grid;
+    for (const auto& row : j) {
+        std::vector<char> charRow;
+        for (const auto& val : row) {
+            // Converts JSON string or int to char
+            charRow.push_back(val.get<std::string>()[0]);
+        }
+        grid.push_back(charRow);
+    }
+    return grid;
 }
 
 // --- USER SOLUTION ---
@@ -62,13 +131,11 @@ ${code}
 
 int main() {
     std::string input_json;
-    // Read the entire JSON input from stdin
     if (!std::getline(std::cin, input_json) || input_json.empty()) return 0;
     
     try {
         auto input = json::parse(input_json);
-        // The drivercode is dynamically injected here
-        ${drivercode} 
+        ${drivercode}
     } catch (const std::exception& e) {
         std::cerr << "Driver Error: " << e.what() << std::endl;
         return 1;

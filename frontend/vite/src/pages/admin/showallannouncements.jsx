@@ -41,7 +41,6 @@ export default function ShowAllAnnouncements() {
             </div>
 
             <div className="grid gap-4">
-                // Inside the map function of ShowAllAnnouncements.js
 {announcements.map((ann) => (
     <div key={ann._id} className="bg-[#121826] border border-slate-800 p-5 rounded-xl flex justify-between items-start">
         <div className="flex-1">
@@ -63,7 +62,7 @@ export default function ShowAllAnnouncements() {
         </div>
         
         <div className="flex gap-2 ml-4">
-            <button onClick={() => navigate(`/admin/update-announcement/${ann._id}`)} className="text-slate-400 hover:text-white">Update</button>
+            <button onClick={() => navigate(`/admin/update-announcement/${ann._id}`, {state : {announcement : ann}})} className="text-slate-400 hover:text-white">Update</button>
             <button onClick={() => handleDelete(ann._id)} className="text-rose-500 hover:text-rose-400">Delete</button>
         </div>
     </div>

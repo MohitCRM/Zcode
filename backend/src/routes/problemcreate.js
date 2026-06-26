@@ -25,6 +25,6 @@ router.get('/getproblembyid/:pid', usermiddleware, phasemiddleware(['Round1', 'R
 router.post('/create', adminmiddleware, createproblem);
 router.put("/update/:pid", adminmiddleware, problemupdate);
 router.delete('/delete/:pid', adminmiddleware, problemdelete);
-router.get('/fetchallproblems/:sid',adminmiddleware,adminfetchallproblems);
+router.get('/fetchallproblems',adminmiddleware,adminfetchallproblems);
 
 module.exports = router;

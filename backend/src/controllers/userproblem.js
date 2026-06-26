@@ -9,27 +9,35 @@ const fs = require('fs');
 
 const adminfetchallproblems = async (req, res) => {
     try {
-        const { sid } = req.query;
+        let page = Math.max(1, parseInt(req.query.page) || 1);
+        let limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+        const skipoffset = (page - 1) * limit;
 
-        if (!sid) {
-            return res.status(400).json({ success: false, message: "Season ID is required" });
-        }
+        const totalproblems = await Problem.countDocuments({});
+        const totalpages = Math.ceil(totalproblems / limit);
 
-        const problems = await Problem.find({ seasonId: Number(sid) });
-
-        if (problems.length === 0) {
-            return res.status(404).json({ success: false, message: "No problems found for this season" });
-        }
+        const problems = await Problem.find({})
+            .sort({ seasonId: -1, releaseDay: -1 }) 
+            .skip(skipoffset)
+            .limit(limit);
 
         res.status(200).json({
             success: true,
-            message: "Problems fetched successfully",
-            problems : problems
+            pagination: {
+                totalproblems,
+                totalpages,
+                currentPage: page,
+                limit: limit,
+                hasNextPage: page < totalpages,
+                hasPrevPage: page > 1
+            },
+            problems: problems
         });
     } catch (err) {
         res.status(500).json({ 
             success: false,
-            message: err.message
+            message: "Failed to fetch problems",
+            details: err.message 
         });
     }
 };
@@ -93,9 +101,11 @@ if (compile.exitCode !== 0) {
         throw new Error(`Runtime Error: ${run.stderr}`);
     }
 
-    if (!run.stdout.trim().startsWith('[')) {
-    throw new Error("Wrong Answer: Output must be a valid JSON array.");
-}
+//     const output = run.stdout.trim();
+// if (!output.startsWith('[') && output !== 'true' && output !== 'false') {
+//     throw new Error("Wrong Answer: Output must be a valid JSON array or boolean.");
+// }
+
     // --- FIX: Normalize both JSON strings ---
     const expected = JSON.parse(testCase.output.trim());
     const actual = JSON.parse(run.stdout.trim());
@@ -169,7 +179,6 @@ const problemupdate = async (req, res) => {
 
                         if (run.exitCode !== 0) throw new Error(`Runtime Error: ${run.stderr}`);
                         
-                        if (!run.stdout.trim().startsWith('[')) throw new Error("Output must be valid JSON.");
                         
                         const expected = JSON.parse(testCase.output.trim());
                         const actual = JSON.parse(run.stdout.trim());

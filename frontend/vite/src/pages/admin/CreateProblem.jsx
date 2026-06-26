@@ -3,6 +3,8 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {z} from "zod";
 import { Controller } from "react-hook-form";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 
 const leetcodeTags = [
     "Array",
@@ -147,6 +149,10 @@ const jsonSchema = z.string().refine((val) => {
 
 
 export default function CreateProblem() {
+  const [serverError, setServerError] = useState("");
+  const [isSubmitting,setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+
   const { register, handleSubmit, control, formState: { errors } } = useForm({
     resolver: zodResolver(problemschema),
     defaultValues: {
@@ -183,6 +189,8 @@ export default function CreateProblem() {
     const { fields: rsFields, append: appendRS, remove: removeRS } = useFieldArray({ control, name: "referencesolution" });
 
   const onSubmit = async (data) => {
+    setServerError("");
+    setIsSubmitting(true);
     try {
       console.log(data);
 
@@ -190,7 +198,11 @@ export default function CreateProblem() {
       alert("Problem created successfully!");
     } catch (error) {
       console.error("Failed to create problem:", error);
+      setServerError(error.response?.data?.error || "Failed to create problem. Please check your data.");
       alert("Error creating problem");
+      // navigate('/admin/showallproblems');
+    }finally{
+      setIsSubmitting(false);
     }
   };
 
@@ -199,6 +211,11 @@ export default function CreateProblem() {
       <div className="bg-[#0C1220] border border-slate-800 rounded-2xl p-8 shadow-2xl">
         <h2 className="text-2xl font-bold text-white mb-6">Create New Problem</h2>
         
+        {serverError && (
+        <div className="mb-6 p-4 bg-rose-900/20 border border-rose-800 text-rose-400 rounded-xl text-sm">
+          {serverError}
+        </div>
+      )}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           {/* General Info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -423,9 +440,13 @@ export default function CreateProblem() {
   </div>
 </div>
 
-          <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-all">
-            Publish Problem
-          </button>
+          <button 
+          type="submit" 
+          disabled={isSubmitting}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all"
+        >
+          {isSubmitting ? "Publishing..." : "Publish Problem"}
+        </button>
         </form>
       </div>
     </div>

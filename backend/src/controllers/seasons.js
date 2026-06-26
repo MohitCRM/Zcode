@@ -75,15 +75,18 @@ const getcurrentseason = async (req,res)=>{
     }
 }
 
-const getseasonbyid = async (req,res)=>{
-    try{
-        const {sid} = req.query;
-        const season = await Season.findById({seasonId : sid});
-        if(!season)
-            return res.status(404).json({error:"No season found"});
-        res.status(200).json({season : season});
-    }catch(err){
-        res.status(400).json({error:err.message});
+const getseasonbyid = async (req, res) => {
+    try {
+        const { sid } = req.params;
+
+        const season = await Season.findById(sid); 
+        
+        if (!season)
+            return res.status(404).json({ error: "No season found" });
+            
+        res.status(200).json({ season: season });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
     }
 }
 
