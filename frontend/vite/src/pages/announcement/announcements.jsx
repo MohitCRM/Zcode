@@ -73,7 +73,7 @@ export default function Announcements() {
                                 <div className="mt-6 pt-4 border-t border-slate-800/50 flex items-center gap-2 text-xs text-slate-500">
                                     <span>Posted by</span>
                                     <span className="font-medium text-slate-300">
-                                        {ann.author.firstName} {ann.author.lastName}
+                                        {ann.author ? `${ann.author.firstName} ${ann.author.lastName}` : "Unknown Author"}
                                     </span>
                                 </div>
                             </div>

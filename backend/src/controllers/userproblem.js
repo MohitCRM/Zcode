@@ -261,7 +261,7 @@ const allproblemfetch = async (req, res) => {
         if (!currentSeason) {
             return res.status(500).json({ error: "Configuration error: Season context missing." });
         }
-
+        const userId = req.result._id;
         const activePhase = currentSeason.getCurrentPhase();
         const currentSeasonDay = currentSeason.getActiveSeasonDay();
         let targetRound = 0;
@@ -276,24 +276,31 @@ const allproblemfetch = async (req, res) => {
                 activePhase,
                 currentSeasonDay,
                 message: `Live competitive round is closed. Head over to the Solutions Hub to review peer submissions! 🔓`,
-                problems: []
+                problems: [],
+                problemsSolved : []
             });
         }
-
+        
         const problems = await Problem.find({
             seasonId: currentSeason.seasonId, 
             round: targetRound,
-            releaseDay: { $lte: currentSeasonDay }
         })
         .select(" _id title difficulty tags baseEloReward releaseDay penaltyWrongAnswer") 
         .sort({ releaseDay: 1 });
+        
+        const user = await User.findById(userId).select('problemsolved');
+        const problemsSolved = await Problem.find({
+            _id: { $in: user.problemsolved }, 
+            seasonId: currentSeason.seasonId,
+            round: targetRound 
+        });
 
         return res.status(200).json({
             seasonId: currentSeason.seasonId,
             activePhase,
             currentSeasonDay,
-            totalUnlocked: problems.length,
-            problems
+            problems,
+            problemsSolved 
         });
         
     } catch (err) {

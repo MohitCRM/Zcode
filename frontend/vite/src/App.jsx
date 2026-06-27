@@ -16,6 +16,7 @@ import {checkauth} from "./slicers/authslice";
 import { getcurrentseason } from "./slicers/seasonslice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
+import SetTime from "./pages/admin/time";
 import Showallproblems from "./pages/admin/showallproblems";
 import Showallseasons from "./pages/admin/showallseasons";
 import Showallannouncements from "./pages/admin/showallannouncements";
@@ -47,6 +48,7 @@ export default function App()
       </div>
     )
   }
+
   return (
     <>
       <Routes>
@@ -89,6 +91,8 @@ export default function App()
           <Route path="update-announcement/:aid" element={<UpdateAnnouncement />} />
           <Route path="update-problem/:pid" element={<UpdateProblem />} />
             <Route path="update-season/:sid" element={<UpdateSeason />} />
+
+          <Route path="settime" element={<SetTime />} ></Route>
         </Route>
       </Route>
 

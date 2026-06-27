@@ -21,12 +21,12 @@ export default function Solution() {
                 const [solRes, probRes,subres] = await Promise.all([
                     axiosClient.get(`/solution/${pid}`),
                     axiosClient.get(`/problem/getproblembyid/${pid}`),
-                    axiosClient.get(`/problem/submittedproblem/${pid}`)
+                    // axiosClient.get(`/problem/submittedproblem/${pid}`)
                 ]);
                 setSolutionData(solRes.data.solutionData);
                 setProblemData(probRes.data.problem);
                 
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error(err) }
             finally { setLoading(false); }
         }
         fetchData();

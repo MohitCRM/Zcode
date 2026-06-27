@@ -90,7 +90,39 @@ export default function ShowAllProblems() {
                                         </button>
                                     </div>
                                 </div>
-                                <p className="text-slate-400 text-xs line-clamp-2">{problem.description}</p>
+                                {/* Metadata Grid */}
+                                    <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400 bg-[#090D16] p-3 rounded-lg border border-slate-700/30">
+                                        <div className="flex flex-col">
+                                            <span className="text-slate-500 uppercase">Difficulty</span>
+                                            <span className="font-semibold text-white capitalize">{problem.difficulty}</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-slate-500 uppercase">Elo Reward</span>
+                                            <span className="font-semibold text-indigo-400">{problem.baseEloReward}</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-slate-500 uppercase">Season / Day</span>
+                                            <span className="font-semibold text-white">S{problem.seasonId} / D{problem.releaseDay}</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-slate-500 uppercase">Penalty</span>
+                                            <span className="font-semibold text-rose-400">{problem.penaltyWrongAnswer}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Tags Section */}
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                        {problem.tags.slice(0, 3).map((tag, i) => (
+                                            <span key={i} className="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded text-[9px]">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                        {problem.tags.length > 3 && (
+                                            <span className="px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded text-[9px]">
+                                                +{problem.tags.length - 3}
+                                            </span>
+                                        )}
+                                    </div>
                             </div>
                         ))}
                     </div>

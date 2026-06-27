@@ -6,6 +6,8 @@ export default function Problemidsforsol() {
     const [problems, setProblems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activePhase, setActivePhase] = useState("");
+    const [currentSeasonDay, setCurrentSeasonDay] = useState(null);
+    const [errorState, setErrorState] = useState(null);
     const navigate = useNavigate();
 
     // Helper for difficulty styling
@@ -23,8 +25,11 @@ export default function Problemidsforsol() {
                 const res = await axiosClient.get("/solution/all");
                 setProblems(res.data.problems);
                 setActivePhase(res.data.activePhase);
+                setCurrentSeasonDay(res.data.currentSeasonDay);
+                setErrorState(null);
             } catch (err) {
-                console.error("Failed to fetch problems:", err);
+                const msg = err.response?.data?.message || "Solutions are currently unavailable.";
+                setErrorState(msg);
             } finally {
                 setLoading(false);
             }
@@ -40,7 +45,7 @@ export default function Problemidsforsol() {
             <div className="fixed inset-0 bg-[linear-gradient(to_right,#161F30_1px,transparent_1px),linear-gradient(to_bottom,#161F30_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30 pointer-events-none z-0"></div>
 
             <main className="mx-auto max-w-7xl relative z-10">
-                <div className="mb-8">
+                <div className="flex items-center justify-between mb-8">
                     <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
                         Solutions Hub
                         <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-widest">
@@ -48,8 +53,26 @@ export default function Problemidsforsol() {
                         </span>
                     </h1>
                     <p className="mt-2 text-sm text-slate-400">Review community submissions and official reference solutions.</p>
+                    {/* Right Side: Day Counter */}
+                    {currentSeasonDay !== null && (
+                        <div className="text-3xl font-bold text-slate-500 border-l border-slate-800 pl-6 flex items-center shrink-0">
+                            Day <span className="text-white ml-2">{currentSeasonDay}</span>
+                        </div>
+                    )}
                 </div>
-
+                {errorState ? (
+                    <div className="bg-[#121826] border border-amber-500/20 p-12 rounded-2xl text-center flex flex-col items-center gap-4 shadow-2xl">
+                        <div className="text-4xl">🔒</div>
+                        <h2 className="text-xl font-bold text-white">Solutions Locked</h2>
+                        <p className="text-slate-400 max-w-md">{errorState}</p>
+                        <button 
+                            onClick={() => navigate('/problems')}
+                            className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-all"
+                        >
+                            Back to Problem Set
+                        </button>
+                    </div>
+                ) : (
                 <div role="table" className="flex flex-col gap-y-2.5 w-full">
                     {/* Header Row */}
                     <div className="bg-[#121826]/40 border border-slate-800/40 rounded-xl px-6 py-3.5 grid grid-cols-[1fr_200px_220px] gap-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -95,6 +118,7 @@ export default function Problemidsforsol() {
                         ))}
                     </div>
                 </div>
+                )}
             </main>
         </div>
     );

@@ -36,12 +36,12 @@ const seasonslicer = createSlice({
         })
         .addCase(getcurrentseason.fulfilled , (state,action)=>{
             state.loading = false;
-            state.season = action.payload;
+            state.data = action.payload.season;
         })
         .addCase(getcurrentseason.rejected, (state,action)=>{
             state.loading = false;
-            state.error = action.payload;
-            state.season = null;
+            state.error = action.payload.error;
+            state.data = null;
         })
     }
 })

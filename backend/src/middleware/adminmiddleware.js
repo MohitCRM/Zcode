@@ -8,9 +8,7 @@ const adminauth = async (req,res,next)=>{
 
     if(!token)
         throw new Error("Toekn doesn't exist");
-
     const payload = jwt.verify(token,process.env.JWT_KEY);
-
     const {_id} = payload;
 
     if(!_id)
@@ -18,7 +16,7 @@ const adminauth = async (req,res,next)=>{
 
     if(payload.role != 'admin')
         throw new Error("Invalid token");
-
+    
     const result = await User.findById(_id);
 
     if(!result)

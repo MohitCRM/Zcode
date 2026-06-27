@@ -11,6 +11,7 @@ const getProblemSolutionHub = async (req, res) => {
         }
 
         const activePhase = currentSeason.getCurrentPhase();
+        const currentSeasonDay = currentSeason.getActiveSeasonDay();
         const completedRound = activePhase === "Round1Solution" ? 1 : activePhase === "Round2Solution" ? 2 : null;
 
         if (!completedRound) {
@@ -61,6 +62,7 @@ const getProblemSolutionHub = async (req, res) => {
 
         return res.status(200).json({
             seasonId: currentSeason.seasonId,
+            currentSeasonDay,
             activePhase,
             solutionData
         });
@@ -78,6 +80,7 @@ const getthisroundsolutions = async (req,res)=>{
         }
 
         const activePhase = currentSeason.getCurrentPhase();
+        const currentSeasonDay = currentSeason.getActiveSeasonDay();
         let targetRound = 0;
 
         if (activePhase === "Round1Solution") {
@@ -102,6 +105,7 @@ const getthisroundsolutions = async (req,res)=>{
 
         return res.status(200).json({
             seasonId: currentSeason.seasonId,
+            currentSeasonDay,
             activePhase,
             totalUnlocked: problems.length,
             problems

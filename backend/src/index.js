@@ -11,9 +11,11 @@ const announcementrouter = require("./routes/announcement");
 const solutionrouter = require("./routes/solution");
 const seasonsrouter = require('./routes/seasons');
 const videosolutionrouter = require('./routes/solutionvideo');
+const timerouter = require('./routes/time');
 const cors = require('cors');
 
 const app = express();
+
 
 app.use(cors({
     origin :'http://localhost:5173',
@@ -29,6 +31,7 @@ app.use('/submit', submitrouter);
 app.use('/user', authrouter);
 app.use('/solution', solutionrouter);
 app.use('/videosolution',videosolutionrouter);
+app.use('/time',timerouter);
 
 const initialiseconnection = async ()=>{
     try{

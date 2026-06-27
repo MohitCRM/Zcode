@@ -34,12 +34,16 @@ export default function Signup() {
   }, [isauth, navigate]);
 
   const onsubmit = (data) => {
-    dispatch(registerUser(data)
-    .unwrap()
-    .then(()=>{
+    dispatch(registerUser(data))
+    .then(() => {
+      // This is now a callback function that runs after success
       dispatch(getcurrentseason());
-    }));
-  };
+    })
+    .catch((err) => {
+      // Always handle the failure case!
+      console.error("Registration failed:", err);
+    });
+};
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-[#090D16] font-sans text-slate-200 antialiased selection:bg-indigo-500/30 overflow-x-hidden px-4 py-12">
