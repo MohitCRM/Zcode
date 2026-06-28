@@ -1,8 +1,8 @@
 const { getLanguageConfig, generateCppFullCode } = require('../utils/problemutility'); 
-const { CURRENT_SEASON_ID } = require("../utils/dates");
 const Problem = require('../models/problem');
 const User = require('../models/user');
 const Submission = require('../models/submission');
+const Leaderboard = require('../models/leaderboard');
 const { Sandbox } = require('e2b');
 const path = require('path');
 const fs = require('fs');
@@ -242,14 +242,15 @@ const problemfetch = async (req, res) => {
             _id: pid,
             seasonId: currentSeason.seasonId,
             round: allowedRound,
-            releaseDay: { $lte: currentSeasonDay } 
+            releaseDay: { $lte: currentSeasonDay },
+
         }).select("-hiddenTestCases -__v -createdAt -updatedAt -problemcreator -drivercode ");
 
         if (!problem) {
             return res.status(404).json({error : "Problem not found, locked behind a future round, or unreleased!"});
         }
 
-        return res.status(200).json({problem : problem});
+        return res.status(200).json({problem : problem, today: problem.releaseDay === currentSeasonDay ? true : false});
     } catch (err) {
         return res.status(400).json({error : "Error Occured: " + err.message});
     }
@@ -261,6 +262,8 @@ const allproblemfetch = async (req, res) => {
         if (!currentSeason) {
             return res.status(500).json({ error: "Configuration error: Season context missing." });
         }
+        
+        // Use the authenticated user ID from req.result
         const userId = req.result._id;
         const activePhase = currentSeason.getCurrentPhase();
         const currentSeasonDay = currentSeason.getActiveSeasonDay();
@@ -277,23 +280,34 @@ const allproblemfetch = async (req, res) => {
                 currentSeasonDay,
                 message: `Live competitive round is closed. Head over to the Solutions Hub to review peer submissions! 🔓`,
                 problems: [],
-                problemsSolved : []
+                problemsSolved: []
             });
         }
         
+        // 1. Fetch all problems assigned to this season and round
         const problems = await Problem.find({
             seasonId: currentSeason.seasonId, 
             round: targetRound,
         })
-        .select(" _id title difficulty tags baseEloReward releaseDay penaltyWrongAnswer") 
+        .select("_id title difficulty tags baseEloReward releaseDay penaltyWrongAnswer") 
         .sort({ releaseDay: 1 });
         
-        const user = await User.findById(userId).select('problemsolved');
-        const problemsSolved = await Problem.find({
-            _id: { $in: user.problemsolved }, 
-            seasonId: currentSeason.seasonId,
-            round: targetRound 
+        // 2. Query the leaderboard for this user and season instead of checking the User collection
+        const userSeasonalStats = await Leaderboard.findOne({
+            userId: userId,
+            seasonId: currentSeason.seasonId
         });
+
+        // 3. Extract the solved problem IDs from the leaderboard document
+        const solvedIds = userSeasonalStats && userSeasonalStats.problemsSolved 
+            ? userSeasonalStats.problemsSolved.map(id => id.toString()) 
+            : [];
+
+        // 4. Filter the already-fetched 'problems' array to get the details of what they solved
+        // This eliminates running an unnecessary extra database query
+        const problemsSolved = problems.filter(problem => 
+            solvedIds.includes(problem._id.toString())
+        );
 
         return res.status(200).json({
             seasonId: currentSeason.seasonId,

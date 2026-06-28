@@ -68,7 +68,7 @@ const tierdata = (currelo) =>{
             color: currtier.color,
             badgeUrl: currtier.badgeUrl,
             floor: currtier.minElo,
-            ceiling: nexttier ? nexttier.minElo - 1 : currtier.maxElo
+            ceiling: nexttier ? nexttier.minElo - 1 : Infinity
         },
         nextRank: nexttier ? {
             name: nexttier.name,

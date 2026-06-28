@@ -66,7 +66,7 @@ export default function Problemidsforsol() {
                         <h2 className="text-xl font-bold text-white">Solutions Locked</h2>
                         <p className="text-slate-400 max-w-md">{errorState}</p>
                         <button 
-                            onClick={() => navigate('/problems')}
+                            onClick={() => navigate('/dashboard/problems')}
                             className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-all"
                         >
                             Back to Problem Set
@@ -86,7 +86,7 @@ export default function Problemidsforsol() {
                         {problems.map((prob, index) => (
                             <div 
                                 key={prob._id}
-                                onClick={() => navigate(`/solutions/${prob._id}`)}
+                                onClick={() => navigate(`/dashboard/solutions/${prob._id}`)}
                                 role="row" 
                                 className="group bg-[#121826]/70 backdrop-blur-sm rounded-xl border border-slate-800/60 p-5 grid grid-cols-[1fr_200px_220px] gap-4 items-center shadow-lg hover:border-indigo-500/40 hover:bg-[#161F30] hover:shadow-[0_0_30px_-5px_rgba(79,70,229,0.15)] transition-all cursor-pointer"
                             >

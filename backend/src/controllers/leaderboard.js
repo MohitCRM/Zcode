@@ -37,7 +37,6 @@ const getleaderboard = async (req, res) => {
             return res.status(404).json({ error: "Season not found" });
         }
         
-        // This is the number you need for your Leaderboard query
         const numericSeasonId = seasonDoc.seasonId; 
 
         // 3. Pagination setup
@@ -55,16 +54,30 @@ const getleaderboard = async (req, res) => {
             .skip(skipoffset)
             .limit(limit);
 
-        const standings = stats.map((stat, index) => ({
-            rank: skipoffset + index + 1,
-            userId: stat.userId ? stat.userId._id : null,
-            name: stat.userId ? `${stat.userId.firstName} ${stat.userId.lastName}` : "Unknown person",
-            elo: stat.elo,
-            rankTier: stat.tierDetails // Accessing your virtual
-        }));
+        const standings = stats.map((stat, index) => {
+            const accepted = stat.acceptedSubmissionsCount || 0;
+            const wrong = stat.wrongSubmissionsCount || 0;
+            const totalSubmissions = accepted + wrong;
+
+            // Calculate accuracy safely preventing division by zero. 
+            // Fixed to 1 decimal place to perfectly match your new front-end UI layout.
+            const accuracy = totalSubmissions > 0 
+                ? parseFloat(((accepted / totalSubmissions) * 100).toFixed(1)) 
+                : 0.0;
+
+            return {
+                rank: skipoffset + index + 1,
+                userId: stat.userId ? stat.userId._id : null,
+                name: stat.userId ? `${stat.userId.firstName} ${stat.userId.lastName}` : "Unknown person",
+                elo: stat.elo,
+                rankTier: stat.tierDetails, // Accesses your mongoose virtual
+                accuracy: accuracy,         // e.g., 85.4
+                solved: stat.problemsSolved ? stat.problemsSolved.length : 0 // Size of array matching layout data tracking
+            };
+        });
 
         return res.status(200).json({
-            season: seasonDoc, // Full season object
+            season: seasonDoc, 
             pagination: {
                 totalpages,
                 currentPage: page,

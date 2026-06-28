@@ -58,7 +58,7 @@ export default function Problems() {
                 <h2 className="text-xl font-bold text-white">Round Currently Closed</h2>
                 <p className="text-slate-400 max-w-md">{errorState}</p>
                 <button 
-                  onClick={() => navigate('/solutions')}
+                  onClick={() => navigate('/dashboard/solutions')}
                   className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-all"
                 >
                   Go to Solution Hub
@@ -81,7 +81,7 @@ export default function Problems() {
             return (
               <div 
                 key={prob._id} 
-                onClick={() => !isLocked && navigate(`/problems/${prob._id}`)}
+                onClick={() => !isLocked && navigate(`/dashboard/problems/${prob._id}`)}
                 className={`group backdrop-blur-sm rounded-xl border p-5 grid grid-cols-[100px_1fr_200px] gap-4 items-center shadow-lg transition-all 
                   ${isLocked 
                     ? 'opacity-50 cursor-not-allowed border-slate-800 bg-[#0C1220]' 

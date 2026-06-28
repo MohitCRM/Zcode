@@ -57,7 +57,7 @@ export default function ShowAllProblems() {
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold text-white">Problem Management</h1>
                 <button 
-                    onClick={() => navigate('/admin/create-problem')}
+                    onClick={() => navigate('/dashboard/admin/create-problem')}
                     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all"
                 >
                     + Create Problem
@@ -77,7 +77,7 @@ export default function ShowAllProblems() {
                                     <h3 className="text-white font-bold truncate">{problem.title}</h3>
                                     <div className="flex gap-2">
                                         <button 
-                                            onClick={() => navigate(`/admin/update-problem/${problem._id}`, { state: { problem } })} 
+                                            onClick={() => navigate(`/dashboard/admin/update-problem/${problem._id}`, { state: { problem } })} 
                                             className="px-2 py-1 text-[10px] text-slate-400 hover:text-white bg-slate-800 rounded hover:bg-slate-700 transition-colors"
                                         >
                                             Edit

@@ -10,9 +10,10 @@ import AdminPanel from "./pages/admin/adminpanel";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Announcements from "./pages/announcement/announcements";
-import ProblemDetail from "./pages/problemdetails/problemdetail"
+import ProblemDetail from "./pages/problemdetails/problemdetail";
+import Landingpage from "./pages/landingpage/landingpage";
 import Layout from "./pages/layout";
-import {checkauth} from "./slicers/authslice";
+import { checkauth } from "./slicers/authslice";
 import { getcurrentseason } from "./slicers/seasonslice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
@@ -27,59 +28,60 @@ import UpdateAnnouncement from "./pages/admin/UpdateAnnouncement";
 import UpdateProblem from "./pages/admin/UpdateProblem";
 import UpdateSeason from "./pages/admin/UpdateSeason";
 
-
-export default function App()
-{
-  const {isauth,loading:authloading} = useSelector((state) => state.auth);
-  const {loading:seasonloading} = useSelector((state)=>state.season);
+export default function App() {
+  const { isauth, loading: authloading } = useSelector((state) => state.auth);
+  const { loading: seasonloading } = useSelector((state) => state.season);
   const dispatch = useDispatch();
 
-  useEffect(()=>{
-    dispatch(checkauth()).then(()=>{
+  useEffect(() => {
+    dispatch(checkauth()).then(() => {
       dispatch(getcurrentseason());
-    })
-  },[dispatch]);
+    });
+  }, [dispatch]);
 
-  if(authloading || seasonloading)
-  {
-    return(
-      <div className="min-h-screen flex items-center justify-center" >
-        <span className="loading loading-spinner loading-lg" ></span>
+  if (authloading || seasonloading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
       </div>
-    )
+    );
   }
 
   return (
-    <>
-      <Routes>
-        <Route path ="/login" element ={isauth ? <Navigate to="/" /> : <Login></Login>} ></Route>
-        <Route path ="/signup" element ={isauth ? <Navigate to="/" /> : <Signup></Signup>}></Route>
+    <Routes>
+      {/* Public Pages */}
+      <Route path="/" element={<Landingpage />} />
+      <Route path="/login" element={isauth ? <Navigate to="/dashboard" /> : <Login />} />
+      <Route path="/signup" element={isauth ? <Navigate to="/dashboard" /> : <Signup />} />
 
-        <Route path="/" element={isauth ? <Layout /> : <Navigate to="/login" />}>
-        <Route index element={<Navigate to="/announcements" />} />
-        <Route path="announcements" element={<Announcements />} />
+      {/* Global Protected Standalone Routes (Outside general dashboard layout framework) */}
+      <Route 
+        path="/solutions/:pid" 
+        element={isauth ? <Solution /> : <Navigate to="/login" />} 
+      />
+      <Route
+        path="/problems/:problemId"
+        element={isauth ? <ProblemDetail /> : <Navigate to="/login" />}
+      />
 
-        <Route path="problems" >
-          <Route index element={<Problems />} />
-          <Route path=":problemId" element={<ProblemDetail />} />
-        </Route>
-
+      {/* Primary Authenticated Workspace Layout Wrapper */}
+      <Route path="/dashboard" element={isauth ? <Layout /> : <Navigate to="/login" />}>
+        {/* Default route index loads announcements cleanly instead of self-redirecting */}
+        <Route index element={<Announcements />} />
+        
+        <Route path="problems" element={<Problems />} />
+        
         <Route path="standings">
           <Route index element={<Standings />} />
           <Route path=":sid" element={<ThisSeason />} />
         </Route>
 
-        <Route path="solutions" >
-          <Route index element={<Problemidsforsol />} />
-          <Route path=":pid" element={<Solution />} />
-        </Route>
+        <Route path="solutions" element={<Problemidsforsol />} />
+        <Route path="user-rank" element={<UserRank />} />
+        <Route path="profile" element={<UserProfile />} />
 
-        <Route path="userRank" element={<UserRank />} />
-
-        <Route path="/userprofile" element={<UserProfile />} />
-
+        {/* Nested Administrator Command Sub-System */}
         <Route path="admin" element={<AdminPanel />}>
-          {/* Nested routes will now render inside the AdminPanel's <Outlet /> */}
           <Route path="showallproblems" element={<Showallproblems />} />
           <Route path="showallannouncements" element={<Showallannouncements />} />
           <Route path="showallseasons" element={<Showallseasons />} />
@@ -90,13 +92,14 @@ export default function App()
   
           <Route path="update-announcement/:aid" element={<UpdateAnnouncement />} />
           <Route path="update-problem/:pid" element={<UpdateProblem />} />
-            <Route path="update-season/:sid" element={<UpdateSeason />} />
+          <Route path="update-season/:sid" element={<UpdateSeason />} />
 
-          <Route path="settime" element={<SetTime />} ></Route>
+          <Route path="settime" element={<SetTime />} />
         </Route>
       </Route>
 
-      </Routes>
-    </>
-  )
+      {/* Fallback Catch-All Redirect */}
+      <Route path="*" element={<Navigate to={isauth ? "/dashboard" : "/"} replace />} />
+    </Routes>
+  );
 }

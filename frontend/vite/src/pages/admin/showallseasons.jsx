@@ -38,7 +38,7 @@ export default function ShowAllSeasons() {
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold text-white">Season Management</h1>
                 <button 
-                    onClick={() => navigate('/admin/create-season')}
+                    onClick={() => navigate('/dashboard/admin/create-season')}
                     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all"
                 >
                     + Create Season
@@ -62,7 +62,7 @@ export default function ShowAllSeasons() {
                                 </div>
                                 <div className="flex gap-2">
                                     <button 
-                                        onClick={() => navigate(`/admin/update-season/${season._id}`)} 
+                                        onClick={() => navigate(`/dashboard/admin/update-season/${season._id}`)} 
                                         className="px-3 py-1 text-xs text-slate-400 hover:text-white bg-slate-800 rounded hover:bg-slate-700 transition-colors"
                                     >
                                         Edit

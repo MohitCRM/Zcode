@@ -33,7 +33,7 @@ export default function ShowAllAnnouncements() {
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold text-white">Announcements</h1>
                 <button 
-                    onClick={() => navigate('/admin/create-announcement')}
+                    onClick={() => navigate('/dashboard/admin/create-announcement')}
                     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all"
                 >
                     + Create Announcement
@@ -62,7 +62,7 @@ export default function ShowAllAnnouncements() {
         </div>
         
         <div className="flex gap-2 ml-4">
-            <button onClick={() => navigate(`/admin/update-announcement/${ann._id}`, {state : {announcement : ann}})} className="text-slate-400 hover:text-white">Update</button>
+            <button onClick={() => navigate(`/dashboard/admin/update-announcement/${ann._id}`, {state : {announcement : ann}})} className="text-slate-400 hover:text-white">Update</button>
             <button onClick={() => handleDelete(ann._id)} className="text-rose-500 hover:text-rose-400">Delete</button>
         </div>
     </div>

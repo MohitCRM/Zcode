@@ -71,7 +71,7 @@ if (seasons.length === 0) {
                                 )}
                             </div>
 
-                            <div onClick={() => navigate(`/standings/${season._id}`)}
+                            <div onClick={() => navigate(`/dashboard/standings/${season._id}`)}
                              className="text-right text-sm text-slate-400 font-medium cursor-pointer hover:text-indigo-400 transition-colors">
                                 View Stats →
                             </div>

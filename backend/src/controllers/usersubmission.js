@@ -4,7 +4,6 @@ const User = require('../models/user');
 const Leaderboard = require('../models/leaderboard');
 const mongoose = require('mongoose');
 const { getLanguageConfig, generateCppFullCode } = require('../utils/problemutility'); 
-const { CURRENT_SEASON_ID } = require("../utils/dates");
 const tierdata = require('../utils/tiersystem');
 const { Sandbox } = require('e2b');
 const fs = require('fs');
@@ -103,7 +102,7 @@ const submitcode = async (req, res) => {
 
         // Database updates (Elo, Leaderboard, etc.) remains the same
         const isAccepted = status === "Accepted";
-        const alreadySolved = user.problemsolved.includes(pid);
+        const alreadySolved = user.problemsolved.some(id => id.toString() === pid.toString());
         let eloChange = 0;
 
         if(!alreadySolved){
@@ -111,21 +110,46 @@ const submitcode = async (req, res) => {
         }
 
         await session.withTransaction(async () => {
-            await Submission.updateOne({ _id: pendingSubmission._id }, { 
-                $set: { status, errorMessage, eloChange, passedTestCases: passedCount, totalTestCases: totalTestCases.length } 
-            }, { session });
+    // 1. ALWAYS save the submission record (for history/debugging)
+    await Submission.updateOne({ _id: pendingSubmission._id }, { 
+        $set: { 
+            status, 
+            errorMessage, 
+            eloChange, // This will stay 0 for repeat attempts
+            passedTestCases: passedCount, 
+            totalTestCases: totalTestCases.length,
+            wasSameDaySolve: false // Repeat attempts don't qualify for bonus
+        } 
+    }, { session });
 
-            if(!alreadySolved){
-            if (isAccepted) await User.updateOne({ _id: userid }, { $addToSet: { problemsolved: pid } }, { session });
+    // 2. ONLY update user/leaderboard if it's a NEW solve
+    if (!alreadySolved && isAccepted) {
+        // Mark as solved
+        await User.updateOne({ _id: userid }, { $addToSet: { problemsolved: pid } }, { session });
 
-            const updatedLB = await Leaderboard.findOneAndUpdate(
-                { userId: userid, seasonId: req.season?.seasonId ?? CURRENT_SEASON_ID },
-                { $inc: { elo: eloChange, acceptedSubmissionsCount: isAccepted ? 1 : 0, wrongSubmissionsCount: isAccepted ? 0 : 1 } },
-                { session, upsert: true, returnDocument: 'after' }
-            );
-            await Leaderboard.updateOne({ _id: updatedLB._id }, { $set: { rank: tierdata(updatedLB.elo).currentRank.name } }, { session });
-        }
-        });
+        // Update leaderboard with reward
+        const updatedLB = await Leaderboard.findOneAndUpdate(
+            { userId: userid, seasonId: req.season?.seasonId ?? CURRENT_SEASON_ID },
+            { 
+                $inc: { 
+                    elo: eloChange, 
+                    acceptedSubmissionsCount: 1 
+                },
+                $addToSet: { problemsSolved: pid }
+            },
+            { session, upsert: true, returnDocument: 'after' }
+        );
+
+        // Refresh Rank
+        const rankInfo = tierdata(updatedLB.elo);
+        await Leaderboard.updateOne({ _id: updatedLB._id }, { 
+            $set: { 
+                rank: rankInfo.currentRank.name,
+                rankProgress: rankInfo.progresspercentage 
+            } 
+        }, { session });
+    }
+});
     
         res.status(201).json({ status, eloChange, message: "Submission processed" , passedTestCases: passedCount, totalTestCases: totalTestCases.length });
     } catch (err) {
