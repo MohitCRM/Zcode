@@ -4,6 +4,7 @@ const Submission = require('../models/submission');
 const getProblemSolutionHub = async (req, res) => {
     try {
         const { pid } = req.params; 
+        const userId = req.result._id;
         const currentSeason = req.seasonConfig || req.season;
         
         if (!currentSeason) {
@@ -37,7 +38,15 @@ const getProblemSolutionHub = async (req, res) => {
         .populate("userId", "firstName")
         .sort({ createdAt: -1 });
 
-        // 3. Assemble the payload
+        // 3. Fetch user's own submissions
+        const userSubmissions = await Submission.find({
+            problemId: pid,
+            userId: userId
+        })
+        .select("language code createdAt status passedTestCases totalTestCases errorMessage eloChange")
+        .sort({ createdAt: -1 });
+
+        // 4. Assemble the payload
         const solutionData = {
             problemId: problem._id,
             title: problem.title,
@@ -57,6 +66,18 @@ const getProblemSolutionHub = async (req, res) => {
                 language: sub.language,
                 code: sub.code,
                 timestamp: sub.createdAt
+            })),
+
+            mySolutions: userSubmissions.map(sub => ({
+                submissionId: sub._id,
+                language: sub.language,
+                code: sub.code,
+                status: sub.status,
+                submittedAt: new Date(sub.createdAt).toLocaleString(),
+                passedTestCases: sub.passedTestCases,
+                totalTestCases: sub.totalTestCases,
+                errorMessage: sub.errorMessage,
+                eloChange: sub.eloChange
             }))
         };
 

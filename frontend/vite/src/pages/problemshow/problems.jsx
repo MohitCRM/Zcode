@@ -37,7 +37,7 @@ export default function Problems() {
             Problem Set
             <div className="flex gap-2">
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-widest">
-                Rated Season {data.seasonId || "1"}
+                Rated Season {!data.seasonId ? '-Off Season-' : data.seasonId}
               </span>
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-widest">
                 {data.activePhase || "Loading..."}

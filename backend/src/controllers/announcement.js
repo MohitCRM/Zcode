@@ -5,7 +5,7 @@ const getallannouncements = async (req,res)=>{
         const announcements = await Announcement.find({})
         .populate({
             path: "author",
-            select : "firstName lastName"
+            select : "firstName"
         })
         .sort({
             isPinned : -1,

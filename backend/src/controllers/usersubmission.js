@@ -109,47 +109,55 @@ const submitcode = async (req, res) => {
         eloChange = isAccepted ? (problem.baseEloReward + (req.season?.getActiveSeasonDay() === problem.releaseDay ? (problem.baseEloReward * 0.3) : 0)) : -problem.penaltyWrongAnswer;
         }
 
-        await session.withTransaction(async () => {
-    // 1. ALWAYS save the submission record (for history/debugging)
-    await Submission.updateOne({ _id: pendingSubmission._id }, { 
-        $set: { 
-            status, 
-            errorMessage, 
-            eloChange, // This will stay 0 for repeat attempts
-            passedTestCases: passedCount, 
-            totalTestCases: totalTestCases.length,
-            wasSameDaySolve: false // Repeat attempts don't qualify for bonus
-        } 
-    }, { session });
+       await session.withTransaction(async () => {
+            // 1. ALWAYS save the submission record
+            await Submission.updateOne({ _id: pendingSubmission._id }, { 
+                $set: { 
+                    status, 
+                    errorMessage, 
+                    eloChange, 
+                    passedTestCases: passedCount, 
+                    totalTestCases: totalTestCases.length 
+                } 
+            }, { session });
 
-    // 2. ONLY update user/leaderboard if it's a NEW solve
-    if (!alreadySolved && isAccepted) {
-        // Mark as solved
-        await User.updateOne({ _id: userid }, { $addToSet: { problemsolved: pid } }, { session });
+            // 2. Determine if this submission is a success or failure for stats
+            const isAccepted = status === "Accepted";
 
-        // Update leaderboard with reward
-        const updatedLB = await Leaderboard.findOneAndUpdate(
-            { userId: userid, seasonId: req.season?.seasonId ?? CURRENT_SEASON_ID },
-            { 
+            // 3. Update User/Leaderboard
+            // We update stats regardless of whether it's already solved, 
+            // but we only add to 'problemsSolved' array if it's a NEW solve.
+            const updateQuery = {
                 $inc: { 
-                    elo: eloChange, 
-                    acceptedSubmissionsCount: 1 
-                },
-                $addToSet: { problemsSolved: pid }
-            },
-            { session, upsert: true, returnDocument: 'after' }
-        );
+                    elo: eloChange,
+                    acceptedSubmissionsCount: isAccepted ? 1 : 0,
+                    wrongSubmissionsCount: isAccepted ? 0 : 1 
+                }
+            };
 
-        // Refresh Rank
-        const rankInfo = tierdata(updatedLB.elo);
-        await Leaderboard.updateOne({ _id: updatedLB._id }, { 
-            $set: { 
-                rank: rankInfo.currentRank.name,
-                rankProgress: rankInfo.progresspercentage 
-            } 
-        }, { session });
-    }
-});
+            if (!alreadySolved && isAccepted) {
+                updateQuery.$addToSet = { problemsSolved: pid };
+                await User.updateOne({ _id: userid }, { $addToSet: { problemsolved: pid } }, { session });
+            }
+
+            const updatedLB = await Leaderboard.findOneAndUpdate(
+                { userId: userid, seasonId: req.season?.seasonId ?? CURRENT_SEASON_ID },
+                updateQuery,
+                { session, upsert: true, returnDocument: 'after' }
+            );
+
+            // 4. Refresh Rank
+            const totalSubmissions = updatedLB.acceptedSubmissionsCount + updatedLB.wrongSubmissionsCount;
+            const accuracy = totalSubmissions > 0 ? (updatedLB.acceptedSubmissionsCount / totalSubmissions) * 100 : 0;
+            const problemsSolvedCount = updatedLB.problemsSolved ? updatedLB.problemsSolved.length : 0;
+
+            const rankInfo = tierdata(updatedLB.elo, accuracy, problemsSolvedCount);
+            await Leaderboard.updateOne({ _id: updatedLB._id }, { 
+                $set: { 
+                    rank: rankInfo.currentRank.name 
+                } 
+            }, { session });
+        });
     
         res.status(201).json({ status, eloChange, message: "Submission processed" , passedTestCases: passedCount, totalTestCases: totalTestCases.length });
     } catch (err) {

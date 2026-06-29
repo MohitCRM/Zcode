@@ -17,7 +17,7 @@ const leaderboardSchema = new Schema({
     elo: {
         type: Number,
         required: true,
-        default: 1200 
+        default: 100 
     },
     rank: {
         type: String,
@@ -48,12 +48,18 @@ const leaderboardSchema = new Schema({
 leaderboardSchema.index({ userId: 1, seasonId: 1 }, { unique: true });
 
 leaderboardSchema.virtual("tierDetails").get(function() {
-    return tierdata(this.elo);
+    const totalSubmissions = this.acceptedSubmissionsCount + this.wrongSubmissionsCount;
+    const accuracy = totalSubmissions > 0 ? (this.acceptedSubmissionsCount / totalSubmissions) * 100 : 0;
+    const problemsSolvedCount = this.problemsSolved ? this.problemsSolved.length : 0;
+    return tierdata(this.elo, accuracy, problemsSolvedCount);
 });
 
 leaderboardSchema.pre('save', function(next) {
     if (this.isModified('elo')) {
-        const details = tierdata(this.elo);
+        const totalSubmissions = this.acceptedSubmissionsCount + this.wrongSubmissionsCount;
+        const accuracy = totalSubmissions > 0 ? (this.acceptedSubmissionsCount / totalSubmissions) * 100 : 0;
+        const problemsSolvedCount = this.problemsSolved ? this.problemsSolved.length : 0;
+        const details = tierdata(this.elo, accuracy, problemsSolvedCount);
         if (details && details.currentRank) {
             this.rank = details.currentRank.name; 
         }

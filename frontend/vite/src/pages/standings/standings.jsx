@@ -11,7 +11,7 @@ export default function Standings() {
         const fetchSeasons = async () => {
             try {
                 // Ensure your backend endpoint returns the seasons array
-                const response = await axiosClient.get('seasons/getallseasons');
+                const response = await axiosClient.get('/seasons/getallseasons');
                 console.log(response.data.seasons)
                 setSeasons(response.data.seasons);
             } catch (err) {
@@ -22,13 +22,13 @@ export default function Standings() {
     }, []);
 
     // Add this check inside your return statement, before the main div
-if (seasons.length === 0) {
-    return (
-        <div className="min-h-screen bg-[#090D16] flex items-center justify-center text-slate-500">
-            Loading seasons...
-        </div>
-    );
-}
+            if (seasons.length === 0) {
+                return (
+                    <div className="min-h-screen bg-[#090D16] flex items-center justify-center text-slate-500">
+                        Loading seasons...
+                    </div>
+                );
+            }
 
     return (
         // Adding min-h-screen and the dark background color here ensures 

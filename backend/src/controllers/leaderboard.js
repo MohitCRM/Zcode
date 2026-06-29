@@ -49,7 +49,7 @@ const getleaderboard = async (req, res) => {
         const totalpages = Math.ceil(totalplayers / limit);
 
         const stats = await Leaderboard.find({ seasonId: numericSeasonId })
-            .populate({ path: 'userId', select: "firstName lastName" })
+            .populate({ path: 'userId', select: "firstName" })
             .sort({ elo: -1 })
             .skip(skipoffset)
             .limit(limit);
@@ -68,7 +68,7 @@ const getleaderboard = async (req, res) => {
             return {
                 rank: skipoffset + index + 1,
                 userId: stat.userId ? stat.userId._id : null,
-                name: stat.userId ? `${stat.userId.firstName} ${stat.userId.lastName}` : "Unknown person",
+                name: stat.userId ? stat.userId.firstName : "Unknown person",
                 elo: stat.elo,
                 rankTier: stat.tierDetails, // Accesses your mongoose virtual
                 accuracy: accuracy,         // e.g., 85.4
@@ -92,4 +92,51 @@ const getleaderboard = async (req, res) => {
     }
 }
 
-module.exports = {showallseasonid,getleaderboard};
+const getmystats = async (req, res) => {
+    try {
+        const seasonId = req.params.seasonId;
+        const userId = req.result._id;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'require UserId' });
+        }
+
+        const record = await Leaderboard.findOne({ userId: userId, seasonId: seasonId })
+            .populate({ path: 'userId', select: "firstName" });
+
+        if (!record) {
+            return res.status(200).json({
+                mystats: {
+                    elo: 100, 
+                    accuracy: 100,
+                    seasonCheckIns: 0,
+                    problemsSolved: 0
+                }
+            });
+        }
+        
+        const totalSubmissions = (record.acceptedSubmissionsCount || 0) + (record.wrongSubmissionsCount || 0);
+        const calculatedAccuracy = totalSubmissions > 0 
+            ? Math.round((record.acceptedSubmissionsCount / totalSubmissions) * 100) 
+            : 100; 
+
+        const calculatedCheckIns = record.checkInDays ? record.checkInDays.length : 0;
+
+        const calculatedProblemsSolved = record.problemsSolved ? record.problemsSolved.length : 0;
+
+        const mystats = {
+            elo: record.elo ?? 100,
+            accuracy: calculatedAccuracy,
+            seasonCheckIns: calculatedCheckIns,
+            problemsSolved: calculatedProblemsSolved,
+            userId: record.userId,
+            rank: record.rank
+        };
+
+        return res.status(200).json({ mystats: mystats });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch mystats', details: err.message });
+    }
+}
+
+module.exports = {showallseasonid,getleaderboard,getmystats};

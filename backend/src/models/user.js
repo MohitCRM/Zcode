@@ -8,14 +8,10 @@ const userSchema = new Schema({
         required: true,
         trim: true,
         minLength: 3,
-        maxLength: 20
+        maxLength: 20,
+        required : true
     },
-    lastName: {
-        type: String,
-        trim: true,
-        minLength: 2,
-        maxLength: 20
-    },
+
     emailId: {
         type: String,
         required: true,

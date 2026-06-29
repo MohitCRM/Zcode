@@ -398,6 +398,17 @@ export default function Solution() {
 
                             {/* Structural Layout Badges */}
                             <div className="flex items-center gap-2 shrink-0">
+                                {sub.eloChange !== undefined && (
+                                  <span className={`font-mono text-[10px] font-bold uppercase rounded-md px-2.5 py-0.5 border ${
+                                    sub.eloChange > 0 
+                                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                                      : sub.eloChange < 0 
+                                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                                        : 'bg-slate-800/80 border-slate-700/30 text-slate-400 group-hover:bg-slate-800 group-hover:text-slate-300'
+                                  }`}>
+                                    {sub.eloChange > 0 ? `+${sub.eloChange}` : sub.eloChange}
+                                  </span>
+                                )}
                                 <span className={`font-mono text-[10px] font-bold uppercase rounded-md px-2.5 py-0.5 border transition-all ${
                                 isSelected
                                     ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400'

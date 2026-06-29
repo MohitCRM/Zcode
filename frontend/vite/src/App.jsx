@@ -13,6 +13,7 @@ import Announcements from "./pages/announcement/announcements";
 import ProblemDetail from "./pages/problemdetails/problemdetail";
 import Landingpage from "./pages/landingpage/landingpage";
 import Layout from "./pages/layout";
+import AdminRoute from "./adminroute";
 import { checkauth } from "./slicers/authslice";
 import { getcurrentseason } from "./slicers/seasonslice";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,7 +30,7 @@ import UpdateProblem from "./pages/admin/UpdateProblem";
 import UpdateSeason from "./pages/admin/UpdateSeason";
 
 export default function App() {
-  const { isauth, loading: authloading } = useSelector((state) => state.auth);
+  const { user, isauth, loading: authloading } = useSelector((state) => state.auth);
   const { loading: seasonloading } = useSelector((state) => state.season);
   const dispatch = useDispatch();
 
@@ -56,11 +57,11 @@ export default function App() {
 
       {/* Global Protected Standalone Routes (Outside general dashboard layout framework) */}
       <Route 
-        path="/solutions/:pid" 
+        path="/dashboard/solutions/:pid" 
         element={isauth ? <Solution /> : <Navigate to="/login" />} 
       />
       <Route
-        path="/problems/:problemId"
+        path="/dashboard/problems/:problemId"
         element={isauth ? <ProblemDetail /> : <Navigate to="/login" />}
       />
 

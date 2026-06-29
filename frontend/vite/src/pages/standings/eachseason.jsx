@@ -108,8 +108,8 @@ export default function ThisSeason() {
                                         <span className="font-mono text-sm text-slate-200 truncate font-semibold">
                                             {user.name}
                                         </span>
-                                        <span className={`text-[9px] font-black tracking-wider px-2 py-0.5 rounded border uppercase shrink-0 font-mono ${getBadgeStyles(user.rankTier?.name)}`}>
-                                            {user.rankTier?.name || "NEWBIE"}
+                                        <span className={`text-[9px] font-black tracking-wider px-2 py-0.5 rounded border uppercase shrink-0 font-mono ${getBadgeStyles(user.rankTier?.currentRank.name)}`}>
+                                            {user.rankTier?.currentRank.name || "NEWBIE"}
                                         </span>
                                     </div>
                                     

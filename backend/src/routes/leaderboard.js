@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const userauth = require('../middleware/usermiddleware');
-const {showallseasonid,getleaderboard} = require('../controllers/leaderboard');
+const phasemiddleware = require('../middleware/phaseguard');
+const {showallseasonid,getleaderboard, getmystats} = require('../controllers/leaderboard');
 
 router.get('/all', userauth , showallseasonid);
+
+router.get('/mystats/:seasonId', userauth, phasemiddleware(['Round1', 'Round2', 'Round1Solution', 'Round2Solution']), getmystats);
 
 router.get('/:sid',userauth,getleaderboard);
 

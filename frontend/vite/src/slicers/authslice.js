@@ -77,7 +77,7 @@ const authslicer = createSlice({
         })
         .addCase(registerUser.rejected, (state,action)=>{
             state.loading = false;
-            state.error = action.payload?.message;
+            state.error = action.payload;
             state.isauth = false;
             state.user = null;
         })
@@ -94,7 +94,7 @@ const authslicer = createSlice({
         })
         .addCase(loginUser.rejected, (state,action)=>{
             state.loading = false;
-            state.error = action.payload?.message || 'Some error has occured';
+            state.error = action.payload || 'Some error has occured';
             state.isauth = false;
             state.user = null;
         })
@@ -111,7 +111,7 @@ const authslicer = createSlice({
         })
         .addCase(checkauth.rejected, (state,action)=>{
             state.loading = false;
-            state.error = action.payload?.message || 'Some error has occured';
+            state.error = action.payload || 'Some error has occured';
             state.isauth = false;
             state.user = null;
         })
@@ -129,7 +129,7 @@ const authslicer = createSlice({
         })
         .addCase(logoutUser.rejected, (state,action)=>{
             state.loading = false;
-            state.error = action.payload?.message || 'Some error has occured';
+            state.error = action.payload || 'Some error has occured';
             state.isauth = false;
             state.user = null;
         })

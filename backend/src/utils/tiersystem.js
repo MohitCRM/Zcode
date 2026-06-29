@@ -2,58 +2,70 @@ const TIERS = [
     {
         name: "Newbie",
         minElo: 0,
-        maxElo: 1199,
-        color: "#9ca3af", 
-        badgeUrl: "/assets/badges/newbie.png"
+        maxElo: 399,
+        color: "#94a3b8", 
+        badgeUrl: "/assets/badges/newbie.png",
+        req: (elo, acc, probs) => elo >= 0
     },
     {
-        name: "Skilled",
-        minElo: 1200,
-        maxElo: 1499,
-        color: "#3b82f6", 
-        badgeUrl: "/assets/badges/skilled.png"
+        name: "Adept",
+        minElo: 400,
+        maxElo: 899,
+        color: "#10b981", 
+        badgeUrl: "/assets/badges/adept.png",
+        req: (elo, acc, probs) => elo >= 400
     },
     {
         name: "Expert",
-        minElo: 1500,
-        maxElo: 1799,
-        color: "#10b981",
-        badgeUrl: "/assets/badges/expert.png"
+        minElo: 900,
+        maxElo: 1499,
+        color: "#6366f1",
+        badgeUrl: "/assets/badges/expert.png",
+        req: (elo, acc, probs) => elo >= 900
     },
     {
         name: "Honoured One",
-        minElo: 1800,
-        maxElo: 1999,
-        color: "#8b5cf6", 
-        badgeUrl: "/assets/badges/honoured.png"
+        minElo: 1500,
+        maxElo: 2199,
+        color: "#a855f7", 
+        badgeUrl: "/assets/badges/honoured.png",
+        req: (elo, acc, probs) => elo >= 1500
     },
     {
         name: "Monarch",
-        minElo: 2000,
-        maxElo: 2399,
-        color: "#f59e0b", 
-        badgeUrl: "/assets/badges/monarch.png"
+        minElo: 2200,
+        maxElo: 3499,
+        color: "#d97706", 
+        badgeUrl: "/assets/badges/monarch.png",
+        req: (elo, acc, probs) => elo >= 2200 && acc > 85
     },
     {
         name: "God",
-        minElo: 2400,
+        minElo: 3500,
         maxElo: 9999, 
-        color: "#ef4444", 
-        badgeUrl: "/assets/badges/god.png"
+        color: "#06b6d4", 
+        badgeUrl: "/assets/badges/god.png",
+        req: (elo, acc, probs) => elo >= 3500 && acc > 95 && probs >= 35
     }
 ];
 
-const tierdata = (currelo) =>{
-    const currtierindex = TIERS.findIndex(
-        tier => currelo >= tier.minElo && currelo <= tier.maxElo
-    );
+const tierdata = (currelo, accuracy = 0, problemsSolved = 0) =>{
+    let currtierindex = 0;
+    
+    // Evaluate from highest to lowest rank
+    for (let i = TIERS.length - 1; i >= 0; i--) {
+        if (TIERS[i].req(currelo, accuracy, problemsSolved)) {
+            currtierindex = i;
+            break;
+        }
+    }
 
-    const currtier = currtierindex !== -1 ? TIERS[currtierindex] : TIERS[0];
+    const currtier = TIERS[currtierindex];
 
     let nexttier = null;
     let progresspercentage = 100;
 
-    if (currtierindex !== -1 && currtierindex < TIERS.length - 1) {
+    if (currtierindex < TIERS.length - 1) {
         nexttier = TIERS[currtierindex + 1];
         
         const tierRange = nexttier.minElo - currtier.minElo;
