@@ -56,9 +56,6 @@ export default function Solution() {
         >
           ← Back
         </button>
-        <div className="text-[10px] text-slate-600 font-mono tracking-widest uppercase">
-          Solution_Manifest: {pid}
-        </div>
       </header>
 
       {/* ================= MAIN DUAL PANEL FRAMEWORK ================= */}
@@ -278,7 +275,7 @@ export default function Solution() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
                         </svg>
                     </div>
-                    <span className="text-slate-500 italic text-xs block">No dynamic video tutorials deployed for this problem sequence yet.</span>
+                    <span className="text-slate-500 italic text-xs block">No video tutorials deployed for this problem yet.</span>
                     </div>
                 )}
                 </div>
@@ -308,7 +305,7 @@ export default function Solution() {
                         <div className="flex items-center justify-between">
                             <div className="text-xs font-bold font-mono text-indigo-400 uppercase tracking-wider flex items-center gap-2">
                             <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
-                            Solution Model alternative #{i + 1}
+                            Solution #{i + 1}
                             </div>
                             {sol.language && (
                             <span className="rounded-md bg-slate-800/80 px-2 py-0.5 text-[10px] font-semibold text-slate-400 border border-slate-700/30 uppercase tracking-wider">
@@ -328,7 +325,7 @@ export default function Solution() {
                 ) : (
                     /* Text Fallback State Box */
                     <div className="text-slate-500 italic text-xs py-4 bg-[#121826]/20 border border-slate-800/40 rounded-xl text-center">
-                    No verified editorial solution matrices released yet.
+                    No verified editorial solutions released yet.
                     </div>
                 )}
                 </div>
@@ -348,7 +345,7 @@ export default function Solution() {
                         </svg>
                     </div>
                     <h3 className="text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                        Isolated Account Log Submissions
+                        My Submissions
                     </h3>
                     </div>
 
@@ -387,7 +384,7 @@ export default function Solution() {
                                 
                                 <div className="truncate space-y-0.5">
                                 <div className={`text-sm font-medium transition-colors ${isSelected ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
-                                    Attempt Matrix #{index + 1}
+                                    Attempt #{index + 1}
                                 </div>
                                 <div className="text-[11px] font-mono text-slate-500 flex items-center gap-1.5">
                                     <span className="h-1.5 w-1.5 rounded-full bg-indigo-500/80"></span>
@@ -442,7 +439,7 @@ export default function Solution() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
                             </svg>
                         </div>
-                        <span className="text-slate-500 italic text-xs block">No personal compiled execution fragments identified inside this system layer.</span>
+                        <span className="text-slate-500 italic text-xs block">Make submissions to see my submissions here.</span>
                         </div>
                     )}
                     </div>
@@ -462,7 +459,7 @@ export default function Solution() {
                         </svg>
                     </div>
                     <h3 className="text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                        Synchronized Peer Instances
+                        Peer Submissions
                     </h3>
                     </div>
 
@@ -542,7 +539,7 @@ export default function Solution() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
                         </div>
-                        <span className="text-slate-500 italic text-xs block">No alternate system pipelines running active data layers.</span>
+                        <span className="text-slate-500 italic text-xs block">No submission are registered for this problem.</span>
                         </div>
                     )}
                     </div>
@@ -567,7 +564,7 @@ export default function Solution() {
                         : 'bg-slate-700'
                     }`}></span>
                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">
-                        {selectedSubmission ? `Code Review // ${selectedSubmission.author}` : "Implementation Inspection Sandbox"}
+                        {selectedSubmission ? `Code Review // ${selectedSubmission.author}` : "Submission Details"}
                     </span>
                     </div>
                     
@@ -619,10 +616,10 @@ export default function Solution() {
                         </div>
                         
                         <p className="text-slate-400 font-medium text-xs mb-1">
-                            Sandbox Uninitialized
+                            No submission selected
                         </p>
                         <p className="text-slate-500 italic text-[11px] leading-relaxed">
-                            Select an evaluation code block instance from the left arrays to initialize streaming inspection routines.
+                            Select an submissions either from my-submissions or peer-submissions to check its details.
                         </p>
                         </div>
                     </div>

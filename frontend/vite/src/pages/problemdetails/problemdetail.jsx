@@ -374,226 +374,226 @@ const ProblemPage = () => {
             )}
 
             {/* Tab: TEST CASES PANEL */}
-{activeRightTab === 'testcase' && (
-  <div className="flex-1 p-5 overflow-y-auto font-sans text-xs space-y-5">
-    <div className="flex items-center gap-2">
-      <svg className="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 3c-4.97 0-9 1.79-9 4s4.03 4 9 4 9-1.79 9-4-4.03-4-9-4zm0 6c-3.87 0-7-1.34-7-2s3.13-2 7-2 7 1.34 7 2-3.13 2-7 2zm0 3c-4.97 0-9 1.79-9 4s4.03 4 9 4 9-1.79 9-4-4.03-4-9-4zm0 6c-3.87 0-7-1.34-7-2s3.13-2 7-2 7 1.34 7 2-3.13 2-7 2z" />
-      </svg>
-      <h3 className="font-bold text-slate-400 text-[11px] uppercase tracking-wider">
-        Sandbox Run Output
-      </h3>
-    </div>
-
-    {runResult ? (
-      <div className="space-y-4">
-        {/* Execution Overview Alert Bar */}
-        <div className={`p-4 rounded-xl border flex items-center gap-3 ${
-          runResult.error || runResult.passed !== runResult.totalTestCases
-            ? 'bg-rose-500/5 border-rose-500/20 text-rose-400' 
-            : 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400'
-        }`}>
-          <span className="text-lg">
-            {runResult.error || runResult.passed !== runResult.totalTestCases ? "❌" : "✅"}
-          </span>
-          <div className="font-sans">
-            <h4 className="font-bold text-sm text-white">
-              {runResult.error 
-                ? "Execution Failed" 
-                : runResult.passed === runResult.totalTestCases 
-                  ? "All Test Cases Passed" 
-                  : "Some Test Cases Failed"}
-            </h4>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {runResult.error 
-                ? "An error occurred during runtime compilation." 
-                : `Passed ${runResult.passed} out of ${runResult.totalTestCases} execution instances.`}
-            </p>
-          </div>
-        </div>
-
-        {/* Individual Diagnostic Items */}
-        {runResult.error ? (
-          <div className="bg-[#0C1220] border border-slate-800/80 p-4 rounded-xl font-mono text-sm text-rose-400 whitespace-pre-wrap leading-relaxed">
-            {runResult.error}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {runResult.results?.map((tc, i) => {
-              const isSuccess = tc.status === 'Success';
-              return (
-                <div key={i} className="group relative bg-[#121826]/40 hover:bg-[#161F30]/60 border border-slate-800/60 rounded-xl p-4 transition-all duration-200">
-                  {/* Vertical Status Accent Tag Line */}
-                  <div className={`absolute left-0 top-3 bottom-3 w-1 rounded-r ${
-                    isSuccess ? 'bg-emerald-500' : 'bg-rose-500'
-                  }`} />
-                  
-                  <div className="pl-2 space-y-3">
-                    {/* Header line containing identity index counter & status badge */}
-                    <div className="flex items-center justify-between border-b border-slate-800/40 pb-2">
-                      <span className="font-bold text-slate-400 text-[11px] uppercase tracking-wider">
-                        Case {i + 1}
-                      </span>
-                      <span className={`font-mono text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                        isSuccess 
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                          : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                      }`}>
-                        {tc.status}
-                      </span>
-                    </div>
-
-                    {/* Aligned functional test criteria values layout block */}
-                    <div className="space-y-2.5 text-slate-300">
-                      <div className="grid grid-cols-[80px_1fr] items-start gap-2">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pt-1">Input</span>
-                        <div className="bg-[#070C15] border border-slate-900 rounded-lg px-3 py-1.5 font-mono text-xs text-slate-300">
-                          {tc.input}
-                        </div>
-                      </div>
-
-                      {tc.expected && (
-                        <div className="grid grid-cols-[80px_1fr] items-start gap-2">
-                          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pt-1">Expected</span>
-                          <div className="bg-[#070C15] border border-slate-900 rounded-lg px-3 py-1.5 font-mono text-xs text-slate-300">
-                            {tc.expected}
-                          </div>
-                        </div>
-                      )}
-
-                      {tc.actual && (
-                        <div className="grid grid-cols-[80px_1fr] items-start gap-2">
-                          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pt-1">Actual</span>
-                          <div className={`bg-[#070C15] border rounded-lg px-3 py-1.5 font-mono text-xs ${
-                            isSuccess ? 'border-slate-900 text-slate-300' : 'border-rose-500/20 text-rose-400'
-                          }`}>
-                            {tc.actual}
-                          </div>
-                        </div>
-                      )}
-
-                      {tc.stderr && (
-                        <div className="grid grid-cols-[80px_1fr] items-start gap-2 pt-1">
-                          <span className="text-[11px] font-bold text-rose-500 uppercase tracking-widest pt-1">Stderr</span>
-                          <div className="bg-rose-950/10 border border-rose-500/20 rounded-lg px-3 py-2 font-mono text-xs text-rose-400 whitespace-pre-wrap">
-                            {tc.stderr}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+            {activeRightTab === 'testcase' && (
+              <div className="flex-1 p-5 overflow-y-auto font-sans text-xs space-y-5">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 3c-4.97 0-9 1.79-9 4s4.03 4 9 4 9-1.79 9-4-4.03-4-9-4zm0 6c-3.87 0-7-1.34-7-2s3.13-2 7-2 7 1.34 7 2-3.13 2-7 2zm0 3c-4.97 0-9 1.79-9 4s4.03 4 9 4 9-1.79 9-4-4.03-4-9-4zm0 6c-3.87 0-7-1.34-7-2s3.13-2 7-2 7 1.34 7 2-3.13 2-7 2z" />
+                  </svg>
+                  <h3 className="font-bold text-slate-400 text-[11px] uppercase tracking-wider">
+                    Sandbox Run Output
+                  </h3>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    ) : (
-      <div className="bg-[#121826]/20 border border-slate-800/40 rounded-xl p-8 text-center text-slate-500 italic">
-        No log execution matrices found. Initialize compile routines by hitting the "Run" trigger framework.
-      </div>
-    )}
-  </div>
-)}
 
-            {/* Tab: SUBMISSION EVALUATION MATRIX */}
-            {/* Tab: SUBMISSION EVALUATION MATRIX */}
-{activeRightTab === 'result' && (
-  <div className="flex-1 p-5 overflow-y-auto font-sans text-xs space-y-5">
-    {/* Section Header */}
-    <div className="flex items-center gap-2">
-      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <h3 className="font-bold text-slate-400 text-[11px] uppercase tracking-wider">
-        Final Evaluation Manifest
-      </h3>
-    </div>
-
-    {submitResult ? (
-      <div className="space-y-4">
-        {/* Dynamic Theme Banner Based on Backend Status */}
-        {(() => {
-          const isAccepted = submitResult.status === 'Accepted';
-          const isPending = submitResult.status === 'Pending';
-          
-          let bannerStyles = 'bg-rose-500/5 border-rose-500/20 text-rose-400';
-          let statusIcon = '❌';
-          
-          if (isAccepted) {
-            bannerStyles = 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400';
-            statusIcon = '🎉';
-          } else if (isPending) {
-            bannerStyles = 'bg-amber-500/5 border-amber-500/20 text-amber-400';
-            statusIcon = '⏳';
-          }
-
-          return (
-            <div className={`p-5 rounded-xl border flex items-start gap-4 shadow-lg ${bannerStyles}`}>
-              <span className="text-2xl mt-0.5">{statusIcon}</span>
-              <div className="flex-1 space-y-1">
-                <h4 className="text-base font-black text-white tracking-tight">
-                  Verification Complete: {submitResult.status}
-                </h4>
-                <p className="text-slate-400 text-xs font-medium max-w-md">
-                  {isAccepted 
-                    ? "All secure isolated execution pipelines and hidden system tests have cleared successfully."
-                    : "The testing infrastructure flagged issues processing this execution block pattern."}
-                </p>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Diagnostic Metrics Matrix Panel */}
-                <div className="bg-[#121826]/40 border border-slate-800/60 rounded-xl p-5 space-y-4 shadow-xl">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800/60 pb-2">
-                    Execution Summary Statistics
-                  </div>
-
-                  <div className="space-y-3.5 font-sans text-sm text-slate-300">
-                    {/* Test Case Breakdown Metric */}
-                    <div className="flex justify-between items-center border-b border-slate-800/40 pb-2.5">
-                      <span className="text-slate-400 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
-                        🎯 Verification Checks
+                {runResult ? (
+                  <div className="space-y-4">
+                    {/* Execution Overview Alert Bar */}
+                    <div className={`p-4 rounded-xl border flex items-center gap-3 ${
+                      runResult.error || runResult.passed !== runResult.totalTestCases
+                        ? 'bg-rose-500/5 border-rose-500/20 text-rose-400' 
+                        : 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400'
+                    }`}>
+                      <span className="text-lg">
+                        {runResult.error || runResult.passed !== runResult.totalTestCases ? "❌" : "✅"}
                       </span>
-                      <span className="font-mono font-bold text-slate-100 bg-[#161F30] border border-slate-800/60 px-2 py-0.5 rounded text-xs">
-                        {submitResult.passedTestCases} / {submitResult.totalTestCases} Passed
-                      </span>
-                    </div>
-
-                    {/* Live Elo Change Event Metrics Badge */}
-                    <div className="flex justify-between items-center pt-0.5">
-                      <span className="text-slate-400 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
-                        ⚡ Rating Impact
-                      </span>
-                      <div>
-                        {submitResult.eloChange > 0 ? (
-                          <span className="font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded text-xs">
-                            +{submitResult.eloChange} Elo Rating Bonus
-                          </span>
-                        ) : submitResult.eloChange < 0 ? (
-                          <span className="font-mono font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2.5 py-0.5 rounded text-xs">
-                            {submitResult.eloChange} Elo Penalty Deducted
-                          </span>
-                        ) : (
-                          <span className="font-mono font-bold text-slate-400 bg-slate-800/60 border border-slate-700/40 px-2.5 py-0.5 rounded text-xs">
-                            0 Elo (Already Solved)
-                          </span>
-                        )}
+                      <div className="font-sans">
+                        <h4 className="font-bold text-sm text-white">
+                          {runResult.error 
+                            ? "Execution Failed" 
+                            : runResult.passed === runResult.totalTestCases 
+                              ? "All Test Cases Passed" 
+                              : "Some Test Cases Failed"}
+                        </h4>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {runResult.error 
+                            ? "An error occurred during runtime compilation." 
+                            : `Passed ${runResult.passed} out of ${runResult.totalTestCases} execution instances.`}
+                        </p>
                       </div>
                     </div>
+
+                    {/* Individual Diagnostic Items */}
+                    {runResult.error ? (
+                      <div className="bg-[#0C1220] border border-slate-800/80 p-4 rounded-xl font-mono text-sm text-rose-400 whitespace-pre-wrap leading-relaxed">
+                        {runResult.error}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {runResult.results?.map((tc, i) => {
+                          const isSuccess = tc.status === 'Success';
+                          return (
+                            <div key={i} className="group relative bg-[#121826]/40 hover:bg-[#161F30]/60 border border-slate-800/60 rounded-xl p-4 transition-all duration-200">
+                              {/* Vertical Status Accent Tag Line */}
+                              <div className={`absolute left-0 top-3 bottom-3 w-1 rounded-r ${
+                                isSuccess ? 'bg-emerald-500' : 'bg-rose-500'
+                              }`} />
+                              
+                              <div className="pl-2 space-y-3">
+                                {/* Header line containing identity index counter & status badge */}
+                                <div className="flex items-center justify-between border-b border-slate-800/40 pb-2">
+                                  <span className="font-bold text-slate-400 text-[11px] uppercase tracking-wider">
+                                    Case {i + 1}
+                                  </span>
+                                  <span className={`font-mono text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                                    isSuccess 
+                                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                                      : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                  }`}>
+                                    {tc.status}
+                                  </span>
+                                </div>
+
+                                {/* Aligned functional test criteria values layout block */}
+                                <div className="space-y-2.5 text-slate-300">
+                                  <div className="grid grid-cols-[80px_1fr] items-start gap-2">
+                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pt-1">Input</span>
+                                    <div className="bg-[#070C15] border border-slate-900 rounded-lg px-3 py-1.5 font-mono text-xs text-slate-300">
+                                      {tc.input}
+                                    </div>
+                                  </div>
+
+                                  {tc.expected && (
+                                    <div className="grid grid-cols-[80px_1fr] items-start gap-2">
+                                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pt-1">Expected</span>
+                                      <div className="bg-[#070C15] border border-slate-900 rounded-lg px-3 py-1.5 font-mono text-xs text-slate-300">
+                                        {tc.expected}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {tc.actual && (
+                                    <div className="grid grid-cols-[80px_1fr] items-start gap-2">
+                                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pt-1">Actual</span>
+                                      <div className={`bg-[#070C15] border rounded-lg px-3 py-1.5 font-mono text-xs ${
+                                        isSuccess ? 'border-slate-900 text-slate-300' : 'border-rose-500/20 text-rose-400'
+                                      }`}>
+                                        {tc.actual}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {tc.stderr && (
+                                    <div className="grid grid-cols-[80px_1fr] items-start gap-2 pt-1">
+                                      <span className="text-[11px] font-bold text-rose-500 uppercase tracking-widest pt-1">Stderr</span>
+                                      <div className="bg-rose-950/10 border border-rose-500/20 rounded-lg px-3 py-2 font-mono text-xs text-rose-400 whitespace-pre-wrap">
+                                        {tc.stderr}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-[#121826]/20 border border-slate-800/40 rounded-xl p-8 text-center text-slate-500 italic">
-                Awaiting submission evaluation routines. Hit "Submit" to run comprehensive assessment algorithms against hidden matrices.
+                ) : (
+                  <div className="bg-[#121826]/20 border border-slate-800/40 rounded-xl p-8 text-center text-slate-500 italic">
+                    Hit run to see the results of visible test cases
+                  </div>
+                )}
               </div>
             )}
+
+            {/* Tab: SUBMISSION EVALUATION MATRIX */}
+            {/* Tab: SUBMISSION EVALUATION MATRIX */}
+      {activeRightTab === 'result' && (
+        <div className="flex-1 p-5 overflow-y-auto font-sans text-xs space-y-5">
+          {/* Section Header */}
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="font-bold text-slate-400 text-[11px] uppercase tracking-wider">
+              Final Evaluation Details
+            </h3>
           </div>
-        )}
-          </div>
+
+          {submitResult ? (
+            <div className="space-y-4">
+              {/* Dynamic Theme Banner Based on Backend Status */}
+              {(() => {
+                const isAccepted = submitResult.status === 'Accepted';
+                const isPending = submitResult.status === 'Pending';
+                
+                let bannerStyles = 'bg-rose-500/5 border-rose-500/20 text-rose-400';
+                let statusIcon = '❌';
+                
+                if (isAccepted) {
+                  bannerStyles = 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400';
+                  statusIcon = '🎉';
+                } else if (isPending) {
+                  bannerStyles = 'bg-amber-500/5 border-amber-500/20 text-amber-400';
+                  statusIcon = '⏳';
+                }
+
+                return (
+                  <div className={`p-5 rounded-xl border flex items-start gap-4 shadow-lg ${bannerStyles}`}>
+                    <span className="text-2xl mt-0.5">{statusIcon}</span>
+                    <div className="flex-1 space-y-1">
+                      <h4 className="text-base font-black text-white tracking-tight">
+                        Verification Complete: {submitResult.status}
+                      </h4>
+                      <p className="text-slate-400 text-xs font-medium max-w-md">
+                        {isAccepted 
+                          ? "All secure isolated execution pipelines and hidden system tests have cleared successfully."
+                          : "The testing infrastructure flagged issues processing this execution block pattern."}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Diagnostic Metrics Matrix Panel */}
+                      <div className="bg-[#121826]/40 border border-slate-800/60 rounded-xl p-5 space-y-4 shadow-xl">
+                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800/60 pb-2">
+                          Execution Summary Statistics
+                        </div>
+
+                        <div className="space-y-3.5 font-sans text-sm text-slate-300">
+                          {/* Test Case Breakdown Metric */}
+                          <div className="flex justify-between items-center border-b border-slate-800/40 pb-2.5">
+                            <span className="text-slate-400 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+                              🎯 Verification Checks
+                            </span>
+                            <span className="font-mono font-bold text-slate-100 bg-[#161F30] border border-slate-800/60 px-2 py-0.5 rounded text-xs">
+                              {submitResult.passedTestCases} / {submitResult.totalTestCases} Passed
+                            </span>
+                          </div>
+
+                          {/* Live Elo Change Event Metrics Badge */}
+                          <div className="flex justify-between items-center pt-0.5">
+                            <span className="text-slate-400 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+                              ⚡ Rating Impact
+                            </span>
+                            <div>
+                              {submitResult.eloChange > 0 ? (
+                                <span className="font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded text-xs">
+                                  +{submitResult.eloChange} Elo Rating Bonus
+                                </span>
+                              ) : submitResult.eloChange < 0 ? (
+                                <span className="font-mono font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2.5 py-0.5 rounded text-xs">
+                                  {submitResult.eloChange} Elo Penalty Deducted
+                                </span>
+                              ) : (
+                                <span className="font-mono font-bold text-slate-400 bg-slate-800/60 border border-slate-700/40 px-2.5 py-0.5 rounded text-xs">
+                                  0 Elo (Already Solved)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-[#121826]/20 border border-slate-800/40 rounded-xl p-8 text-center text-slate-500 italic">
+                      Hit submit to know the result here
+                    </div>
+                  )}
+                </div>
+              )}
+                </div>
 
           {/* Bottom Action Footer Bar */}
           <div className="bg-[#0C1220] border-t border-slate-800/80 px-6 py-3.5 flex items-center justify-between shrink-0">

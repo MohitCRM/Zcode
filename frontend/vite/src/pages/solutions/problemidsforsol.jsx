@@ -4,6 +4,7 @@ import axiosClient from '../../utils/axiosClient';
 
 export default function Problemidsforsol() {
     const [problems, setProblems] = useState([]);
+    const [problemsSolved, setProblemsSolved] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activePhase, setActivePhase] = useState("");
     const [currentSeasonDay, setCurrentSeasonDay] = useState(null);
@@ -24,6 +25,7 @@ export default function Problemidsforsol() {
             try {
                 const res = await axiosClient.get("/solution/all");
                 setProblems(res.data.problems);
+                setProblemsSolved(res.data.problemsSolved || []);
                 setActivePhase(res.data.activePhase);
                 setCurrentSeasonDay(res.data.currentSeasonDay);
                 setErrorState(null);
@@ -83,7 +85,9 @@ export default function Problemidsforsol() {
 
                     {/* Problem Rows */}
                     <div className="flex flex-col gap-y-2">
-                        {problems.map((prob, index) => (
+                        {problems.map((prob, index) => {
+                            const isSolved = problemsSolved.some(s => s._id === prob._id);
+                            return (
                             <div 
                                 key={prob._id}
                                 onClick={() => navigate(`/dashboard/solutions/${prob._id}`)}
@@ -92,6 +96,9 @@ export default function Problemidsforsol() {
                             >
                                 <div className="font-medium text-slate-300 group-hover:text-white truncate">
                                     <span className="text-slate-600 font-normal mr-1.5">{index + 1}.</span> {prob.title}
+                                    {isSolved && (
+                                        <span className="ml-2 text-emerald-500">✓</span>
+                                    )}
                                 </div>
                                 
                                 <div className="flex flex-col gap-1">
@@ -115,7 +122,8 @@ export default function Problemidsforsol() {
                                     ))}
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
                 )}

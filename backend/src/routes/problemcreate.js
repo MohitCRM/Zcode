@@ -11,9 +11,14 @@ const {
     problemdelete, 
     solvedproblems,
     sumbittedproblem,
-    adminfetchallproblems
+    adminfetchallproblems,
+    guestfetchallproblmes
 } = require('../controllers/userproblem');
 
+//guest routes
+router.get('/guestfetchallproblems',usermiddleware,guestfetchallproblmes); 
+
+//user routes
 router.get('/getproblems', usermiddleware, phasemiddleware(['Round1', 'Round2']), allproblemfetch);
 router.get('/profile/solvedproblems', usermiddleware, solvedproblems);
 

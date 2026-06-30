@@ -130,8 +130,8 @@ const submitcode = async (req, res) => {
             const updateQuery = {
                 $inc: { 
                     elo: eloChange,
-                    acceptedSubmissionsCount: isAccepted ? 1 : 0,
-                    wrongSubmissionsCount: isAccepted ? 0 : 1 
+                    acceptedSubmissionsCount: alreadySolved ? 0 : (isAccepted ? 1 : 0),
+                    wrongSubmissionsCount: alreadySolved ? 0 : (isAccepted ? 0 : 1) 
                 }
             };
 

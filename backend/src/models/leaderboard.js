@@ -55,7 +55,7 @@ leaderboardSchema.virtual("tierDetails").get(function() {
 });
 
 leaderboardSchema.pre('save', function(next) {
-    if (this.isModified('elo')) {
+    if (this.isModified('elo') || this.isModified('acceptedSubmissionsCount') || this.isModified('wrongSubmissionsCount')) {
         const totalSubmissions = this.acceptedSubmissionsCount + this.wrongSubmissionsCount;
         const accuracy = totalSubmissions > 0 ? (this.acceptedSubmissionsCount / totalSubmissions) * 100 : 0;
         const problemsSolvedCount = this.problemsSolved ? this.problemsSolved.length : 0;

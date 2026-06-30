@@ -7,6 +7,57 @@ const { Sandbox } = require('e2b');
 const path = require('path');
 const fs = require('fs');
 
+const guestfetchallproblmes = async (req,res)=>{
+        try {
+        const userId = req.result._id;
+        const currentSeason = req.season;
+        let page = Math.max(1, parseInt(req.query.page) || 1);
+        let limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+        const skipoffset = (page - 1) * limit;
+
+        const totalproblems = await Problem.countDocuments({});
+        const totalpages = Math.ceil(totalproblems / limit);
+
+        const problems = await Problem.find({})
+            .sort({ seasonId: -1, releaseDay: -1 }) 
+            .skip(skipoffset)
+            .limit(limit);
+
+        
+        const userSeasonalStats = await Leaderboard.findOne({
+        userId: userId,
+        seasonId: currentSeason.seasonId
+        });
+
+        const solvedIds = userSeasonalStats && userSeasonalStats.problemsSolved 
+            ? userSeasonalStats.problemsSolved.map(id => id.toString()) 
+            : [];
+
+        const problemsSolved = problems.filter(problem => 
+            solvedIds.includes(problem._id.toString())
+        );
+
+        res.status(200).json({
+            success: true,
+            pagination: {
+                totalproblems,
+                totalpages,
+                currentPage: page,
+                limit: limit,
+                hasNextPage: page < totalpages,
+                hasPrevPage: page > 1
+            },
+            problems: problems,
+            problemsSolved: problemsSolved
+        });
+    } catch (err) {
+        res.status(500).json({ 
+            success: false,
+            message: "Failed to fetch problems",
+            details: err.message 
+        });
+    }
+}
 const adminfetchallproblems = async (req, res) => {
     try {
         let page = Math.max(1, parseInt(req.query.page) || 1);
@@ -361,5 +412,6 @@ module.exports = {
     problemdelete, 
     solvedproblems, 
     sumbittedproblem ,
-    adminfetchallproblems
+    adminfetchallproblems,
+    guestfetchallproblmes
 };

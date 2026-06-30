@@ -18,6 +18,7 @@ const userSchema = new Schema({
         trim: true,
         lowercase: true,
         immutable: true,
+        sparse : true,
         unique: true
     },
     age: {
@@ -27,12 +28,11 @@ const userSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
+        enum: ['user', 'admin','guest'],
         default: 'user'
     },
     password: {
         type: String,
-        required: true
     },
     problemsolved: [{
         type: Schema.Types.ObjectId,

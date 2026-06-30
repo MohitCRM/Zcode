@@ -1,6 +1,7 @@
 const Leaderboard = require('../models/leaderboard');
 const Season = require('../models/season');
 const mongoose = require('mongoose');
+const { validateGuestStats } = require('../utils/guestUtils');
 
 const showallseasonid = async (req,res)=>{
     try{
@@ -110,7 +111,9 @@ const getmystats = async (req, res) => {
                     elo: 100, 
                     accuracy: 100,
                     seasonCheckIns: 0,
-                    problemsSolved: 0
+                    problemsSolved: 0,
+                    acceptedSubmissionsCount: 0,
+                    wrongSubmissionsCount: 0
                 }
             });
         }
@@ -129,6 +132,8 @@ const getmystats = async (req, res) => {
             accuracy: calculatedAccuracy,
             seasonCheckIns: calculatedCheckIns,
             problemsSolved: calculatedProblemsSolved,
+            acceptedSubmissionsCount: record.acceptedSubmissionsCount || 0,
+            wrongSubmissionsCount: record.wrongSubmissionsCount || 0,
             userId: record.userId,
             rank: record.rank
         };
@@ -138,5 +143,70 @@ const getmystats = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch mystats', details: err.message });
     }
 }
+const manipulateGuestStats = async (req, res) => {
+    try {
+        const userId = req.result._id;
 
-module.exports = {showallseasonid,getleaderboard,getmystats};
+        if (req.result.role !== 'guest') {
+            return res.status(403).json({ error: "Only guest users can manipulate stats directly." });
+        }
+
+        const currentSeason = req.season; 
+        if (!currentSeason) {
+            return res.status(500).json({ error: "Tournament context missing." });
+        }
+
+        const { elo, acceptedSubmissionsCount, wrongSubmissionsCount } = req.body;
+
+        // 1. Validate inputs using utility function
+        try {
+            validateGuestStats(elo, acceptedSubmissionsCount, wrongSubmissionsCount);
+        } catch (validationError) {
+            return res.status(400).json({ error: validationError.message });
+        }
+
+        // 2. Prepare update query
+        const updateQuery = {};
+        if (elo !== undefined) updateQuery.elo = elo;
+        if (acceptedSubmissionsCount !== undefined) updateQuery.acceptedSubmissionsCount = acceptedSubmissionsCount;
+        if (wrongSubmissionsCount !== undefined) updateQuery.wrongSubmissionsCount = wrongSubmissionsCount;
+
+        // 3. Find and update the leaderboard entry for the guest
+        // Ensure to trigger 'save' middleware if we were using .save(), but with findOneAndUpdate 
+        // the tier details are re-calculated. Let's do findOne, modify, and save to trigger the pre-save hook.
+        
+        let stat = await Leaderboard.findOne({ userId: userId, seasonId: currentSeason.seasonId });
+        
+        if (!stat) {
+            // Create one if they don't have stats yet
+            stat = new Leaderboard({
+                userId: userId,
+                seasonId: currentSeason.seasonId,
+                elo: elo ?? 100,
+                acceptedSubmissionsCount: acceptedSubmissionsCount ?? 0,
+                wrongSubmissionsCount: wrongSubmissionsCount ?? 0
+            });
+        } else {
+            if (elo !== undefined) stat.elo = elo;
+            if (acceptedSubmissionsCount !== undefined) stat.acceptedSubmissionsCount = acceptedSubmissionsCount;
+            if (wrongSubmissionsCount !== undefined) stat.wrongSubmissionsCount = wrongSubmissionsCount;
+        }
+
+        await stat.save(); // This triggers the pre-save hook to update the rank string based on new Elo
+
+        return res.status(200).json({
+            message: "Stats successfully manipulated.",
+            mystats: {
+                elo: stat.elo,
+                acceptedSubmissionsCount: stat.acceptedSubmissionsCount,
+                wrongSubmissionsCount: stat.wrongSubmissionsCount,
+                rank: stat.rank
+            }
+        });
+
+    } catch (err) {
+        return res.status(500).json({ error: "Failed to manipulate stats", details: err.message });
+    }
+};
+
+module.exports = { showallseasonid, getleaderboard, getmystats, manipulateGuestStats };
