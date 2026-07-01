@@ -12,7 +12,7 @@ router.post('/login',login);
 
 router.post('/logout',usermiddleware, logout);
 
-router.post('/guest/register', guestregister);
+router.post('/guest/login', guestregister);
 
 router.delete('/profile/delete',usermiddleware,deleteprofile);
 

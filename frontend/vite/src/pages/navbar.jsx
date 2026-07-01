@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logoutUser } from "../slicers/authslice";
+import { logoutUser,ExitUser } from "../slicers/authslice";
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -21,6 +21,15 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleExit = async ()=>{
+    try{
+      await dispatch(ExitUser()).unwrap();
+      navigate('/');
+    }catch(err)
+    {
+      console.error("Exit failed: ",err);
+    }
+  }
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
@@ -33,7 +42,7 @@ const Navbar = () => {
   return (
     <header className="border-b border-slate-800/80 bg-[#0C1220]/90 backdrop-blur-md sticky top-0 z-50 select-none">
       <div className="mx-auto flex max-w-7xl h-16 items-center justify-between px-6">
-        
+
         {/* Logo Section - Points directly to layout base root */}
         <div className="flex items-center gap-2.5 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 transition-transform group-hover:scale-105">
@@ -56,7 +65,7 @@ const Navbar = () => {
 
         {/* User Account Menu Trigger */}
         <div className="relative" ref={dropdownRef}>
-          <button 
+          <button
             onClick={() => setIsOpen(!isOpen)}
             className="flex items-center gap-2.5 rounded-xl py-1.5 px-3 bg-[#121826] border border-slate-800/60 hover:border-slate-700 hover:bg-[#161F30] transition-all focus:outline-none"
           >
@@ -76,18 +85,32 @@ const Navbar = () => {
               <Link to="/dashboard/profile" className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-[#161F30] transition-colors">
                 My Profile
               </Link>
-                {user?.role === 'admin' && (
-              <Link to="/dashboard/admin" className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-[#161F30] transition-colors">
-                Admin Panel
-              </Link>
-            )}
+              {user?.role === 'admin' && (
+                <Link to="/dashboard/admin" className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-[#161F30] transition-colors">
+                  Admin Panel
+                </Link>
+              )}
+              {user?.role === 'guest' && (
+                <Link to="/dashboard/guestpowers" className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-[#161F30] transition-colors">
+                  Guest Panel
+                </Link>
+              )}
               <div className="my-1 border-t border-slate-800"></div>
-              <button 
-                onClick={handleLogout} 
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 font-bold text-rose-400 hover:bg-rose-950/20 transition-colors text-left"
-              >
-                Log out
-              </button>
+              {user?.role === 'guest' ? (
+                <button
+                  onClick={handleExit}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 font-bold text-amber-400 hover:bg-amber-950/20 transition-colors text-left"
+                >
+                  Exit Guest Mode
+                </button>
+              ) : (
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 font-bold text-rose-400 hover:bg-rose-950/20 transition-colors text-left"
+                >
+                  Log out
+                </button>
+              )}
             </div>
           )}
         </div>

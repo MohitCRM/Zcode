@@ -34,13 +34,16 @@ const submitcode = async (req, res) => {
         const problem = await Problem.findById(pid).lean();
         if (!problem) return res.status(404).json({ error: "Problem not found" });
 
+        const isGuest = user.role === 'guest';
+        const targetSeasonId = isGuest ? 7 : (req.season?.seasonId ?? 1); // fallback to 1 if req.season is missing
+
         const { timeLimit = 1.0 } = problem.constraints || {};
         const jsonLib = fs.readFileSync(path.join(__dirname, "../../libs/json.hpp"), 'utf-8');
 
         const [pendingSubmission] = await Submission.create([{
             userId: userid,
             problemId: pid,
-            seasonId: req.season?.seasonId,
+            seasonId: targetSeasonId,
             code,
             language,
             status: "Pending"
@@ -141,7 +144,7 @@ const submitcode = async (req, res) => {
             }
 
             const updatedLB = await Leaderboard.findOneAndUpdate(
-                { userId: userid, seasonId: req.season?.seasonId ?? CURRENT_SEASON_ID },
+                { userId: userid, seasonId: targetSeasonId },
                 updateQuery,
                 { session, upsert: true, returnDocument: 'after' }
             );

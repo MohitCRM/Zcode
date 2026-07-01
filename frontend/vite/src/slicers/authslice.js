@@ -22,6 +22,32 @@ export const registerUser = createAsyncThunk(
     }
 );
 
+export const guestlogin = createAsyncThunk(
+    'auth/guestlogin',
+    async (userdata,{rejectWithValue})=>{
+        try{
+            const response = await axiosClient.post('/user/guest/login',userdata)
+            return response.data.user;
+        }catch(err)
+        {
+            return rejectWithValue(getErrorMessage(err));
+        }
+    }
+)
+
+export const ExitUser = createAsyncThunk(
+    'auth/ExitUser',
+    async (_, {rejectWithValue}) =>{
+        try{
+            await axiosClient.post('user/guest/exit')
+            return null;
+        }catch(err)
+        {
+            return rejectWithValue(getErrorMessage(err));
+        }
+    }
+)
+
 export const loginUser = createAsyncThunk(
     'auth/login',
     async (credentials,{rejectWithValue})=>{
@@ -99,6 +125,22 @@ const authslicer = createSlice({
             state.user = null;
         })
 
+        //guestlogin
+        .addCase(guestlogin.pending, (state)=>{
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(guestlogin.fulfilled , (state,action)=>{
+            state.loading = false;
+            state.isauth = !!action.payload;
+            state.user = action.payload;
+        })
+        .addCase(guestlogin.rejected, (state,action)=>{
+            state.loading = false;
+            state.error = action.payload || 'Some error has occured';
+            state.isauth = false;
+            state.user = null;
+        })
         //checkauth cases
          .addCase(checkauth.pending, (state)=>{
             state.loading = true;

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../../utils/axiosClient";
 import { useNavigate } from "react-router";
+import { useSelector } from "react-redux";
+import GuestProblems from "./GuestProblems";
 
 export default function Problems() {
   const [data, setdata] = useState({ 
@@ -12,6 +14,11 @@ export default function Problems() {
   });
   const [errorState, setErrorState] = useState(null);
   const navigate = useNavigate();
+  const { user } = useSelector(state => state.auth);
+
+  if (user?.role === 'guest') {
+    return <GuestProblems />;
+  }
 
   useEffect(() => {
     const fetchProblems = async () => {

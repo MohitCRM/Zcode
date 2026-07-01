@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
+import { useSelector } from 'react-redux';
 import axiosClient from '../../utils/axiosClient';
 import Editor from '@monaco-editor/react';
 
@@ -17,14 +18,19 @@ export default function Solution() {
   const [problemData, setProblemData] = useState(null);
   const [activeLeftTab, setActiveLeftTab] = useState('description');
   const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const { user } = useSelector(state => state.auth);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
+        const isGuest = user?.role === 'guest';
+        const solEndpoint = isGuest ? `/solution/guest/${pid}` : `/solution/${pid}`;
+        const probEndpoint = isGuest ? `/problem/guestgetproblembyid/${pid}` : `/problem/getproblembyid/${pid}`;
+        
         const [solRes, probRes] = await Promise.all([
-          axiosClient.get(`/solution/${pid}`),
-          axiosClient.get(`/problem/getproblembyid/${pid}`)
+          axiosClient.get(solEndpoint),
+          axiosClient.get(probEndpoint)
         ]);
         setSolutionData(solRes.data.solutionData);
         setProblemData(probRes.data.problem);
@@ -35,7 +41,7 @@ export default function Solution() {
       }
     }
     fetchData();
-  }, [pid]);
+  }, [pid, user?.role]);
 
   if (loading || !problemData || !solutionData) {
     return (

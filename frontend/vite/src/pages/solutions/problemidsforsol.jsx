@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import axiosClient from '../../utils/axiosClient';
+import GuestSolutions from './GuestSolutions';
 
 export default function Problemidsforsol() {
     const [problems, setProblems] = useState([]);
@@ -10,6 +12,11 @@ export default function Problemidsforsol() {
     const [currentSeasonDay, setCurrentSeasonDay] = useState(null);
     const [errorState, setErrorState] = useState(null);
     const navigate = useNavigate();
+    const { user } = useSelector(state => state.auth);
+
+    if (user?.role === 'guest') {
+        return <GuestSolutions />;
+    }
 
     // Helper for difficulty styling
     const getDifficultyStyle = (difficulty) => {

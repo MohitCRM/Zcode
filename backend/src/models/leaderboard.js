@@ -17,7 +17,7 @@ const leaderboardSchema = new Schema({
     elo: {
         type: Number,
         required: true,
-        default: 100 
+        default: 100
     },
     rank: {
         type: String,
@@ -39,32 +39,31 @@ const leaderboardSchema = new Schema({
             ref: "problem"
         }
     ]
-}, { 
-    timestamps: true, 
+}, {
+    timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
 
 leaderboardSchema.index({ userId: 1, seasonId: 1 }, { unique: true });
 
-leaderboardSchema.virtual("tierDetails").get(function() {
+leaderboardSchema.virtual("tierDetails").get(function () {
     const totalSubmissions = this.acceptedSubmissionsCount + this.wrongSubmissionsCount;
     const accuracy = totalSubmissions > 0 ? (this.acceptedSubmissionsCount / totalSubmissions) * 100 : 0;
     const problemsSolvedCount = this.problemsSolved ? this.problemsSolved.length : 0;
     return tierdata(this.elo, accuracy, problemsSolvedCount);
 });
 
-leaderboardSchema.pre('save', function(next) {
+leaderboardSchema.pre('save', function () {
     if (this.isModified('elo') || this.isModified('acceptedSubmissionsCount') || this.isModified('wrongSubmissionsCount')) {
         const totalSubmissions = this.acceptedSubmissionsCount + this.wrongSubmissionsCount;
         const accuracy = totalSubmissions > 0 ? (this.acceptedSubmissionsCount / totalSubmissions) * 100 : 0;
         const problemsSolvedCount = this.problemsSolved ? this.problemsSolved.length : 0;
         const details = tierdata(this.elo, accuracy, problemsSolvedCount);
         if (details && details.currentRank) {
-            this.rank = details.currentRank.name; 
+            this.rank = details.currentRank.name;
         }
     }
-    next();
 });
 
 const Leaderboard = mongoose.model('seasonalstats', leaderboardSchema);

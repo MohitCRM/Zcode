@@ -1,13 +1,20 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../../utils/axiosClient";
 import { useNavigate } from "react-router";
-
+import { useSelector } from "react-redux";
 
 export default function Standings() {
     const [seasons, setSeasons] = useState([]);
     const navigate = useNavigate();
+    const { user } = useSelector(state => state.auth);
+    const { data: currentSeason } = useSelector(state => state.season);
 
     useEffect(() => {
+
+        if (user?.role === 'guest' && currentSeason?._id) {
+            navigate(`/dashboard/standings/${currentSeason._id}`, { replace: true });
+            return;
+        }
         const fetchSeasons = async () => {
             try {
                 // Ensure your backend endpoint returns the seasons array
@@ -22,13 +29,13 @@ export default function Standings() {
     }, []);
 
     // Add this check inside your return statement, before the main div
-            if (seasons.length === 0) {
-                return (
-                    <div className="min-h-screen bg-[#090D16] flex items-center justify-center text-slate-500">
-                        Loading seasons...
-                    </div>
-                );
-            }
+    if (seasons.length === 0) {
+        return (
+            <div className="min-h-screen bg-[#090D16] flex items-center justify-center text-slate-500">
+                Loading seasons...
+            </div>
+        );
+    }
 
     return (
         // Adding min-h-screen and the dark background color here ensures 
@@ -52,12 +59,12 @@ export default function Standings() {
 
                     {/* Season Rows */}
                     {seasons.map((season) => (
-                        <div 
+                        <div
                             key={season.seasonId}
                             className="group bg-[#121826]/70 backdrop-blur-sm rounded-xl border border-slate-800/60 p-5 grid grid-cols-[1fr_200px_200px] gap-4 items-center shadow-lg hover:border-indigo-500/40 hover:bg-[#161F30] transition-all duration-200"
                         >
                             <div className="font-medium text-slate-300 group-hover:text-white transition-colors">
-                                Season {season.seasonId}  
+                                Season {season.seasonId}
                             </div>
 
                             <div className="flex justify-center">
@@ -72,7 +79,7 @@ export default function Standings() {
                             </div>
 
                             <div onClick={() => navigate(`/dashboard/standings/${season._id}`)}
-                             className="text-right text-sm text-slate-400 font-medium cursor-pointer hover:text-indigo-400 transition-colors">
+                                className="text-right text-sm text-slate-400 font-medium cursor-pointer hover:text-indigo-400 transition-colors">
                                 View Stats →
                             </div>
                         </div>

@@ -34,6 +34,7 @@ export default function Signup() {
 
   const onsubmit = (data) => {
     dispatch(registerUser(data))
+      .unwrap()
       .then(() => {
         dispatch(getcurrentseason());
       })
@@ -47,7 +48,7 @@ export default function Signup() {
       {/* Dynamic Background Matrix Overlay Accent */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#161F30_1px,transparent_1px),linear-gradient(to_bottom,#161F30_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none z-0"></div>
 
-      {/* Main Terminal Frame Container (Matches image_189a53.jpg Layout Split) */}
+      {/* Main Terminal Frame Container */}
       <div className="w-full max-w-4xl bg-[#0B111E]/80 backdrop-blur-md border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row relative z-10 min-h-[480px]">
         
         {/* LEFT PANEL: Informational Welcome Panel */}
@@ -145,17 +146,28 @@ export default function Signup() {
             </div>
           </div>
 
-          {/* Bottom Action Trigger Row (Matches layout orientation directly) */}
+          {/* Bottom Action Trigger Row */}
           <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="text-xs text-slate-500 font-medium">
-              Already have an account?{" "}
-              <Link 
-                to="/login"
-                className="text-indigo-400 font-bold hover:text-indigo-300 transition-colors font-mono uppercase tracking-wide ml-0.5"
-              >
-                Login
-              </Link>
-            </span>
+            <div className="flex flex-col space-y-1 text-center sm:text-left">
+              <span className="text-xs text-slate-500 font-medium">
+                Already have an account?{" "}
+                <Link 
+                  to="/login"
+                  className="text-indigo-400 font-bold hover:text-indigo-300 transition-colors font-mono uppercase tracking-wide ml-0.5 underline underline-offset-4"
+                >
+                  Login
+                </Link>
+              </span>
+              <span className="text-xs text-slate-500 font-medium">
+                Just looking around?{" "}
+                <Link 
+                  to="/guest-login" // Make sure this route matches your guest login path in App.js
+                  className="text-emerald-400 font-bold hover:text-emerald-300 transition-colors font-mono uppercase tracking-wide ml-0.5 underline underline-offset-4"
+                >
+                  Enter as Guest
+                </Link>
+              </span>
+            </div>
 
             <button 
               type="submit"

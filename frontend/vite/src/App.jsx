@@ -28,6 +28,8 @@ import CreateSeason from "./pages/admin/CreateSeason";
 import UpdateAnnouncement from "./pages/admin/UpdateAnnouncement";
 import UpdateProblem from "./pages/admin/UpdateProblem";
 import UpdateSeason from "./pages/admin/UpdateSeason";
+import GuestLogin from "./pages/auth/GuestLogin";
+import GuestPowers from "./pages/guest/GuestPowers";
 
 export default function App() {
   const { user, isauth, loading: authloading } = useSelector((state) => state.auth);
@@ -54,11 +56,15 @@ export default function App() {
       <Route path="/" element={<Landingpage />} />
       <Route path="/login" element={isauth ? <Navigate to="/dashboard" /> : <Login />} />
       <Route path="/signup" element={isauth ? <Navigate to="/dashboard" /> : <Signup />} />
+      <Route path="/guest-login" element={isauth ? <Navigate to="/dashboard" /> : <GuestLogin />} />
+
+      {/*Guest Powers route*/}
+      <Route path="/dashboard/guestpowers" element={isauth ? <GuestPowers /> : <Navigate to="/login" />} />
 
       {/* Global Protected Standalone Routes (Outside general dashboard layout framework) */}
-      <Route 
-        path="/dashboard/solutions/:pid" 
-        element={isauth ? <Solution /> : <Navigate to="/login" />} 
+      <Route
+        path="/dashboard/solutions/:pid"
+        element={isauth ? <Solution /> : <Navigate to="/login" />}
       />
       <Route
         path="/dashboard/problems/:problemId"
@@ -69,9 +75,9 @@ export default function App() {
       <Route path="/dashboard" element={isauth ? <Layout /> : <Navigate to="/login" />}>
         {/* Default route index loads announcements cleanly instead of self-redirecting */}
         <Route index element={<Announcements />} />
-        
+
         <Route path="problems" element={<Problems />} />
-        
+
         <Route path="standings">
           <Route index element={<Standings />} />
           <Route path=":sid" element={<ThisSeason />} />
@@ -86,11 +92,11 @@ export default function App() {
           <Route path="showallproblems" element={<Showallproblems />} />
           <Route path="showallannouncements" element={<Showallannouncements />} />
           <Route path="showallseasons" element={<Showallseasons />} />
-  
+
           <Route path="create-announcement" element={<CreateAnnouncement />} />
           <Route path="create-problem" element={<CreateProblem />} />
           <Route path="create-season" element={<CreateSeason />} />
-  
+
           <Route path="update-announcement/:aid" element={<UpdateAnnouncement />} />
           <Route path="update-problem/:pid" element={<UpdateProblem />} />
           <Route path="update-season/:sid" element={<UpdateSeason />} />

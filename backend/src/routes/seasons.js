@@ -9,7 +9,7 @@ router.post('/create',adminmiddleware,createseason);
 router.put('/update/:sid',adminmiddleware,updateseason);
 router.delete('/delete/:sid',adminmiddleware,deleteseason);
 router.get('/getallseasons',usermiddleware,showallseasons);
-router.get('/getcurrentseason',phasemiddleware(['Round1', 'Round2', 'Round1Solution', 'Round2Solution']), getcurrentseason);
+router.get('/getcurrentseason', getcurrentseason);
 router.get('/getseasonbyid/:sid',usermiddleware, getseasonbyid);
 
 module.exports = router;

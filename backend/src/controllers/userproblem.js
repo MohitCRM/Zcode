@@ -404,6 +404,22 @@ const sumbittedproblem = async (req, res) => {
     }
 };
 
+const guestproblemfetch = async (req, res) => {
+    const { pid } = req.params;
+    try {
+        if (!pid) return res.status(400).json({error : "Missing pid field"});
+
+        const problem = await Problem.findById(pid).select("-hiddenTestCases -__v -createdAt -updatedAt -problemcreator -drivercode");
+        if (!problem) {
+            return res.status(404).json({error : "Problem not found"});
+        }
+
+        return res.status(200).json({problem: problem, today: false});
+    } catch (err) {
+        return res.status(400).json({error : "Error Occured: " + err.message});
+    }
+};
+
 module.exports = { 
     createproblem, 
     problemfetch, 
@@ -413,5 +429,6 @@ module.exports = {
     solvedproblems, 
     sumbittedproblem ,
     adminfetchallproblems,
-    guestfetchallproblmes
+    guestfetchallproblmes,
+    guestproblemfetch
 };

@@ -3,22 +3,21 @@ const Season = require('../models/season');
 const mongoose = require('mongoose');
 const { validateGuestStats } = require('../utils/guestUtils');
 
-const showallseasonid = async (req,res)=>{
-    try{
+const showallseasonid = async (req, res) => {
+    try {
         const allseasons = await Leaderboard.distinct('seasonId');
 
-        allseasons.sort((a,b) => a-b);
+        allseasons.sort((a, b) => a - b);
 
-        const seasons = allseasons.map(sid =>({
-            seasonId : sid,
-            name : `Season ${sid}`,
-            status : sid === 1 ? 'Active' : 'Ended'
+        const seasons = allseasons.map(sid => ({
+            seasonId: sid,
+            name: `Season ${sid}`,
+            status: sid === 1 ? 'Active' : 'Ended'
         }))
 
-        return res.status(200).json({seasons : seasons});
+        return res.status(200).json({ seasons: seasons });
     }
-    catch(err)
-    {
+    catch (err) {
         return res.status(500).json({ error: "Failed to fetch seasons list", details: err.message });
     }
 }
@@ -37,8 +36,8 @@ const getleaderboard = async (req, res) => {
         if (!seasonDoc) {
             return res.status(404).json({ error: "Season not found" });
         }
-        
-        const numericSeasonId = seasonDoc.seasonId; 
+
+        const numericSeasonId = seasonDoc.seasonId;
 
         // 3. Pagination setup
         let page = Math.max(1, parseInt(req.query.page) || 1);
@@ -62,8 +61,8 @@ const getleaderboard = async (req, res) => {
 
             // Calculate accuracy safely preventing division by zero. 
             // Fixed to 1 decimal place to perfectly match your new front-end UI layout.
-            const accuracy = totalSubmissions > 0 
-                ? parseFloat(((accepted / totalSubmissions) * 100).toFixed(1)) 
+            const accuracy = totalSubmissions > 0
+                ? parseFloat(((accepted / totalSubmissions) * 100).toFixed(1))
                 : 0.0;
 
             return {
@@ -78,7 +77,7 @@ const getleaderboard = async (req, res) => {
         });
 
         return res.status(200).json({
-            season: seasonDoc, 
+            season: seasonDoc,
             pagination: {
                 totalpages,
                 currentPage: page,
@@ -108,7 +107,7 @@ const getmystats = async (req, res) => {
         if (!record) {
             return res.status(200).json({
                 mystats: {
-                    elo: 100, 
+                    elo: 100,
                     accuracy: 100,
                     seasonCheckIns: 0,
                     problemsSolved: 0,
@@ -117,11 +116,11 @@ const getmystats = async (req, res) => {
                 }
             });
         }
-        
+
         const totalSubmissions = (record.acceptedSubmissionsCount || 0) + (record.wrongSubmissionsCount || 0);
-        const calculatedAccuracy = totalSubmissions > 0 
-            ? Math.round((record.acceptedSubmissionsCount / totalSubmissions) * 100) 
-            : 100; 
+        const calculatedAccuracy = totalSubmissions > 0
+            ? Math.round((record.acceptedSubmissionsCount / totalSubmissions) * 100)
+            : 100;
 
         const calculatedCheckIns = record.checkInDays ? record.checkInDays.length : 0;
 
@@ -151,7 +150,7 @@ const manipulateGuestStats = async (req, res) => {
             return res.status(403).json({ error: "Only guest users can manipulate stats directly." });
         }
 
-        const currentSeason = req.season; 
+        const currentSeason = req.season;
         if (!currentSeason) {
             return res.status(500).json({ error: "Tournament context missing." });
         }
@@ -174,9 +173,9 @@ const manipulateGuestStats = async (req, res) => {
         // 3. Find and update the leaderboard entry for the guest
         // Ensure to trigger 'save' middleware if we were using .save(), but with findOneAndUpdate 
         // the tier details are re-calculated. Let's do findOne, modify, and save to trigger the pre-save hook.
-        
+
         let stat = await Leaderboard.findOne({ userId: userId, seasonId: currentSeason.seasonId });
-        
+
         if (!stat) {
             // Create one if they don't have stats yet
             stat = new Leaderboard({
@@ -194,10 +193,16 @@ const manipulateGuestStats = async (req, res) => {
 
         await stat.save(); // This triggers the pre-save hook to update the rank string based on new Elo
 
+        const totalSubmissions = stat.acceptedSubmissionsCount + stat.wrongSubmissionsCount;
+        const calculatedAccuracy = totalSubmissions > 0
+            ? Math.round((stat.acceptedSubmissionsCount / totalSubmissions) * 100)
+            : 100;
+
         return res.status(200).json({
             message: "Stats successfully manipulated.",
             mystats: {
                 elo: stat.elo,
+                accuracy: calculatedAccuracy,
                 acceptedSubmissionsCount: stat.acceptedSubmissionsCount,
                 wrongSubmissionsCount: stat.wrongSubmissionsCount,
                 rank: stat.rank

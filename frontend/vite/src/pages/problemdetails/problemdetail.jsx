@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import Editor from '@monaco-editor/react';
 import { useParams, useNavigate } from 'react-router';
+import { useSelector } from 'react-redux';
 import axiosClient from "../../utils/axiosClient";
 
 const langAliases = {
@@ -33,12 +34,16 @@ const ProblemPage = () => {
   const editorRef = useRef(null);
   const { problemId } = useParams();
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchProblem = async () => {
       setLoading(true);
       try {
-        const response = await axiosClient.get(`/problem/getproblembyid/${problemId}`);
+        const endpoint = user?.role === 'guest' 
+          ? `/problem/guestgetproblembyid/${problemId}`
+          : `/problem/getproblembyid/${problemId}`;
+        const response = await axiosClient.get(endpoint);
         const { problem ,today} = response.data;
         
         const startCodes = problem?.startcode || [];
@@ -56,7 +61,7 @@ const ProblemPage = () => {
     };
 
     fetchProblem();
-  }, [problemId]);
+  }, [problemId, user?.role]);
 
   useEffect(() => {
     if (problem) {

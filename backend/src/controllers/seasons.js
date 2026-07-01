@@ -1,4 +1,6 @@
 const Season = require('../models/season');
+const User = require('../models/user');
+const jwt = require('jsonwebtoken');
 
 const showallseasons = async (req,res)=>{
     try{
@@ -66,6 +68,24 @@ const deleteseason = async (req, res) => {
 
 const getcurrentseason = async (req,res)=>{
     try{
+        // Soft check to see if the user is a guest without throwing errors for unauthenticated users
+        const { token } = req.cookies;
+        if (token) {
+            try {
+                const payload = jwt.verify(token, process.env.JWT_KEY);
+                if (payload._id) {
+                    const user = await User.findById(payload._id);
+                    if (user && user.role === 'guest') {
+                        const guestSeason = await Season.findOne({ seasonId: 7 });
+                        if (!guestSeason) return res.status(404).json({error:"Guest season not found"});
+                        return res.status(200).json({season: guestSeason});
+                    }
+                }
+            } catch (e) {
+                // Ignore token errors and fall back to public active season logic
+            }
+        }
+
         const currentseason = await Season.findOne({isActive:true});
         if(!currentseason) return res.status(404).json({error:"No current season found"});
         res.status(200).json({season : currentseason});

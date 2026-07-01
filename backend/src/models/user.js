@@ -14,7 +14,6 @@ const userSchema = new Schema({
 
     emailId: {
         type: String,
-        required: true,
         trim: true,
         lowercase: true,
         immutable: true,

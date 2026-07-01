@@ -3,6 +3,7 @@ const router = express.Router();
 const adminmiddleware = require('../middleware/adminmiddleware');
 const usermiddleware = require('../middleware/usermiddleware');
 const phasemiddleware = require('../middleware/phaseguard');
+const guestmiddleware = require('../middleware/guestmiddleware');
 const {
     createproblem, 
     problemfetch, 
@@ -12,11 +13,13 @@ const {
     solvedproblems,
     sumbittedproblem,
     adminfetchallproblems,
-    guestfetchallproblmes
+    guestfetchallproblmes,
+    guestproblemfetch
 } = require('../controllers/userproblem');
 
 //guest routes
-router.get('/guestfetchallproblems',usermiddleware,guestfetchallproblmes); 
+router.get('/guestfetchallproblems',usermiddleware,guestmiddleware,guestfetchallproblmes); 
+router.get('/guestgetproblembyid/:pid', usermiddleware,guestmiddleware, guestproblemfetch);
 
 //user routes
 router.get('/getproblems', usermiddleware, phasemiddleware(['Round1', 'Round2']), allproblemfetch);
