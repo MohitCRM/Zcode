@@ -11,6 +11,30 @@ const langAliases = {
   javascript: ['javascript', 'js']
 };
 
+const formatExampleData = (dataString) => {
+  if (!dataString) return dataString;
+  try {
+    const parsed = typeof dataString === 'string' ? JSON.parse(dataString) : dataString;
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      return Object.entries(parsed)
+        .map(([key, value]) => {
+          let valStr = JSON.stringify(value);
+          if (Array.isArray(value)) {
+            valStr = valStr.replace(/,/g, ', ');
+          }
+          return `${key} = ${valStr}`;
+        })
+        .join(', ');
+    }
+    if (Array.isArray(parsed)) {
+      return JSON.stringify(parsed).replace(/,/g, ', ');
+    }
+    return String(parsed);
+  } catch (e) {
+    return typeof dataString === 'object' ? JSON.stringify(dataString) : dataString;
+  }
+};
+
 const findStartCode = (startcodeArray, selectedLang) => {
   if (!startcodeArray || !Array.isArray(startcodeArray)) return null;
   const allowedAliases = langAliases[selectedLang] || [];
@@ -242,7 +266,7 @@ const ProblemPage = () => {
                               Input
                             </span>
                             <div className="bg-[#070C15] border border-slate-900 rounded-lg px-4 py-3 font-mono text-sm text-slate-300 leading-normal">
-                              {example.input}
+                              {formatExampleData(example.input)}
                             </div>
                           </div>
 
@@ -252,7 +276,7 @@ const ProblemPage = () => {
                               Output
                             </span>
                             <div className="bg-[#070C15] border border-slate-900 rounded-lg px-4 py-3 font-mono text-sm text-slate-300 leading-normal">
-                              {example.output}
+                              {formatExampleData(example.output)}
                             </div>
                           </div>
 
@@ -453,7 +477,7 @@ const ProblemPage = () => {
                                   <div className="grid grid-cols-[80px_1fr] items-start gap-2">
                                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pt-1">Input</span>
                                     <div className="bg-[#070C15] border border-slate-900 rounded-lg px-3 py-1.5 font-mono text-xs text-slate-300">
-                                      {tc.input}
+                                      {formatExampleData(tc.input)}
                                     </div>
                                   </div>
 
@@ -461,7 +485,7 @@ const ProblemPage = () => {
                                     <div className="grid grid-cols-[80px_1fr] items-start gap-2">
                                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pt-1">Expected</span>
                                       <div className="bg-[#070C15] border border-slate-900 rounded-lg px-3 py-1.5 font-mono text-xs text-slate-300">
-                                        {tc.expected}
+                                        {formatExampleData(tc.expected)}
                                       </div>
                                     </div>
                                   )}
@@ -472,7 +496,7 @@ const ProblemPage = () => {
                                       <div className={`bg-[#070C15] border rounded-lg px-3 py-1.5 font-mono text-xs ${
                                         isSuccess ? 'border-slate-900 text-slate-300' : 'border-rose-500/20 text-rose-400'
                                       }`}>
-                                        {tc.actual}
+                                        {formatExampleData(tc.actual)}
                                       </div>
                                     </div>
                                   )}

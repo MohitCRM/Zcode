@@ -60,6 +60,11 @@ export default function Landingpage() {
           <span className="font-mono text-xl font-bold tracking-tight text-white">Zcode</span>
         </div>
         <div className="flex items-center gap-3">
+          <Link to="/guest-login">
+            <button className="px-4 py-2 text-sm font-mono uppercase tracking-wider text-emerald-500/80 hover:text-emerald-400 transition-colors cursor-pointer">
+              Guest
+            </button>
+          </Link>
           <Link to="/login">
             <button className="px-4 py-2 text-sm font-mono uppercase tracking-wider text-slate-400 hover:text-white transition-colors cursor-pointer">
               Log in
@@ -99,6 +104,11 @@ export default function Landingpage() {
             <Link to="/login" className="w-full sm:w-auto">
               <button className="px-8 py-3 bg-[#0B111E] border border-slate-800 hover:border-indigo-500/40 text-slate-300 hover:text-white rounded-xl font-mono font-bold uppercase tracking-widest text-sm transition-all cursor-pointer w-full">
                 Log in
+              </button>
+            </Link>
+            <Link to="/guest-login" className="w-full sm:w-auto">
+              <button className="px-8 py-3 bg-[#041611]/40 border border-emerald-500/40 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 rounded-xl font-mono font-bold uppercase tracking-widest text-sm transition-all cursor-pointer w-full shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:shadow-[0_0_20px_rgba(16,185,129,0.25)]">
+                Guest Login
               </button>
             </Link>
           </div>

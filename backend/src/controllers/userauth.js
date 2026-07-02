@@ -26,7 +26,6 @@ const register = async (req,res)=>{
 
         const reply = {
             firstName: newUser.firstName,
-            lastName : newUser.lastName,
             emailId : newUser.emailId,
             _id : newUser._id,
             role : newUser.role
@@ -40,7 +39,9 @@ const register = async (req,res)=>{
 
         res.cookie('token', token, { 
             httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000 
+            secure: true,
+            sameSite: 'none',
+            maxAge: 24 * 60 * 60 * 1000
         });
 
         res.status(201).json({
@@ -75,15 +76,19 @@ const login = async (req,res)=>{
 
         const reply = {
             firstName: usr.firstName,
-            lastName : usr.lastName,
             emailId : usr.emailId,
             _id : usr._id,
             role : usr.role
         }
 
         //generating a jwt token to relogin later
-        const token = jwt.sign({_id:usr._id , emailId:emailId, role : usr.role},process.env.JWT_KEY, {expiresIn : 60*60*24});
-        res.cookie('token', token , {maxAge : 60 * 60 * 1000 * 24});
+        const token = jwt.sign({_id:usr._id , emailId:emailId, role : usr.role},process.env.JWT_KEY, {expiresIn : "24h"});
+        res.cookie('token', token , {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            maxAge : 24*60*60 * 1000
+        });
         res.status(200).json({
             user: reply,
             message : "Logged in Successfully"
@@ -104,7 +109,12 @@ const logout = async (req,res)=>{
         await redisClient.set(`token:${token}`,`Blocked`);
         await redisClient.expireAt(`token:${token}`,payload.exp);
 
-        res.cookie("token",null,{expires : new Date(Date.now())});
+        res.cookie("token",null,{
+            expires : new Date(Date.now()),
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none'
+        });
         res.status(200).json({message : "Logged out Succesfully"});
 
     }
@@ -113,39 +123,46 @@ const logout = async (req,res)=>{
     }
 }
 
-const adminregister = async(req,res)=>{
-    try{
-        //validating the message sent by user
-        validate(req.body);
-        const {firstName, emailId, password} = req.body;
-        req.body.role = 'admin';
-        //checking if emailId alredy exists
-        const isExisting = await User.exists({ emailId });
-        if (isExisting) {
-            throw new Error("Email Id already exists");
+const guestregister = async (req, res) => {
+    try {
+        const { firstName } = req.body;
+
+        if (!firstName || firstName.trim().length < 3 || firstName.trim().length > 20) {
+            return res.status(400).json({ error: "First name must be between 3 and 20 characters." });
         }
 
-        //Bcrypting hash
-        req.body.password = await bcrypt.hash(password,10);
+        const guestData = {
+            firstName: firstName.trim(),
+            role: 'guest'
+        };
 
-        const newUser = await User.create(req.body);
+        const newUser = await User.create(guestData);
 
-        //Creating a JWT when a user is registered at the time , also can do later when login in if not here
+        // 3. Generate the token
         const token = jwt.sign(
-            { _id: newUser._id, emailId: newUser.emailId, role: 'admin' },
+            { _id: newUser._id, role: 'guest' },
             process.env.JWT_KEY,
             { expiresIn: "24h" }
         );
 
         res.cookie('token', token, { 
             httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000 
+            secure: true,
+            sameSite: 'none',
+            maxAge: 24 * 60 * 60 * 1000
         });
 
-        res.status(201).json({message : "User Registered Successfully"});
+        res.status(201).json({
+            message: "User Registered Successfully as Guest",
+            user: {
+                _id: newUser._id,
+                firstName: newUser.firstName,
+                role: newUser.role
+            }
+        });
     }
-    catch(err){
-        res.status(400).json({error : err.message});
+    catch (err) {
+        res.status(400).json({ error: err.message });
     }
 }
 
@@ -163,6 +180,40 @@ const deleteprofile = async (req,res)=>{
     catch(err)
     {
         res.status(500).json({error : err.message});
+    }
+}
+
+const exitguestmode = async (req, res) => {
+    try {
+        const userid = req.result._id;
+
+        if (req.result.role !== 'guest') {
+            return res.status(403).json({ error: "Only guest users can exit guest mode" });
+        }
+
+        // Delete from all collections
+        await User.findByIdAndDelete(userid);
+        await Submission.deleteMany({ userId: userid });
+        await Leaderboard.deleteMany({ userId: userid });
+
+        // Logout logic
+        const { token } = req.cookies;
+        if (token) {
+            const payload = jwt.decode(token);
+            await redisClient.set(`token:${token}`, `Blocked`);
+            await redisClient.expireAt(`token:${token}`, payload.exp);
+            
+            res.cookie("token", null, {
+                expires: new Date(Date.now()),
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none'
+            });
+        }
+
+        res.status(200).json({ message: "Guest mode exited successfully. All data erased." });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 }
 
@@ -191,4 +242,58 @@ const checkauth = async (req, res) => {
         res.status(500).json({ error: "Failed to fetch user context", details: err.message });
     }
 }
-module.exports = {register,login,logout,adminregister,deleteprofile,checkauth};
+const getallusers = async (req, res) => {
+    try {
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 20));
+        const skip = (page - 1) * limit;
+
+        const totalUsers = await User.countDocuments();
+        const users = await User.find({})
+            .select("-password -createdAt -updatedAt -__v")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.status(200).json({
+            pagination: {
+                totalUsers,
+                totalPages: Math.ceil(totalUsers / limit),
+                currentPage: page,
+                limit
+            },
+            users
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch users", details: err.message });
+    }
+}
+
+const makeadmin = async (req, res) => {
+    try {
+        const { targetUserId } = req.body;
+        
+        if (!targetUserId) {
+            return res.status(400).json({ error: "targetUserId is required" });
+        }
+
+        const userToUpdate = await User.findByIdAndUpdate(
+            targetUserId, 
+            { role: 'admin' }, 
+            { new: true }
+        ).select("-password -createdAt -updatedAt -__v");
+
+        if (!userToUpdate) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.status(200).json({ 
+            message: "User successfully promoted to admin", 
+            user: userToUpdate 
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to promote user to admin", details: err.message });
+    }
+}
+
+module.exports = {register,login,logout,guestregister,deleteprofile,checkauth,exitguestmode,getallusers,makeadmin};

@@ -10,6 +10,30 @@ const difficultyMatrix = {
   hard: 'bg-[#17080c] border-[#571922] text-[#ff3355]'
 };
 
+const formatExampleData = (dataString) => {
+  if (!dataString) return dataString;
+  try {
+    const parsed = typeof dataString === 'string' ? JSON.parse(dataString) : dataString;
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      return Object.entries(parsed)
+        .map(([key, value]) => {
+          let valStr = JSON.stringify(value);
+          if (Array.isArray(value)) {
+            valStr = valStr.replace(/,/g, ', ');
+          }
+          return `${key} = ${valStr}`;
+        })
+        .join(', ');
+    }
+    if (Array.isArray(parsed)) {
+      return JSON.stringify(parsed).replace(/,/g, ', ');
+    }
+    return String(parsed);
+  } catch (e) {
+    return typeof dataString === 'object' ? JSON.stringify(dataString) : dataString;
+  }
+};
+
 export default function Solution() {
   const { pid } = useParams();
   const navigate = useNavigate();
@@ -155,13 +179,13 @@ export default function Solution() {
                           <div className="space-y-1">
                             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest font-sans">Input</span>
                             <div className="bg-[#070C15] border border-slate-900 rounded-lg px-4 py-3 font-mono text-sm text-slate-300">
-                              {example.input}
+                              {formatExampleData(example.input)}
                             </div>
                           </div>
                           <div className="space-y-1">
                             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest font-sans">Output</span>
                             <div className="bg-[#070C15] border border-slate-900 rounded-lg px-4 py-3 font-mono text-sm text-slate-300">
-                              {example.output}
+                              {formatExampleData(example.output)}
                             </div>
                           </div>
                         </div>

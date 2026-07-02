@@ -73,8 +73,12 @@ export default function Standings() {
                                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
                                         Active
                                     </span>
+                                ) : season.isCompleted ? (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400 border border-emerald-500/20">
+                                        Completed
+                                    </span>
                                 ) : (
-                                    <span className="text-xs font-medium text-slate-600 uppercase tracking-wide">Completed</span>
+                                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Upcoming</span>
                                 )}
                             </div>
 

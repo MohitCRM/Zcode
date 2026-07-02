@@ -2,6 +2,16 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
 const solutionvideoSchema = new Schema({
+    problemId : {
+        type : Schema.Types.ObjectId,
+        ref : 'Problem',
+        required : true
+    },
+    userId : {
+        type : Schema.Types.ObjectId,
+        ref : 'User',
+        required : true
+    },
     videotitle: {
         type : String,
         required : true,

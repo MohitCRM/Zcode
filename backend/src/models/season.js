@@ -12,6 +12,14 @@ const seasonSchema = new Schema({
         type: Boolean,
         default: false
     },
+    isCompleted: {
+        type: Boolean,
+        default: false
+    },
+    isGuestSeason: {
+        type: Boolean,
+        default: false
+    },
     launchDate: { type: Date, required: true },
     
     round1Start: { type: Date, required: true },

@@ -8,6 +8,8 @@ import {z} from "zod";
 const seasonschema = z.object({
   seasonId: z.number().int().positive("Season ID must be a positive integer"),
   isActive: z.boolean().default(false),
+  isGuestSeason: z.boolean().default(false),
+  isCompleted: z.boolean().default(false),
   
   launchDate: z.coerce.date(),
   
@@ -50,6 +52,8 @@ export default function UpdateSeason() {
         reset({
           seasonId: data.seasonId,
           isActive: data.isActive,
+          isGuestSeason: data.isGuestSeason || false,
+          isCompleted: data.isCompleted || false,
           launchDate: formatDate(data.launchDate),
           round1Start: formatDate(data.round1Start),
           round1End: formatDate(data.round1End),
@@ -86,7 +90,7 @@ export default function UpdateSeason() {
         <h2 className="text-2xl font-bold text-white mb-6">Update Season</h2>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Season ID</label>
               <input 
@@ -95,9 +99,20 @@ export default function UpdateSeason() {
                 readOnly // Fixed field
               />
             </div>
-            <div className="flex items-center gap-3 pt-6">
+            
+            <div className="flex items-center gap-2 pt-6">
               <input type="checkbox" {...register("isActive")} className="accent-indigo-600 w-5 h-5" />
-              <label className="text-sm font-medium text-slate-300">Set as Active</label>
+              <label className="text-sm font-medium text-slate-300">Active</label>
+            </div>
+            
+            <div className="flex items-center gap-2 pt-6">
+              <input type="checkbox" {...register("isGuestSeason")} className="accent-emerald-600 w-5 h-5" />
+              <label className="text-sm font-medium text-slate-300">Guest</label>
+            </div>
+
+            <div className="flex items-center gap-2 pt-6">
+              <input type="checkbox" {...register("isCompleted")} className="accent-slate-500 w-5 h-5" />
+              <label className="text-sm font-medium text-slate-300">Completed</label>
             </div>
           </div>
 

@@ -3,7 +3,7 @@ const router = express.Router();
 const adminmiddleware = require('../middleware/adminmiddleware');
 const {generateuploadsignature,savevideometadata,deletevideo} = require('../controllers/videosolution');
 
-router.get('createuploadsignature',adminmiddleware,generateuploadsignature);
+router.get('createuploadsignature/:problemId',adminmiddleware,generateuploadsignature);
 router.post('/save',adminmiddleware,savevideometadata);
 router.delete('/delete/:videoId',adminmiddleware,deletevideo);
 

@@ -144,11 +144,11 @@ if (compile.exitCode !== 0) {
                 // Run Test Cases
                 for (const testCase of totalTestCases) {
     await sandbox.files.write('/home/user/input.txt', testCase.input);
-    const run = await sandbox.commands.run("cd /home/user && ./main < input.txt", { 
-        timeout: constraints.timeLimit 
-    });
+    const timeLimit = constraints.timeLimit || 2;
+    const run = await sandbox.commands.run(`cd /home/user && timeout -k 0.5s ${timeLimit}s ./main < input.txt`);
 
     if (run.exitCode !== 0) {
+        if (run.exitCode === 124 || run.exitCode === 137) throw new Error("Time Limit Exceeded");
         throw new Error(`Runtime Error: ${run.stderr}`);
     }
 
@@ -224,11 +224,13 @@ const problemupdate = async (req, res) => {
                     // 3. Run and Normalize
                     for (const testCase of totalTestCases) {
                         await sandbox.files.write('/home/user/input.txt', testCase.input);
-                        const run = await sandbox.commands.run("cd /home/user && ./main < input.txt", { 
-                            timeout: constraints.timeLimit || 2 
-                        });
+                        const timeLimit = constraints.timeLimit || 2;
+                        const run = await sandbox.commands.run(`cd /home/user && timeout -k 0.5s ${timeLimit}s ./main < input.txt`);
 
-                        if (run.exitCode !== 0) throw new Error(`Runtime Error: ${run.stderr}`);
+                        if (run.exitCode !== 0) {
+                            if (run.exitCode === 124 || run.exitCode === 137) throw new Error("Time Limit Exceeded");
+                            throw new Error(`Runtime Error: ${run.stderr}`);
+                        }
                         
                         
                         const expected = JSON.parse(testCase.output.trim());

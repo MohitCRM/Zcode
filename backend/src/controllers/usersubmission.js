@@ -2,6 +2,7 @@ const Problem = require("../models/problem")
 const Submission = require("../models/submission");
 const User = require('../models/user');
 const Leaderboard = require('../models/leaderboard');
+const Season = require('../models/season');
 const mongoose = require('mongoose');
 const { getLanguageConfig, generateCppFullCode } = require('../utils/problemutility'); 
 const tierdata = require('../utils/tiersystem');
@@ -12,6 +13,7 @@ const path = require('path');
 const getErrorMessage = (exitCode, stderr, timeLimit) => {
     switch (exitCode) {
         case 124: return { status: "Time Limit Exceeded", message: `The code took longer than ${timeLimit}s to execute.` };
+        case 137: return { status: "Time/Memory Limit Exceeded", message: "Process was killed (likely Time Limit or Out Of Memory)." };
         case 139: return { status: "Segmentation Fault", message: "Memory access violation (e.g., array out of bounds or null pointer)." };
         case 134: return { status: "Aborted", message: "The program aborted (often due to assertion failure or sanitizers)." };
         case 127: return { status: "Command Not Found", message: "The executable was not found in the sandbox." };
@@ -35,7 +37,11 @@ const submitcode = async (req, res) => {
         if (!problem) return res.status(404).json({ error: "Problem not found" });
 
         const isGuest = user.role === 'guest';
-        const targetSeasonId = isGuest ? 7 : (req.season?.seasonId ?? 1); // fallback to 1 if req.season is missing
+        let targetSeasonId = req.season?.seasonId ?? 1; // fallback to 1 if req.season is missing
+        if (isGuest) {
+            const guestSeason = await Season.findOne({ isGuestSeason: true });
+            if (guestSeason) targetSeasonId = guestSeason.seasonId;
+        }
 
         const { timeLimit = 1.0 } = problem.constraints || {};
         const jsonLib = fs.readFileSync(path.join(__dirname, "../../libs/json.hpp"), 'utf-8');
@@ -73,10 +79,10 @@ const submitcode = async (req, res) => {
                 // 3. Execution Loop with Normalization
                 for (const tc of totalTestCases) {
                     await sandbox.files.write('/home/user/input.txt', tc.input);
-                    const run = await sandbox.commands.run("cd /home/user && ./main < input.txt", { timeout: timeLimit });
+                    const run = await sandbox.commands.run(`cd /home/user && timeout -k 0.5s ${timeLimit}s ./main < input.txt`);
                     
                     if (run.exitCode !== 0) {
-                        status = run.exitCode === 124 ? "Time Limit Exceeded" : "Runtime Error";
+                        status = (run.exitCode === 124 || run.exitCode === 137) ? "Time Limit Exceeded" : "Runtime Error";
                         errorMessage = run.stderr;
                         break;
                     }
@@ -205,7 +211,7 @@ const runcode = async (req, res) => {
 
             for (const tc of problem.visibleTestCases) {
                 await sandbox.files.write('/home/user/input.txt', tc.input);
-                const run = await sandbox.commands.run("cd /home/user && ./main < input.txt", { timeout: 1000 });
+                const run = await sandbox.commands.run(`cd /home/user && timeout -k 0.5s ${timeLimit}s ./main < input.txt`);
 
                 // Distinguish Runtime Error types
                 // Distinguish Runtime Error types

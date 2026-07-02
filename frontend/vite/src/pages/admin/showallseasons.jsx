@@ -10,7 +10,7 @@ export default function ShowAllSeasons() {
     useEffect(() => {
         const fetchSeasons = async () => {
             try {
-                const response = await axiosClient.get('/seasons/getallseasons');
+                const response = await axiosClient.get('seasons/admin/getallseasons');
                 setSeasons(response.data.seasons);
             } catch (err) {
                 console.error("Failed to fetch seasons:", err.message);
@@ -56,9 +56,25 @@ export default function ShowAllSeasons() {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="text-white font-bold text-lg">Season {season.seasonId}</h3>
-                                    <span className={`inline-block mt-1 text-[10px] uppercase font-bold px-2 py-0.5 rounded ${season.isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-700 text-slate-400'}`}>
-                                        {season.isActive ? "Active" : "Inactive"}
-                                    </span>
+                                    <div className="mt-1">
+                                        {season.isGuestSeason ? (
+                                            <span className="inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                                                Guest
+                                            </span>
+                                        ) : season.isActive ? (
+                                            <span className="inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                                Active
+                                            </span>
+                                        ) : season.isCompleted ? (
+                                            <span className="inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                Completed
+                                            </span>
+                                        ) : (
+                                            <span className="inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-700 text-slate-400">
+                                                Upcoming
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="flex gap-2">
                                     <button 

@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const showallseasons = async (req,res)=>{
     try{
-        const allseasons = await Season.find().sort({ seasonId: -1 });
+        const allseasons = await Season.find({ isGuestSeason: { $ne: true } }).sort({ seasonId: -1 });
         if(!allseasons || allseasons.length === 0)
         {
             return res.status(404).json({error:"No seasons found"});
@@ -16,16 +16,34 @@ const showallseasons = async (req,res)=>{
     }
 }
 
+const admingetallseasons = async (req,res)=>{
+    try{
+        const allseasons = await Season.find().sort({seasonId:-1});
+        if(!allseasons || allseasons.length === 0)
+        {
+            return res.status(404).json({error:"No seasons found"});
+        }
+        res.status(200).json({seasons:allseasons});
+    }catch(err)
+    {
+        res.status(400).json({error:err.message});
+    }
+}
+
+
 const createseason = async (req, res) => {
     try {
-        const { seasonId, isActive, launchDate, round1Start, round1End, r1SolutionStart, r1SolutionEnd, round2Start, round2End, r2SolutionStart, r2SolutionEnd } = req.body;
+        const { seasonId, isActive, isGuestSeason, launchDate, round1Start, round1End, r1SolutionStart, r1SolutionEnd, round2Start, round2End, r2SolutionStart, r2SolutionEnd } = req.body;
 
         if (isActive) {
             await Season.updateMany({ isActive: true }, { isActive: false });
         }
+        if (isGuestSeason) {
+            await Season.updateMany({ isGuestSeason: true }, { isGuestSeason: false });
+        }
 
         const newSeason = await Season.create({
-            seasonId, isActive, launchDate, round1Start, round1End, r1SolutionStart, r1SolutionEnd, round2Start, round2End, r2SolutionStart, r2SolutionEnd
+            seasonId, isActive, isGuestSeason, launchDate, round1Start, round1End, r1SolutionStart, r1SolutionEnd, round2Start, round2End, r2SolutionStart, r2SolutionEnd
         });
 
         res.status(201).json({ message: "Season created successfully", season : newSeason });
@@ -41,6 +59,9 @@ const updateseason = async (req, res) => {
 
         if (updateData.isActive === true) {
             await Season.updateMany({ _id: { $ne: sid } }, { isActive: false });
+        }
+        if (updateData.isGuestSeason === true) {
+            await Season.updateMany({ _id: { $ne: sid } }, { isGuestSeason: false });
         }
 
         const updatedSeason = await Season.findByIdAndUpdate(sid, updateData, { returnDocument: 'after', runValidators: true });
@@ -76,7 +97,7 @@ const getcurrentseason = async (req,res)=>{
                 if (payload._id) {
                     const user = await User.findById(payload._id);
                     if (user && user.role === 'guest') {
-                        const guestSeason = await Season.findOne({ seasonId: 7 });
+                        const guestSeason = await Season.findOne({ isGuestSeason: true });
                         if (!guestSeason) return res.status(404).json({error:"Guest season not found"});
                         return res.status(200).json({season: guestSeason});
                     }
@@ -110,4 +131,4 @@ const getseasonbyid = async (req, res) => {
     }
 }
 
-module.exports = {createseason,updateseason,deleteseason,showallseasons,getcurrentseason,getseasonbyid};
+module.exports = {createseason,updateseason,deleteseason,showallseasons,getcurrentseason,getseasonbyid,admingetallseasons};

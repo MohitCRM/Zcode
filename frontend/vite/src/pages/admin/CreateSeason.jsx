@@ -7,6 +7,8 @@ import axiosClient from "../../utils/axiosClient";
 const seasonschema = z.object({
   seasonId: z.number().int().positive("Season ID must be a positive integer"),
   isActive: z.boolean().default(false),
+  isGuestSeason: z.boolean().default(false),
+  isCompleted: z.boolean().default(false),
   
   launchDate: z.coerce.date(),
   
@@ -70,7 +72,7 @@ const onSubmit = async (data) => {
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Season ID & Active Status */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Season ID</label>
               <input 
@@ -81,9 +83,19 @@ const onSubmit = async (data) => {
               {errors.seasonId && <p className="text-rose-500 text-xs mt-1">{errors.seasonId.message}</p>}
             </div>
             
-            <div className="flex items-center gap-3 pt-6">
+            <div className="flex items-center gap-2 pt-6">
               <input type="checkbox" {...register("isActive")} className="accent-indigo-600 w-5 h-5" />
-              <label className="text-sm font-medium text-slate-300">Set as Active</label>
+              <label className="text-sm font-medium text-slate-300">Active</label>
+            </div>
+            
+            <div className="flex items-center gap-2 pt-6">
+              <input type="checkbox" {...register("isGuestSeason")} className="accent-emerald-600 w-5 h-5" />
+              <label className="text-sm font-medium text-slate-300">Guest</label>
+            </div>
+
+            <div className="flex items-center gap-2 pt-6">
+              <input type="checkbox" {...register("isCompleted")} className="accent-slate-500 w-5 h-5" />
+              <label className="text-sm font-medium text-slate-300">Completed</label>
             </div>
           </div>
 

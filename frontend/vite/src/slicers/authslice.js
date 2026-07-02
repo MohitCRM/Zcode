@@ -39,7 +39,7 @@ export const ExitUser = createAsyncThunk(
     'auth/ExitUser',
     async (_, {rejectWithValue}) =>{
         try{
-            await axiosClient.post('user/guest/exit')
+            await axiosClient.delete('user/guest/exit')
             return null;
         }catch(err)
         {
