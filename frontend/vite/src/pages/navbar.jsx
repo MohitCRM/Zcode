@@ -8,6 +8,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const [isOpen, setIsOpen] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
   const dropdownRef = useRef(null);
 
   // Close dropdown when clicking outside
@@ -23,11 +24,14 @@ const Navbar = () => {
 
   const handleExit = async ()=>{
     try{
+      setIsExiting(true);
       await dispatch(ExitUser()).unwrap();
       navigate('/');
     }catch(err)
     {
       console.error("Exit failed: ",err);
+    }finally{
+      setIsExiting(false);
     }
   }
   const handleLogout = async () => {
@@ -99,9 +103,12 @@ const Navbar = () => {
               {user?.role === 'guest' ? (
                 <button
                   onClick={handleExit}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 font-bold text-amber-400 hover:bg-amber-950/20 transition-colors text-left"
+                  disabled={isExiting}
+                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2.5 font-bold text-left transition-colors ${
+                    isExiting ? 'text-amber-400/50 cursor-not-allowed' : 'text-amber-400 hover:bg-amber-950/20'
+                  }`}
                 >
-                  Exit Guest Mode
+                  {isExiting ? 'Exiting...' : 'Exit Guest Mode'}
                 </button>
               ) : (
                 <button

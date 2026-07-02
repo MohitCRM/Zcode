@@ -36,7 +36,7 @@ export default function UpdateSeason() {
   const { sid } = useParams(); // assuming pid is the _id
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(seasonschema) // Ensure your schema is imported
   });
 
@@ -168,9 +168,10 @@ export default function UpdateSeason() {
           
           <button 
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl"
+            disabled={isSubmitting}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl"
           >
-            Update Season
+            {isSubmitting ? "Updating..." : "Update Season"}
           </button>
         </form>
       </div>

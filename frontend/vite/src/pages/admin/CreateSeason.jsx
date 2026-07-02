@@ -34,7 +34,7 @@ const seasonschema = z.object({
 
 
 export default function CreateSeason() {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(seasonschema)
   });
 
@@ -151,9 +151,10 @@ const onSubmit = async (data) => {
 
           <button 
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20"
+            disabled={isSubmitting}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20"
           >
-            Create Season
+            {isSubmitting ? "Creating..." : "Create Season"}
           </button>
         </form>
       </div>
