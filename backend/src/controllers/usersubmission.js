@@ -170,9 +170,9 @@ const submitcode = async (req, res) => {
     
         res.status(201).json({ status, eloChange, message: "Submission processed" , passedTestCases: passedCount, totalTestCases: totalTestCases.length });
     } catch (err) {
-        res.status(500).json({ error: "Fatal System Error" });
+        res.status(500).json({ error: "Fatal System Error" + err});
     } finally {
-        session.endSession();
+        session.endSession(); 
     }
 };
 
@@ -281,8 +281,9 @@ const runcode = async (req, res) => {
         });
     }
 
+
     // 3. Handle truly unexpected system failures
-    res.status(500).json({ error: "Internal server error. Please try again." });
+    res.status(500).json({ error: "Internal server error. Please try again."  + err});
 }
 };
 module.exports = {submitcode, runcode};
