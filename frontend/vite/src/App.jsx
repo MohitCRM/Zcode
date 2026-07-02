@@ -13,7 +13,6 @@ import Announcements from "./pages/announcement/announcements";
 import ProblemDetail from "./pages/problemdetails/problemdetail";
 import Landingpage from "./pages/landingpage/landingpage";
 import Layout from "./pages/layout";
-import AdminRoute from "./adminroute";
 import { checkauth } from "./slicers/authslice";
 import { getcurrentseason } from "./slicers/seasonslice";
 import { useDispatch, useSelector } from "react-redux";
