@@ -17,7 +17,7 @@ export default function Login() {
   const [showPassword, setshowPassword] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, isauth } = useSelector((state) => state.auth);
+  const { loading, isauth, error } = useSelector((state) => state.auth);
 
   const {
     register,
@@ -53,6 +53,13 @@ export default function Login() {
             <h3 className="text-2xl font-black uppercase tracking-wider text-white">Login</h3>
             <p className="text-slate-500 font-mono text-[11px]">VERIFY SECURITY ENCRYPTED TOKEN ACCESS</p>
           </div>
+
+          {error && (
+            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 px-4 py-3 rounded-xl text-xs font-mono flex items-start gap-3">
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
 
           <div className="space-y-4">
             {/* Input Email field */}

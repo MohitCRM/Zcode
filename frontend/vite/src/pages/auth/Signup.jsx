@@ -18,7 +18,7 @@ export default function Signup() {
   const [showPassword, setshowPassword] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, isauth } = useSelector((state) => state.auth);
+  const { loading, isauth, error } = useSelector((state) => state.auth);
 
   const {
     register,
@@ -74,6 +74,13 @@ export default function Signup() {
             <h3 className="text-lg font-bold text-white tracking-wide">Create Account</h3>
             <p className="text-slate-500 font-mono text-[11px]">INITIALIZE EXECUTOR IDENTITY PROTOCOLS</p>
           </div>
+
+          {error && (
+            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 px-4 py-3 rounded-xl text-xs font-mono flex items-start gap-3">
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
 
           <div className="space-y-3.5">
             {/* Input Name field */}

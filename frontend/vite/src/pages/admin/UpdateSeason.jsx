@@ -11,19 +11,19 @@ const seasonschema = z.object({
   isGuestSeason: z.boolean().default(false),
   isCompleted: z.boolean().default(false),
   
-  launchDate: z.coerce.date(),
+  launchDate: z.string(),
   
-  round1Start: z.coerce.date(),
-  round1End: z.coerce.date(),
+  round1Start: z.string(),
+  round1End: z.string(),
   
-  r1SolutionStart: z.coerce.date(),
-  r1SolutionEnd: z.coerce.date(),
+  r1SolutionStart: z.string(),
+  r1SolutionEnd: z.string(),
   
-  round2Start: z.coerce.date(),
-  round2End: z.coerce.date(),
+  round2Start: z.string(),
+  round2End: z.string(),
   
-  r2SolutionStart: z.coerce.date(),
-  r2SolutionEnd: z.coerce.date(),
+  r2SolutionStart: z.string(),
+  r2SolutionEnd: z.string(),
 }).refine((data) => data.round1End > data.round1Start, {
   message: "Round 1 End date must be after Start date",
   path: ["round1End"],
@@ -46,8 +46,14 @@ export default function UpdateSeason() {
         const res = await axiosClient.get(`/seasons/getseasonbyid/${sid}`);
         const data = res.data.season;
 
-        // Helper to format Date for datetime-local input
-        const formatDate = (date) => new Date(date).toISOString().slice(0, 16);
+        // Helper to format Date to IST for datetime-local input
+        const formatDate = (dateString) => {
+            if (!dateString) return "";
+            const d = new Date(dateString);
+            const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
+            const str = d.toLocaleString('sv-SE', options); // "2026-07-31 13:00"
+            return str.replace(' ', 'T');
+        };
 
         reset({
           seasonId: data.seasonId,
@@ -73,8 +79,21 @@ export default function UpdateSeason() {
   }, [sid, reset]);
 
   const onSubmit = async (data) => {
+    const formatIST = (dateStr) => new Date(dateStr + "+05:30").toISOString();
+    const formattedData = {
+        ...data,
+        launchDate: formatIST(data.launchDate),
+        round1Start: formatIST(data.round1Start),
+        round1End: formatIST(data.round1End),
+        r1SolutionStart: formatIST(data.r1SolutionStart),
+        r1SolutionEnd: formatIST(data.r1SolutionEnd),
+        round2Start: formatIST(data.round2Start),
+        round2End: formatIST(data.round2End),
+        r2SolutionStart: formatIST(data.r2SolutionStart),
+        r2SolutionEnd: formatIST(data.r2SolutionEnd),
+    };
     try {
-      await axiosClient.put(`/seasons/update/${sid}`, data);
+      await axiosClient.put(`/seasons/update/${sid}`, formattedData);
       alert("Season updated successfully!");
       navigate('/admin/update-season/all');
     } catch (err) {

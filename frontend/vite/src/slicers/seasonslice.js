@@ -26,7 +26,7 @@ export  const getcurrentseason = createAsyncThunk(
 
 const seasonslicer = createSlice({
     name : 'season',
-    initialState : {data : null,loading:false,error:null},
+    initialState : {data : null, loading: true, error: null},
     reducers : {},
     extraReducers : (builder)=>{
         builder

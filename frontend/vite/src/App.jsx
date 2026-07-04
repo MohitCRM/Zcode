@@ -21,6 +21,7 @@ import SetTime from "./pages/admin/time";
 import Showallproblems from "./pages/admin/showallproblems";
 import Showallseasons from "./pages/admin/showallseasons";
 import Showallannouncements from "./pages/admin/showallannouncements";
+import ShowallUsers from "./pages/admin/showallusers";
 import CreateAnnouncement from "./pages/admin/CreateAnnouncement";
 import CreateProblem from "./pages/admin/CreateProblem";
 import CreateSeason from "./pages/admin/CreateSeason";
@@ -91,6 +92,7 @@ export default function App() {
           <Route path="showallproblems" element={<Showallproblems />} />
           <Route path="showallannouncements" element={<Showallannouncements />} />
           <Route path="showallseasons" element={<Showallseasons />} />
+          <Route path="showallusers" element={<ShowallUsers />} />
 
           <Route path="create-announcement" element={<CreateAnnouncement />} />
           <Route path="create-problem" element={<CreateProblem />} />

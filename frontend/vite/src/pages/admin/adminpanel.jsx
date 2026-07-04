@@ -25,6 +25,9 @@ export default function AdminPanel() {
           <NavLink to="showallseasons" className={navClass}>
             <span>📅</span> Seasons
           </NavLink>
+          <NavLink to="showallusers" className={navClass}>
+            <span>👥</span> Users
+          </NavLink>
 
             <NavLink to="settime" className={navClass}>
                 <span>📅</span> Set Time

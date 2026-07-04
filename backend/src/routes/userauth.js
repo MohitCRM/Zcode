@@ -1,8 +1,7 @@
 const express = require("express");
-const {register,login,logout,guestregister,deleteprofile,checkauth,exitguestmode,getallusers,makeadmin} = require("../controllers/userauth");
+const {register,login,logout,guestregister,deleteprofile,checkauth,exitguestmode,getallusers,makeadmin,removeadmin,admindeleteuser} = require("../controllers/userauth");
 const usermiddleware = require('../middleware/usermiddleware');
 const adminmiddleware = require('../middleware/adminmiddleware');
-
 
 const router = express.Router();
 
@@ -20,7 +19,10 @@ router.get('/checkauth',usermiddleware,checkauth);
 
 router.delete('/guest/exit', usermiddleware, exitguestmode);
 
-router.get('/admin/users', adminmiddleware, getallusers);
+router.get('/admin/showallusers', adminmiddleware, getallusers);
 router.put('/admin/makeadmin', adminmiddleware, makeadmin);
+router.put('/admin/removeadmin', adminmiddleware, removeadmin);
+router.delete('/admin/deleteuser/:id', adminmiddleware, admindeleteuser);
+
 
 module.exports = router;

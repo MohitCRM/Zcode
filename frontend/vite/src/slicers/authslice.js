@@ -88,7 +88,7 @@ export const logoutUser = createAsyncThunk(
 
 const authslicer = createSlice({
     name : 'auth',
-    initialState : {user : {}, loading:false,error : null, isauth : false},
+    initialState : {user : {}, loading: true, error : null, isauth : false},
     reducers : {},
     extraReducers : (builder)=>{
         builder
@@ -153,7 +153,7 @@ const authslicer = createSlice({
         })
         .addCase(checkauth.rejected, (state,action)=>{
             state.loading = false;
-            state.error = action.payload || 'Some error has occured';
+            state.error = null; // Do not show 'Token doesn't exist' as a global error
             state.isauth = false;
             state.user = null;
         })

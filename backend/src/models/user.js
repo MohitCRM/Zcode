@@ -5,11 +5,11 @@ const Seasonalstats = require('./leaderboard');
 const userSchema = new Schema({
     firstName: {
         type: String,
-        required: true,
         trim: true,
         minLength: 3,
         maxLength: 20,
-        required : true
+        required : true,
+        unique : true
     },
 
     emailId: {

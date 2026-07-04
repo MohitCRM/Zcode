@@ -250,7 +250,7 @@ const getallusers = async (req, res) => {
 
         const totalUsers = await User.countDocuments();
         const users = await User.find({})
-            .select("-password -createdAt -updatedAt -__v")
+            .select("-password -updatedAt -__v")
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
@@ -296,4 +296,46 @@ const makeadmin = async (req, res) => {
     }
 }
 
-module.exports = {register,login,logout,guestregister,deleteprofile,checkauth,exitguestmode,getallusers,makeadmin};
+const removeadmin = async (req, res) => {
+    try {
+        const { targetUserId } = req.body;
+
+        if (!targetUserId) {
+            return res.status(400).json({ error: "targetUserId is required" });
+        }
+
+        const userToUpdate = await User.findByIdAndUpdate(
+            targetUserId,
+            { role: 'user' },
+            { new: true }
+        ).select("-password -createdAt -updatedAt -__v");
+
+        if (!userToUpdate) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.status(200).json({
+            message: "User successfully demoted from admin",
+            user: userToUpdate
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to demote user from admin", details: err.message });
+    }
+}
+
+
+
+
+const admindeleteuser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await User.findByIdAndDelete(id);
+        await Submission.deleteMany({ userId: id });
+        await Leaderboard.deleteMany({ userId: id });
+        res.status(200).json({ message: "User deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+module.exports = {register,login,logout,guestregister,deleteprofile,checkauth,exitguestmode,getallusers,makeadmin,removeadmin,admindeleteuser};

@@ -7,7 +7,7 @@ const restrictToPhase = (allowedPhases) => {
             let activeSeason;
 
             if (isGuest) {
-                activeSeason = await Season.findOne({ seasonId: 7 });
+                activeSeason = await Season.findOne({ isGuestSeason: true });
             } else {
                 activeSeason = await Season.findOne({ isActive: true });
 
@@ -21,7 +21,7 @@ const restrictToPhase = (allowedPhases) => {
                 return res.status(500).json({
                     error: "Configuration Error",
                     message: isGuest 
-                        ? "Season 7 has not been configured in the database system for guests."
+                        ? "Guest season has not been configured in the database system for guests."
                         : "No tournament seasons have been configured in the database system."
                 });
             }

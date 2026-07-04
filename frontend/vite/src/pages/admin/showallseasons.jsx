@@ -93,11 +93,11 @@ export default function ShowAllSeasons() {
                             </div>
 
                             <div className="text-[11px] text-slate-400 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-800 pt-4">
-                                <div><span className="text-slate-600">Launch:</span> {new Date(season.launchDate).toLocaleDateString()}</div>
-                                <div><span className="text-slate-600">Round 1:</span> {new Date(season.round1Start).toLocaleDateString()}</div>
-                                <div><span className="text-slate-600">R1 Sol:</span> {new Date(season.r1SolutionStart).toLocaleDateString()}</div>
-                                <div><span className="text-slate-600">Round 2:</span> {new Date(season.round2Start).toLocaleDateString()}</div>
-                                <div><span className="text-slate-600">R2 Sol:</span> {new Date(season.r2SolutionStart).toLocaleDateString()}</div>
+                                <div><span className="text-slate-600">Launch:</span> {new Date(season.launchDate).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</div>
+                                <div><span className="text-slate-600">Round 1:</span> {new Date(season.round1Start).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</div>
+                                <div><span className="text-slate-600">R1 Sol:</span> {new Date(season.r1SolutionStart).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</div>
+                                <div><span className="text-slate-600">Round 2:</span> {new Date(season.round2Start).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</div>
+                                <div><span className="text-slate-600">R2 Sol:</span> {new Date(season.r2SolutionStart).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</div>
                             </div>
                         </div>
                     ))}

@@ -10,19 +10,19 @@ const seasonschema = z.object({
   isGuestSeason: z.boolean().default(false),
   isCompleted: z.boolean().default(false),
   
-  launchDate: z.coerce.date(),
+  launchDate: z.string(),
   
-  round1Start: z.coerce.date(),
-  round1End: z.coerce.date(),
+  round1Start: z.string(),
+  round1End: z.string(),
   
-  r1SolutionStart: z.coerce.date(),
-  r1SolutionEnd: z.coerce.date(),
+  r1SolutionStart: z.string(),
+  r1SolutionEnd: z.string(),
   
-  round2Start: z.coerce.date(),
-  round2End: z.coerce.date(),
+  round2Start: z.string(),
+  round2End: z.string(),
   
-  r2SolutionStart: z.coerce.date(),
-  r2SolutionEnd: z.coerce.date(),
+  r2SolutionStart: z.string(),
+  r2SolutionEnd: z.string(),
 }).refine((data) => data.round1End > data.round1Start, {
   message: "Round 1 End date must be after Start date",
   path: ["round1End"],
@@ -41,17 +41,18 @@ export default function CreateSeason() {
   const navigate = useNavigate();
 
 const onSubmit = async (data) => {
+  const formatIST = (dateStr) => new Date(dateStr + "+05:30").toISOString();
   const formattedData = {
         ...data,
-        launchDate: new Date(data.launchDate).toISOString(),
-        round1Start: new Date(data.round1Start).toISOString(),
-        round1End: new Date(data.round1End).toISOString(),
-        r1SolutionStart: new Date(data.r1SolutionStart).toISOString(),
-        r1SolutionEnd: new Date(data.r1SolutionEnd).toISOString(),
-        round2Start: new Date(data.round2Start).toISOString(),
-        round2End: new Date(data.round2End).toISOString(),
-        r2SolutionStart: new Date(data.r2SolutionStart).toISOString(),
-        r2SolutionEnd: new Date(data.r2SolutionEnd).toISOString(),
+        launchDate: formatIST(data.launchDate),
+        round1Start: formatIST(data.round1Start),
+        round1End: formatIST(data.round1End),
+        r1SolutionStart: formatIST(data.r1SolutionStart),
+        r1SolutionEnd: formatIST(data.r1SolutionEnd),
+        round2Start: formatIST(data.round2Start),
+        round2End: formatIST(data.round2End),
+        r2SolutionStart: formatIST(data.r2SolutionStart),
+        r2SolutionEnd: formatIST(data.r2SolutionEnd),
     };
     try {
         const response = await axiosClient.post('/seasons/create', formattedData);
