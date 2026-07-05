@@ -67,16 +67,26 @@ const Navbar = () => {
           <Link to="/dashboard/user-rank" className="hover:text-white transition-colors">Elo</Link>
         </div>
 
-        {/* User Account Menu Trigger */}
-        <div className="relative" ref={dropdownRef}>
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2.5 rounded-xl py-1.5 px-3 bg-[#121826] border border-slate-800/60 hover:border-slate-700 hover:bg-[#161F30] transition-all focus:outline-none"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-950 text-sm font-semibold text-indigo-300 border border-indigo-500/30 uppercase">
-              {user?.firstName?.[0]}
-            </div>
-            <span className="text-sm font-medium text-slate-300 hidden sm:inline">{user?.firstName}</span>
+        <div className="flex items-center gap-4">
+          {user?.role && (
+            <span className={`hidden sm:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md border ${
+              user.role === 'admin' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]' :
+              user.role === 'guest' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' :
+              'bg-slate-800/80 text-slate-400 border-slate-700'
+            }`}>
+              {user.role}
+            </span>
+          )}
+          {/* User Account Menu Trigger */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex items-center gap-2.5 rounded-xl py-1.5 px-3 bg-[#121826] border border-slate-800/60 hover:border-slate-700 hover:bg-[#161F30] transition-all focus:outline-none"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-950 text-sm font-semibold text-indigo-300 border border-indigo-500/30 uppercase">
+                {user?.firstName?.[0]}
+              </div>
+              <span className="text-sm font-medium text-slate-300 hidden sm:inline">{user?.firstName}</span>
             <svg className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
             </svg>
@@ -120,6 +130,7 @@ const Navbar = () => {
               )}
             </div>
           )}
+        </div>
         </div>
       </div>
     </header>

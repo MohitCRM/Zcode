@@ -80,10 +80,6 @@ export default function Landingpage() {
 
       <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-24 relative z-10">
         <div className="relative max-w-3xl mx-auto flex flex-col items-center gap-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-xs font-mono font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            {loading ? "Fetching Terminal Parameters..." : `Season ${season?.seasonId || "—"} Active`}
-          </div> 
 
           <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-tight text-white uppercase">
             Code. Compete.{" "}
