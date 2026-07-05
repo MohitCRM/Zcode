@@ -219,7 +219,7 @@ const guestsolutionhub = async (req,res)=>{
     try {
         const { pid } = req.params; 
         const userId = req.result._id;
-        const currentSeason = req.seasonConfig || req.season;
+        const currentSeason =  req.season;
         
         if (!currentSeason) {
             return res.status(500).json({ error: "Tournament context missing." });
@@ -228,7 +228,6 @@ const guestsolutionhub = async (req,res)=>{
         // 1. Fetch only the requested problem
         const problem = await Problem.findOne({ 
             _id: pid, 
-            seasonId: currentSeason.seasonId
         })
         .select("title difficulty tags baseEloReward releaseDay referencesolution");
 

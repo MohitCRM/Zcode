@@ -19,7 +19,7 @@ const guestfetchallproblmes = async (req,res)=>{
         const totalpages = Math.ceil(totalproblems / limit);
 
         const problems = await Problem.find({})
-            .sort({ seasonId: -1, releaseDay: -1 }) 
+            .sort({ seasonId: -1, releaseDay: 1 }) 
             .skip(skipoffset)
             .limit(limit);
 
@@ -174,7 +174,6 @@ if (compile.exitCode !== 0) {
         // 5. Save to database
         await Problem.create({
             ...req.body,
-            seasonId: req.seasonId ? req.seasonId : CURRENT_SEASON_ID, 
             problemcreator: req.result._id
         });
 
@@ -303,7 +302,17 @@ const problemfetch = async (req, res) => {
             return res.status(404).json({error : "Problem not found, locked behind a future round, or unreleased!"});
         }
 
-        return res.status(200).json({problem : problem, today: problem.releaseDay === currentSeasonDay ? true : false});
+        const wrongSubmissionsCount = await Submission.countDocuments({
+            userId: req.result._id,
+            problemId: pid,
+            status: { $in: ["Wrong Answer", "Time Limit Exceeded", "Runtime Error", "Compilation Error"] }
+        });
+
+        return res.status(200).json({
+            problem : problem, 
+            today: problem.releaseDay === currentSeasonDay ? true : false,
+            wrongSubmissionsCount
+        });
     } catch (err) {
         return res.status(400).json({error : "Error Occured: " + err.message});
     }
@@ -416,7 +425,17 @@ const guestproblemfetch = async (req, res) => {
             return res.status(404).json({error : "Problem not found"});
         }
 
-        return res.status(200).json({problem: problem, today: false});
+        const wrongSubmissionsCount = await Submission.countDocuments({
+            userId: req.result._id,
+            problemId: pid,
+            status: { $in: ["Wrong Answer", "Time Limit Exceeded", "Runtime Error", "Compilation Error"] }
+        });
+
+        return res.status(200).json({
+            problem: problem, 
+            today: false,
+            wrongSubmissionsCount
+        });
     } catch (err) {
         return res.status(400).json({error : "Error Occured: " + err.message});
     }
