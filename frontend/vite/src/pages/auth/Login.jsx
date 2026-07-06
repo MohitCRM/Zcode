@@ -44,6 +44,17 @@ export default function Login() {
       {/* Dynamic Background Matrix Overlay Accent */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#161F30_1px,transparent_1px),linear-gradient(to_bottom,#161F30_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none z-0"></div>
 
+      {/* Back Button */}
+      <Link 
+        to="/"
+        className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-[#121826]/80 hover:bg-indigo-500/20 border border-slate-800/80 hover:border-indigo-500/50 rounded-xl text-slate-400 hover:text-indigo-400 transition-all duration-300 backdrop-blur-md group shadow-lg"
+      >
+        <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span className="font-semibold text-sm tracking-wide">Back to Home</span>
+      </Link>
+
       {/* Main Container Split-Panel (Matches your handwritten notebook layout structure) */}
       <div className="w-full max-w-4xl bg-[#0B111E]/80 backdrop-blur-md border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row relative z-10 min-h-[460px]">
         
@@ -51,7 +62,7 @@ export default function Login() {
         <form onSubmit={handleSubmit(onsubmit)} className="w-full md:w-1/2 p-10 flex flex-col justify-center bg-[#0C1220]/40 space-y-5">
           <div className="space-y-1 text-center md:text-left">
             <h3 className="text-2xl font-black uppercase tracking-wider text-white">Login</h3>
-            <p className="text-slate-500 font-mono text-[11px]">VERIFY SECURITY ENCRYPTED TOKEN ACCESS</p>
+            <p className="text-slate-500 font-mono text-[11px]">Enter your details to get started</p>
           </div>
 
           {error && (

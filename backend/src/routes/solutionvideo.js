@@ -5,6 +5,6 @@ const {generateuploadsignature,savevideometadata,deletevideo} = require('../cont
 
 router.get('createuploadsignature/:problemId',adminmiddleware,generateuploadsignature);
 router.post('/save',adminmiddleware,savevideometadata);
-router.delete('/delete/:videoId',adminmiddleware,deletevideo);
+router.delete('/delete/:problemId',adminmiddleware,deletevideo);
 
 module.exports = router;

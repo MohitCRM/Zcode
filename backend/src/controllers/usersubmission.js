@@ -170,6 +170,9 @@ const submitcode = async (req, res) => {
     
         res.status(201).json({ status, eloChange, message: "Submission processed" , passedTestCases: passedCount, totalTestCases: totalTestCases.length });
     } catch (err) {
+        if (err.message && err.message.toLowerCase().includes("limit")) {
+            return res.status(429).json({ error: "Servers are currently at maximum capacity. Please wait a few seconds and submit again!" });
+        }
         res.status(500).json({ error: "Fatal System Error" + err});
     } finally {
         session.endSession(); 
@@ -253,6 +256,9 @@ const runcode = async (req, res) => {
         }
         res.status(200).json({ results, passed : passed, totalTestCases: problem.visibleTestCases.length });
     } catch (err) {
+    if (err.message && err.message.toLowerCase().includes("limit")) {
+        return res.status(429).json({ error: "Servers are currently at maximum capacity. Please wait a few seconds and run again!" });
+    }
     if (err.name === 'CommandExitError') {
         let errorTitle = "Execution Error";
         

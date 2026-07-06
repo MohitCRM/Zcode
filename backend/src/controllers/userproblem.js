@@ -6,6 +6,8 @@ const Leaderboard = require('../models/leaderboard');
 const { Sandbox } = require('e2b');
 const path = require('path');
 const fs = require('fs');
+const SolutionVideo = require('../models/solutionvideo');
+const cloudinary = require('cloudinary').v2;
 
 const guestfetchallproblmes = async (req,res)=>{
         try {
@@ -179,8 +181,10 @@ if (compile.exitCode !== 0) {
 
         res.status(200).json({message : "Problem Created Successfully"});
     } catch (err) {
+        if (err.message && err.message.toLowerCase().includes("limit")) {
+            return res.status(429).json({ error: "Servers are currently at maximum capacity. Please wait a few seconds and try creating again!" });
+        }
         res.status(400).json({error : "Error: " + err.message});
-
     }
 }
 
@@ -252,6 +256,9 @@ const problemupdate = async (req, res) => {
 
         res.status(200).json({ message: "Problem Updated Successfully", problem: newProblem });
     } catch (err) {
+        if (err.message && err.message.toLowerCase().includes("limit")) {
+            return res.status(429).json({ error: "Servers are currently at maximum capacity. Please wait a few seconds and try updating again!" });
+        }
         return res.status(400).json({ error: "Error Occurred during updates: " + err.message });
     }
 };
@@ -263,6 +270,16 @@ const problemdelete = async (req, res) => {
 
         const deletedprobem = await Problem.findByIdAndDelete(pid);
         if (!deletedprobem) return res.status(404).json({error : "Problem not found"});
+
+        // Delete associated video from DB and Cloudinary
+        const video = await SolutionVideo.findOneAndDelete({problemId: pid});
+        if (video && video.cloudinaryPublicId) {
+            try {
+                await cloudinary.uploader.destroy(video.cloudinaryPublicId, { resource_type: 'video', invalidate: true });
+            } catch(e) {
+                console.error("Failed to delete video from cloudinary", e);
+            }
+        }
 
         res.status(200).json({message : "Problem Deleted Successfully"});
     } catch (err) {
@@ -296,10 +313,16 @@ const problemfetch = async (req, res) => {
             round: allowedRound,
             releaseDay: { $lte: currentSeasonDay },
 
-        }).select("-hiddenTestCases -__v -createdAt -updatedAt -problemcreator -drivercode ");
+        }).select("-hiddenTestCases -__v -createdAt -updatedAt -problemcreator -drivercode ").lean();
 
         if (!problem) {
             return res.status(404).json({error : "Problem not found, locked behind a future round, or unreleased!"});
+        }
+
+        // Fetch video solution
+        const videoSolution = await SolutionVideo.findOne({ problemId: pid }).lean();
+        if (videoSolution) {
+            problem.videoSolution = videoSolution;
         }
 
         const wrongSubmissionsCount = await Submission.countDocuments({
@@ -420,9 +443,15 @@ const guestproblemfetch = async (req, res) => {
     try {
         if (!pid) return res.status(400).json({error : "Missing pid field"});
 
-        const problem = await Problem.findById(pid).select("-hiddenTestCases -__v -createdAt -updatedAt -problemcreator -drivercode");
+        const problem = await Problem.findById(pid).select("-hiddenTestCases -__v -createdAt -updatedAt -problemcreator -drivercode").lean();
         if (!problem) {
             return res.status(404).json({error : "Problem not found"});
+        }
+
+        // Fetch video solution
+        const videoSolution = await SolutionVideo.findOne({ problemId: pid }).lean();
+        if (videoSolution) {
+            problem.videoSolution = videoSolution;
         }
 
         const wrongSubmissionsCount = await Submission.countDocuments({

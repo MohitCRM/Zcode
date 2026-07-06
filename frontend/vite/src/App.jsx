@@ -30,6 +30,7 @@ import UpdateProblem from "./pages/admin/UpdateProblem";
 import UpdateSeason from "./pages/admin/UpdateSeason";
 import GuestLogin from "./pages/auth/GuestLogin";
 import GuestPowers from "./pages/guest/GuestPowers";
+import Adminvideosolutionupload from "./pages/admin/adminvideosolutionupload";
 
 export default function App() {
   const { user, isauth, loading: authloading } = useSelector((state) => state.auth);
@@ -97,6 +98,8 @@ export default function App() {
           <Route path="create-announcement" element={<CreateAnnouncement />} />
           <Route path="create-problem" element={<CreateProblem />} />
           <Route path="create-season" element={<CreateSeason />} />
+
+          <Route path="upload-video/:pid" element={<Adminvideosolutionupload />} />
 
           <Route path="update-announcement/:aid" element={<UpdateAnnouncement />} />
           <Route path="update-problem/:pid" element={<UpdateProblem />} />

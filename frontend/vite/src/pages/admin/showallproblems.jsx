@@ -10,15 +10,13 @@ export default function ShowAllProblems() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Define the function strictly INSIDE the effect
-        const controller = new AbortController();
+
 
         const fetchProblems = async () => {
             setLoading(true);
             try {
                 const response = await axiosClient.get(`/problem/fetchallproblems`, {
                     params: { page: currentPage, limit: 9 },
-                    signal: controller.signal // Link the request to the controller
                 });
                 
                 setProblems(response.data.problems || []);
@@ -35,8 +33,6 @@ export default function ShowAllProblems() {
 
         fetchProblems();
 
-        // Cleanup: abort the request if the component re-renders or unmounts
-        return () => controller.abort();
     }, [currentPage]);
 
     const handleDelete = async (id) => {
@@ -47,6 +43,17 @@ export default function ShowAllProblems() {
         } catch (err) {
             console.error("Delete failed:", err);
             alert("Failed to delete problem.");
+        }
+    };
+
+    const handleDeleteVideo = async (problemId) => {
+        if (!window.confirm("Are you sure you want to delete the video solution for this problem?")) return;
+        try {
+            await axiosClient.delete(`/videosolution/delete/${problemId}`);
+            alert("Video solution deleted successfully!");
+        } catch (err) {
+            console.error("Delete video failed:", err);
+            alert(err.response?.data?.error || "Failed to delete video solution.");
         }
     };
 
@@ -75,7 +82,19 @@ export default function ShowAllProblems() {
                             <div key={problem._id} className="bg-[#121826] border border-slate-800 p-5 rounded-xl flex flex-col gap-3">
                                 <div className="flex justify-between items-start">
                                     <h3 className="text-white font-bold truncate">{problem.title}</h3>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 flex-wrap justify-end">
+                                        <button 
+                                            onClick={() => navigate(`/dashboard/admin/upload-video/${problem._id}`)} 
+                                            className="px-2 py-1 text-[10px] text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 rounded hover:bg-emerald-500/20 transition-colors"
+                                        >
+                                            Upload Vid
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteVideo(problem._id)} 
+                                            className="px-2 py-1 text-[10px] text-amber-400 hover:text-amber-300 bg-amber-500/10 rounded hover:bg-amber-500/20 transition-colors"
+                                        >
+                                            Delete Vid
+                                        </button>
                                         <button 
                                             onClick={() => navigate(`/dashboard/admin/update-problem/${problem._id}`, { state: { problem } })} 
                                             className="px-2 py-1 text-[10px] text-slate-400 hover:text-white bg-slate-800 rounded hover:bg-slate-700 transition-colors"

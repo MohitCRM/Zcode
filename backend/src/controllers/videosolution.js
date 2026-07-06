@@ -115,9 +115,9 @@ const savevideometadata = async (req,res)=>{
 
 const deletevideo = async (req,res)=>{
     try{
-        const {videoId} = req.params;
+        const {problemId} = req.params;
 
-        const video = await SolutionVideo.findByIdAndDelete(videoId);
+        const video = await SolutionVideo.findOneAndDelete({ problemId: problemId });
 
         if(!video)
             return res.status(404).json({error : 'Video not found'});
