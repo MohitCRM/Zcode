@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import Editor from '@monaco-editor/react';
 import { useParams, useNavigate } from 'react-router';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import axiosClient from "../../utils/axiosClient";
+import { updateChatHistory } from '../../slicers/chataiSlice';
+import { updateCode } from '../../slicers/editorSlice';
 
 const langAliases = {
   cpp: ['c++', 'cpp', 'cplusplus'],
@@ -59,6 +61,17 @@ const ProblemPage = () => {
   const { problemId } = useParams();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  const { histories } = useSelector((state) => state.chatai);
+  const chatHistory = histories[problemId] || [];
+
+  const { codes } = useSelector((state) => state.editor);
+
+  const [aiQuery, setAiQuery] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [wrongSubmissions, setWrongSubmissions] = useState(0);
+  const chatEndRef = useRef(null);
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -68,15 +81,24 @@ const ProblemPage = () => {
           ? `/problem/guestgetproblembyid/${problemId}`
           : `/problem/getproblembyid/${problemId}`;
         const response = await axiosClient.get(endpoint);
-        const { problem ,today} = response.data;
+        const { problem, today, wrongSubmissionsCount } = response.data;
         
         const startCodes = problem?.startcode || [];
         const match = findStartCode(startCodes, selectedLanguage);
         const initialCode = match ? match.initialcode : "// Write your C++ solution here";
 
         setProblem(problem);
-        setCode(initialCode);
+        
+        const existingCode = codes[problemId]?.[selectedLanguage];
+        if (existingCode !== undefined) {
+          setCode(existingCode);
+        } else {
+          setCode(initialCode);
+          dispatch(updateCode({ problemId, language: selectedLanguage, code: initialCode }));
+        }
+
         setIsReleaseDay(today);
+        setWrongSubmissions(wrongSubmissionsCount || 0);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching problem:', error);
@@ -89,14 +111,23 @@ const ProblemPage = () => {
 
   useEffect(() => {
     if (problem) {
-      const match = findStartCode(problem.startcode, selectedLanguage);
-      const initialCode = match ? match.initialcode : '';
-      setCode(initialCode);
+      const existingCode = codes[problemId]?.[selectedLanguage];
+      if (existingCode !== undefined) {
+        setCode(existingCode);
+      } else {
+        const match = findStartCode(problem.startcode, selectedLanguage);
+        const initialCode = match ? match.initialcode : '';
+        setCode(initialCode);
+        dispatch(updateCode({ problemId, language: selectedLanguage, code: initialCode }));
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLanguage, problem]);
 
   const handleEditorChange = (value) => {
-    setCode(value || '');
+    const newCode = value || '';
+    setCode(newCode);
+    dispatch(updateCode({ problemId, language: selectedLanguage, code: newCode }));
   };
 
   const handleEditorDidMount = (editor) => {
@@ -121,8 +152,9 @@ const ProblemPage = () => {
     } catch (error) {
       console.error('Error running code:', error);
       setRunResult({
-        success: false,
-        error: error.response?.data?.error || 'Internal server error'
+        error: error.response?.data?.error || 'Internal server error',
+        passed: 0,
+        totalTestCases: 0
       });
       setLoading(false);
       setActiveRightTab('testcase');
@@ -142,9 +174,67 @@ const ProblemPage = () => {
       setActiveRightTab('result');
     } catch (error) {
       console.error('Error submitting code:', error);
-      setSubmitResult(null);
+      setSubmitResult({
+        status: "System Error",
+        errorMessage: error.response?.data?.error || 'Internal server error',
+        passedTestCases: 0,
+        totalTestCases: 0,
+        eloChange: 0
+      });
       setLoading(false);
       setActiveRightTab('result');
+    }
+  };
+
+  useEffect(() => {
+    if (submitResult && submitResult.status && submitResult.status !== 'Accepted' && submitResult.status !== 'Pending') {
+      setWrongSubmissions(prev => prev + 1);
+    }
+  }, [submitResult]);
+
+  useEffect(() => {
+    if (activeLeftTab === 'askzai' && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatHistory, activeLeftTab]);
+
+  const handleAskZAi = async (e) => {
+    e?.preventDefault();
+    if (!aiQuery.trim() || aiLoading) return;
+
+    const userMessage = { role: 'user', text: aiQuery };
+    const updatedHistory = [...chatHistory, userMessage];
+    dispatch(updateChatHistory({ problemId, history: updatedHistory }));
+    setAiQuery('');
+    setAiLoading(true);
+
+    try {
+      const response = await axiosClient.post('/ai/problemchatai', {
+        problemId,
+        userCode: code,
+        chatHistory: updatedHistory,
+        language: selectedLanguage,
+        newQuestion: aiQuery
+      });
+
+      dispatch(updateChatHistory({
+        problemId,
+        history: [
+          ...updatedHistory,
+          { role: 'model', text: response.data.reply }
+        ]
+      }));
+    } catch (error) {
+      console.error("AI Error:", error);
+      dispatch(updateChatHistory({
+        problemId,
+        history: [
+          ...updatedHistory,
+          { role: 'model', text: error.response?.data?.reply || "I'm having trouble connecting right now. Please try again." }
+        ]
+      }));
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -184,9 +274,37 @@ const ProblemPage = () => {
         {/* ================= LEFT SIDE PANEL ================= */}
         <div className="w-1/2 flex flex-col border-r border-slate-800/80 bg-[#0A0E1A]">
 
-          {/* Left Content Area */}
+          {/* Left Panel Tabs */}
+          <div className="flex overflow-x-auto custom-scrollbar bg-[#090D16] border-b border-slate-800/80">
+              {['description', 'askzai'].map((tab) => {
+                const isZAiLocked = tab === 'askzai' && wrongSubmissions === 0;
+                const isActive = activeLeftTab === tab;
+                
+                return (
+                  <button
+                    key={tab}
+                    className={`flex items-center justify-center px-6 py-3 font-semibold text-sm transition-all duration-200 border-b-2 ${
+                      isActive 
+                        ? 'border-indigo-500 text-indigo-400 bg-[#161F30]' 
+                        : isZAiLocked 
+                          ? 'border-transparent text-slate-600 cursor-not-allowed'
+                          : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#161F30]/50'
+                    }`}
+                    onClick={() => {
+                      if (!isZAiLocked) setActiveLeftTab(tab);
+                    }}
+                    title={isZAiLocked ? "Submit a failed attempt to unlock ZAi" : ""}
+                  >
+                    {tab === 'description' ? 'Description' : isZAiLocked ? 'Ask ZAi 🔒' : 'Ask ZAi '}
+                  </button>
+                );
+              })}
+            </div>
+
+          {/* Left Content Area - Description */}
+          {activeLeftTab === 'description' && (
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
-            {problem && activeLeftTab === 'description' && (
+            {problem && (
               <>
                 {/* Header Title Block */}
                 <div className="flex items-start justify-between border-b border-slate-800/60 pb-4">
@@ -339,6 +457,100 @@ const ProblemPage = () => {
               </>
             )}
           </div>
+          )}
+
+          {/* Left Content Area - Ask ZAi */}
+          {activeLeftTab === 'askzai' && (
+            <div className="flex-1 flex flex-col min-h-0 bg-[#0A0E1A]">
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {chatHistory.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full pt-8 pb-4">
+                    {/* Header Area */}
+                    <div className="flex flex-col items-center space-y-4 mb-10">
+                      {/* Avatar */}
+                      <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-[#090D16] border border-slate-800 shadow-inner relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-cyan-500/20"></div>
+                        <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 to-cyan-400 relative z-10 font-sans">Z</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h2 className="text-xl font-bold text-white tracking-tight">Ask Z anything</h2>
+                        <p className="text-slate-400 text-xs">Hints, explanations, strategy — no spoilers.</p>
+                      </div>
+                    </div>
+
+                    {/* Intro Bubble */}
+                    <div className="w-full mt-auto">
+                      <div className="flex items-end gap-3">
+                        <div className="flex h-5 w-5 items-center justify-center rounded bg-indigo-500/20 text-indigo-400 shadow-sm border border-indigo-500/30">
+                          <span className="text-xs font-bold text-indigo-400 font-sans">Z</span>
+                        </div>
+                        <div className="bg-[#161F30] border border-slate-700/50 rounded-2xl rounded-tl-sm px-4 py-3 text-[13px] leading-relaxed text-slate-300 shadow-sm">
+                          Hey there 👋 I'm Z — your mindful coding guide. I'm here to help you think through problems, understand concepts, and sharpen your approach. Ask me anything to get started.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  chatHistory.map((msg, idx) => (
+                    <div key={idx} className="w-full mb-6">
+                      {msg.role === 'user' ? (
+                        <div className="flex justify-end w-full">
+                          <div className="max-w-[80%] rounded-3xl px-5 py-3.5 bg-[#1E293B] text-slate-200 text-sm leading-relaxed whitespace-pre-wrap shadow-sm">
+                            {msg.text}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-4 w-full">
+                          <div className="flex h-4 w-4 mt-0.5 shrink-0 items-center justify-center rounded bg-indigo-500/20 shadow-sm border border-indigo-500/30">
+                            <span className="text-[10px] font-bold text-indigo-400 font-sans tracking-tighter">Z</span>
+                          </div>
+                          <div className="flex-1 text-slate-300 text-sm leading-relaxed whitespace-pre-wrap pt-2">
+                            {msg.text}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+                {aiLoading && (
+                  <div className="flex items-center gap-4 w-full mb-6">
+                    <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-indigo-500/20 shadow-sm border border-indigo-500/30">
+                      <span className="text-[10px] font-bold text-indigo-400 font-sans tracking-tighter">Z</span>
+                    </div>
+                    <div className="flex gap-1.5 pt-1">
+                      <div className="w-2 h-2 bg-indigo-500/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-indigo-500/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-indigo-500/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+              
+              {/* Chat Input */}
+              <div className="p-4 bg-[#0C1220] border-t border-slate-800/80 shrink-0">
+                <form onSubmit={handleAskZAi} className="flex gap-2">
+                  <input 
+                    type="text"
+                    value={aiQuery}
+                    onChange={(e) => setAiQuery(e.target.value)}
+                    placeholder="Ask ZAi for a hint..."
+                    className="flex-1 bg-[#121826] border border-slate-800 text-sm rounded-lg px-4 py-2.5 text-slate-200 outline-none focus:border-indigo-500/50 placeholder-slate-600"
+                    disabled={aiLoading}
+                  />
+                  <button 
+                    type="submit"
+                    disabled={aiLoading || !aiQuery.trim()}
+                    className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                  >
+                    Send
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ================= RIGHT SIDE PANEL ================= */}
@@ -410,7 +622,7 @@ const ProblemPage = () => {
                     <path d="M12 3c-4.97 0-9 1.79-9 4s4.03 4 9 4 9-1.79 9-4-4.03-4-9-4zm0 6c-3.87 0-7-1.34-7-2s3.13-2 7-2 7 1.34 7 2-3.13 2-7 2zm0 3c-4.97 0-9 1.79-9 4s4.03 4 9 4 9-1.79 9-4-4.03-4-9-4zm0 6c-3.87 0-7-1.34-7-2s3.13-2 7-2 7 1.34 7 2-3.13 2-7 2z" />
                   </svg>
                   <h3 className="font-bold text-slate-400 text-[11px] uppercase tracking-wider">
-                    Sandbox Run Output
+                    Run Output
                   </h3>
                 </div>
 
@@ -436,7 +648,7 @@ const ProblemPage = () => {
                         <p className="text-xs text-slate-400 mt-0.5">
                           {runResult.error 
                             ? "An error occurred during runtime compilation." 
-                            : `Passed ${runResult.passed} out of ${runResult.totalTestCases} execution instances.`}
+                            : `Passed ${runResult.passed} out of ${runResult.totalTestCases} Visible test cases.`}
                         </p>
                       </div>
                     </div>
@@ -565,9 +777,11 @@ const ProblemPage = () => {
                         Verification Complete: {submitResult.status}
                       </h4>
                       <p className="text-slate-400 text-xs font-medium max-w-md">
-                        {isAccepted 
-                          ? "All secure isolated execution pipelines and hidden system tests have cleared successfully."
-                          : "The testing infrastructure flagged issues processing this execution block pattern."}
+                        {submitResult.errorMessage
+                          ? submitResult.errorMessage
+                          : isAccepted 
+                          ? "All test cases including hidden system tests have passed."
+                          : "Code failed to run the test cases."}
                       </p>
                     </div>
                   </div>

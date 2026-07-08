@@ -64,11 +64,11 @@ function Adminvideosolutionupload() {
             const metadataResponse = await axiosClient.post(`/videosolution/save`,{
                 problemId : pid,
                 cloudinaryPublicId: cloudinaryResult.public_id,
-                secureUrl: cloudinaryResult.secureUrl,
+                secureUrl: cloudinaryResult.secure_url,
                 duration : cloudinaryResult.duration
             })
 
-            setUploadVideo(metadataResponse.data.videoSolution);
+            setUploadVideo(metadataResponse.data);
             reset();
         }catch (err) {
           console.error('Upload error:', err);
@@ -98,7 +98,7 @@ function Adminvideosolutionupload() {
                     <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm flex flex-col gap-1">
                         <h3 className="font-bold text-emerald-300">Upload Successful!</h3>
                         <p>Duration: {formatDuration(uploadVideo.duration)}</p>
-                        <p>Uploaded: {new Date(uploadVideo.createdAt || Date.now()).toLocaleString()}</p>
+                        <p>Uploaded: {new Date(uploadVideo.uploadedAt || Date.now()).toLocaleString()}</p>
                     </div>
                 )}
 

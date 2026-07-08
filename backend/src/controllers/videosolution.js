@@ -28,7 +28,7 @@ const generateuploadsignature = async (req,res)=>{
         //generating digital signature , so i must also send uploadparams to verify
         const signature = cloudinary.utils.api_sign_request(
             uploadParams,
-            process.env.CLOUDINARY_API_KEY
+            process.env.CLOUDINARY_API_SECRET
         );
 
         res.json(
@@ -38,7 +38,7 @@ const generateuploadsignature = async (req,res)=>{
                 public_id : publicId,
                 api_key : process.env.CLOUDINARY_API_KEY,
                 cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-                upload_url : `https://api.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/video/upload`
+                upload_url : `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/video/upload`
             }
         );
 
@@ -88,17 +88,21 @@ const savevideometadata = async (req,res)=>{
             format: 'jpg'
         });
 
+        const problem = await Problem.findById(problemId);
+        const videotitle = problem ? `${problem.title} Solution` : 'Solution Video';
+
         //creating video solution record
         const videoSolution = new SolutionVideo({
             problemId,
             userId,
+            videotitle,
             cloudinaryPublicId,
             secureUrl,
             duration : cloudinaryresource.duration || duration,
             thumbnailUrl
         })
 
-        await SolutionVideo.save();
+        await videoSolution.save();
 
         res.status(201).json({
             message : 'Video solution saved successfully',
@@ -109,7 +113,8 @@ const savevideometadata = async (req,res)=>{
         });
     }catch(err)
     {   
-        res.status(500).json({error : 'Failed to save video metadata'});
+        console.error("Save video metadata error:", err);
+        res.status(500).json({error : 'Failed to save video metadata', details: err.message});
     }
 }
 

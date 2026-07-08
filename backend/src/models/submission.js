@@ -42,11 +42,11 @@ const submissionSchema = new Schema({
         default: false
     },
     memory: {
-        type: Number, // Judge0 returns memory in KB
+        type: Number, 
         default: 0
     },
     runtime: {
-        type: Number, // Judge0 returns time in seconds (float) or milliseconds
+        type: Number, 
         default: 0
     },
     totalTestCases: {

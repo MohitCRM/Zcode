@@ -98,7 +98,7 @@ export default function GuestLogin() {
                             disabled={loading}
                             className="w-full sm:w-auto px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-mono font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-600/10 hover:shadow-indigo-500/20 active:scale-[0.98] transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none"
                         >
-                            {loading ? "Initializing..." : "Enter Sandbox"}
+                            {loading ? "Initializing..." : "Enter Guest Mode"}
                         </button>
                     </div>
                 </form>

@@ -360,13 +360,19 @@ export default function RanksPage() {
     problemsSolved: 0
   });
 
-  const { data: seasonData } = useSelector(state => state.season);
+  const { data: seasonData, loading: seasonLoading } = useSelector(state => state.season);
   const seasonId = seasonData?.seasonId;
-  
+  console.log(seasonData);
   const [offSeasonMessage, setOffSeasonMessage] = useState(null);
 
   useEffect(() => {
-    if (!seasonId) return;
+    if (seasonLoading) return;
+    
+    if (!seasonId) {
+      setOffSeasonMessage("No active seasons right now.");
+      setIsLoading(false);
+      return;
+    }
     
     axiosClient.get(`/leaderboard/mystats/${seasonId}`)
       .then(res => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
 import axiosClient from '../../utils/axiosClient';
@@ -33,6 +33,205 @@ const formatExampleData = (dataString) => {
     return typeof dataString === 'object' ? JSON.stringify(dataString) : dataString;
   }
 };
+
+function CustomVideoPlayer({ url, poster }) {
+  const playerRef = useRef(null);
+  const wrapperRef = useRef(null);
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.8);
+  const [playbackRate, setPlaybackRate] = useState(1.0);
+  const [seeking, setSeeking] = useState(false);
+  const [playedFraction, setPlayedFraction] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [duration, setDuration] = useState(0);
+
+  const formatTime = (seconds) => {
+    if (isNaN(seconds)) return '00:00';
+    const date = new Date(seconds * 1000);
+    const hh = date.getUTCHours();
+    const mm = date.getUTCMinutes();
+    const ss = date.getUTCSeconds().toString().padStart(2, '0');
+    if (hh) {
+      return `${hh}:${mm.toString().padStart(2, '0')}:${ss}`;
+    }
+    return `${mm}:${ss}`;
+  };
+
+  const videoUrl = (url && !url.match(/\.(mp4|webm|ogg)$/i)) ? `${url}.mp4` : url;
+
+  useEffect(() => {
+    if (playerRef.current) playerRef.current.volume = volume;
+  }, [volume]);
+
+  useEffect(() => {
+    if (playerRef.current) playerRef.current.playbackRate = playbackRate;
+  }, [playbackRate]);
+
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      if (wrapperRef.current?.requestFullscreen) {
+        wrapperRef.current.requestFullscreen();
+      } else if (wrapperRef.current?.webkitRequestFullscreen) {
+        wrapperRef.current.webkitRequestFullscreen();
+      } else if (wrapperRef.current?.msRequestFullscreen) {
+        wrapperRef.current.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
+  const togglePlay = () => {
+    if (playerRef.current) {
+      if (isPlaying) {
+        playerRef.current.pause();
+      } else {
+        playerRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (!seeking && playerRef.current) {
+      const current = playerRef.current.currentTime;
+      const dur = playerRef.current.duration || 1;
+      setPlayedFraction(current / dur);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (playerRef.current) {
+      setDuration(playerRef.current.duration);
+    }
+  };
+
+  const handleSeekMouseDown = () => setSeeking(true);
+  const handleSeekChange = (e) => setPlayedFraction(parseFloat(e.target.value));
+  const handleSeekMouseUp = (e) => {
+    setSeeking(false);
+    if (playerRef.current) {
+      const dur = playerRef.current.duration || 1;
+      playerRef.current.currentTime = parseFloat(e.target.value) * dur;
+    }
+  };
+
+  return (
+    <div 
+      ref={wrapperRef} 
+      className={`relative mx-auto flex flex-col overflow-hidden transition-all duration-200 ${
+        isFullscreen ? "h-full w-full max-w-none rounded-none border-none bg-black" : "w-full rounded-xl border border-slate-800/60 bg-[#070C15] shadow-lg"
+      }`}
+    >
+      <div className={`relative w-full flex-grow bg-black ${isFullscreen ? "h-full flex items-center justify-center" : "aspect-video"}`}>
+        <video
+          ref={playerRef}
+          src={videoUrl}
+          poster={poster}
+          className={`w-full object-contain cursor-pointer ${isFullscreen ? "h-full max-h-screen" : "h-full"}`}
+          onClick={togglePlay}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={() => setIsPlaying(false)}
+        />
+      </div>
+
+      <div className={`flex flex-col gap-3 p-4 text-slate-200 transition-all duration-300 ${
+        isFullscreen 
+          ? "absolute bottom-0 left-0 w-full z-50 bg-[#0B111E]/80 backdrop-blur-md border-t border-slate-700/50" 
+          : "border-t border-slate-800/60 bg-[#0B111E]"
+      }`}>
+        <input
+          type="range"
+          min={0}
+          max={0.999999}
+          step="any"
+          value={playedFraction}
+          onMouseDown={handleSeekMouseDown}
+          onChange={handleSeekChange}
+          onMouseUp={handleSeekMouseUp}
+          className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-700/50 accent-indigo-500 hover:accent-indigo-400"
+        />
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={togglePlay} className="flex items-center gap-2 rounded-lg bg-indigo-600/10 px-3 py-1.5 text-xs font-bold text-indigo-400 transition-colors hover:bg-indigo-600/20 hover:text-indigo-300">
+              {isPlaying ? (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path fillRule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clipRule="evenodd" /></svg>
+                  Pause
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" /></svg>
+                  Play
+                </>
+              )}
+            </button>
+
+            <label className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+              <span className="text-xs font-medium text-slate-400 font-mono mr-2">
+                {formatTime(playedFraction * duration)} / {formatTime(duration)}
+              </span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06z" /></svg>
+              <input
+                type="range" min={0} max={1} step="0.1" value={volume}
+                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                className="h-1.5 w-16 cursor-pointer appearance-none rounded-lg bg-slate-700/50 accent-indigo-500 hover:accent-indigo-400"
+              />
+            </label>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <select
+              value={playbackRate}
+              onChange={(e) => setPlaybackRate(parseFloat(e.target.value))}
+              className="rounded border border-slate-700/50 bg-[#161F30] px-2 py-1 text-xs font-medium text-slate-300 outline-none transition-colors hover:border-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value={0.5}>0.5x</option>
+              <option value={1}>1.0x</option>
+              <option value={1.5}>1.5x</option>
+              <option value={2}>2.0x</option>
+            </select>
+
+            <button onClick={toggleFullscreen} className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-400 transition-colors hover:bg-[#121826] hover:text-slate-200">
+              {isFullscreen ? (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path fillRule="evenodd" d="M3.22 3.22a.75.75 0 011.06 0l3.97 3.97V4.5a.75.75 0 011.5 0V9a.75.75 0 01-.75.75H4.5a.75.75 0 010-1.5h2.69L3.22 4.28a.75.75 0 010-1.06zm17.56 0a.75.75 0 010 1.06l-3.97 3.97h2.69a.75.75 0 010 1.5H15a.75.75 0 01-.75-.75V4.5a.75.75 0 011.5 0v2.69l3.97-3.97a.75.75 0 011.06 0zM3.22 20.78a.75.75 0 010-1.06l3.97-3.97H4.5a.75.75 0 010-1.5H9a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-2.69l-3.97 3.97a.75.75 0 01-1.06 0zm17.56 0a.75.75 0 01-1.06 0l-3.97-3.97v2.69a.75.75 0 01-1.5 0V15a.75.75 0 01.75-.75h4.5a.75.75 0 010 1.5h-2.69l3.97 3.97a.75.75 0 010 1.06z" clipRule="evenodd" /></svg>
+                  Exit
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path fillRule="evenodd" d="M15 3.75a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V5.56l-3.97 3.97a.75.75 0 11-1.06-1.06l3.97-3.97h-2.69a.75.75 0 01-.75-.75zm-12 0A.75.75 0 013.75 3h4.5a.75.75 0 010 1.5H5.56l3.97 3.97a.75.75 0 01-1.06 1.06L4.5 5.56v2.69a.75.75 0 01-1.5 0v-4.5zm11.47 11.47a.75.75 0 011.06 0l3.97 3.97v-2.69a.75.75 0 011.5 0v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 010-1.5h2.69l-3.97-3.97a.75.75 0 010-1.06zm-9.47 0a.75.75 0 010 1.06l-3.97 3.97h2.69a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75v-4.5a.75.75 0 011.5 0v2.69l3.97-3.97a.75.75 0 011.06 0z" clipRule="evenodd" /></svg>
+                  Fullscreen
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Solution() {
   const { pid } = useParams();
@@ -259,44 +458,11 @@ export default function Solution() {
         </h3>
       </div>
 
-                {solutionData.videoSolutions && solutionData.videoSolutions.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-4">
-                    {solutionData.videoSolutions.map((video, idx) => (
-                        <div 
-                        key={idx} 
-                        className="group bg-[#121826]/70 backdrop-blur-sm rounded-xl border border-slate-800/60 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-indigo-500/40 hover:bg-[#161F30] hover:shadow-[0_0_30px_-5px_rgba(79,70,229,0.15)] transition-all duration-200 ease-out"
-                        >
-                        <div className="flex items-center gap-4">
-                            {/* Simulated Thumbnail Thumbnail Action Button */}
-                            <div className="relative flex h-16 w-24 shrink-0 items-center justify-center rounded-lg bg-[#070C15] border border-slate-800 overflow-hidden group-hover:border-indigo-500/30 transition-colors">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600/90 text-white shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform z-10">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 translate-x-0.5">
-                                <path d="M6.3 2.841A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.269l9.344-5.89a1.5 1.5 0 0 0 0-2.538L6.3 2.84z" />
-                                </svg>
-                            </div>
-                            </div>
-                            <div>
-                            <h4 className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors">
-                                {video.title || `Video Explanation Tutorial #${idx + 1}`}
-                            </h4>
-                            <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                                Instructor: <span className="text-indigo-400 font-semibold">{video.author || "Zcode Staff"}</span>
-                            </p>
-                            </div>
-                        </div>
-                        
-                        <a 
-                            href={video.url} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="w-full sm:w-auto text-center rounded-xl bg-[#121826] border border-slate-800/60 hover:border-indigo-500/40 hover:bg-indigo-600 px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white shadow-md transition-all duration-200"
-                        >
-                            Watch Stream
-                        </a>
-                        </div>
-                    ))}
-                    </div>
+                {problemData.videoSolution?.secureUrl ? (
+                    <CustomVideoPlayer 
+                        url={problemData.videoSolution.secureUrl} 
+                        poster={problemData.videoSolution.thumbnailUrl} 
+                    />
                 ) : (
                     /* Video Fallback State Box */
                     <div className="group bg-[#121826]/30 backdrop-blur-sm rounded-xl border border-dashed border-slate-800/80 p-6 text-center transition-all">
@@ -305,7 +471,7 @@ export default function Solution() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
                         </svg>
                     </div>
-                    <span className="text-slate-500 italic text-xs block">No video tutorials deployed for this problem yet.</span>
+                    <span className="text-slate-500 italic text-xs block">No video walkthroughs available.</span>
                     </div>
                 )}
                 </div>
@@ -387,7 +553,7 @@ export default function Solution() {
                         return (
                             <div 
                             key={sub.submissionId || index}
-                            onClick={() => setSelectedSubmission({ ...sub, author: 'Your Account Instance' })}
+                            onClick={() => setSelectedSubmission({ ...sub, author: 'Your Account Submission' })}
                             className={`group relative rounded-xl border p-4 flex items-center justify-between gap-4 transition-all duration-200 ease-out cursor-pointer shadow-lg ${
                                 isSelected 
                                 ? 'bg-[#161F30] border-indigo-500 shadow-[0_0_25px_-5px_rgba(79,70,229,0.2)]' 
@@ -455,7 +621,7 @@ export default function Solution() {
                                     : 'text-slate-600 group-hover:text-slate-400 group-hover:translate-x-0.5'
                                 }`}
                                 >
-                                <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                                <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
                                 </svg>
                             </div>
                             </div>
@@ -529,7 +695,7 @@ export default function Solution() {
                                 </div>
                                 <div className="text-[11px] font-mono text-slate-500 flex items-center gap-1.5">
                                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/80 animate-pulse"></span>
-                                    Instance Verification Cleared
+                                    Accepted Submission
                                 </div>
                                 </div>
                             </div>
@@ -555,7 +721,7 @@ export default function Solution() {
                                     : 'text-slate-600 group-hover:text-slate-400 group-hover:translate-x-0.5'
                                 }`}
                                 >
-                                <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                                <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
                                 </svg>
                             </div>
                             </div>

@@ -61,13 +61,13 @@ export default function GuestSolutions() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-                            Sandbox Solutions Hub
+                            Solutions Hub
                         </h1>
                         <p className="mt-2 text-sm text-slate-400">Review all community submissions and reference solutions in Guest Mode.</p>
                     </div>
                     <div className="flex gap-2">
                         <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">
-                            Guest Sandbox
+                            Guest Mode
                         </span>
                     </div>
                 </div>

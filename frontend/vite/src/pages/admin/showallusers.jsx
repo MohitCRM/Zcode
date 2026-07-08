@@ -43,7 +43,7 @@ export default function ShowallUsers() {
     if (!window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) return;
     
     try {
-      await axiosClient.delete(`/admin/deleteuser/${userId}`);
+      await axiosClient.delete(`/user/admin/deleteuser/${userId}`);
       fetchUsers(page);
     } catch (err) {
       alert("Failed to delete user: " + (err.response?.data?.error || err.message));
