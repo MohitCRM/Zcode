@@ -37,12 +37,9 @@ const problemchatai = async (req, res) => {
                     `;
 
         const staticContext = `
-            --- PROBLEM SETTINGS ---
             Title: ${problemDetails.title}
             Description: ${problemDetails.description}
             Constraints: ${JSON.stringify(problemDetails.constraints)}
-
-            --- REFERENCE SOLUTION (SECRET) ---
             Language: ${language}
             ${refSolutionCode}
             ------------------------
@@ -65,10 +62,8 @@ const problemchatai = async (req, res) => {
             ${staticContext}
             ${formattedHistory}
 
-            --- USER'S CURRENT LIVE CODE ---
             ${userCode || "(No code provided)"}
 
-            --- NEW QUESTION FROM USER ---
             ${newQuestion || "Can you review my code and give me a hint?"}
                     `;
 
@@ -81,13 +76,8 @@ const problemchatai = async (req, res) => {
             }
         }); 
 
-        let aiResponse = response.text;
-        // const codeBlockCount = (aiResponse.match(/```/g) || []).length;
-        // if (codeBlockCount >= 2 && aiResponse.length > 300) {
-        //     aiResponse = "I can't provide the exact code, but I suggest reviewing the logic around your current implementation!";
-        // }
 
-        res.status(200).json({ reply: aiResponse });
+        res.status(200).json({ reply: response.text });
 
     } catch (err) {
         console.error("AI Coach Error:", err);

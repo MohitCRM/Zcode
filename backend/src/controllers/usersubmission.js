@@ -37,7 +37,7 @@ const submitcode = async (req, res) => {
         if (!problem) return res.status(404).json({ error: "Problem not found" });
 
         const isGuest = user.role === 'guest';
-        let targetSeasonId = req.season?.seasonId ?? 1; // fallback to 1 if req.season is missing
+        let targetSeasonId = req.season?.seasonId;
         if (isGuest) {
             const guestSeason = await Season.findOne({ isGuestSeason: true });
             if (guestSeason) targetSeasonId = guestSeason.seasonId;
@@ -46,14 +46,6 @@ const submitcode = async (req, res) => {
         const { timeLimit = 1.0 } = problem.constraints || {};
         const jsonLib = fs.readFileSync(path.join(__dirname, "../../libs/json.hpp"), 'utf-8');
 
-        const [pendingSubmission] = await Submission.create([{
-            userId: userid,
-            problemId: pid,
-            seasonId: targetSeasonId,
-            code,
-            language,
-            status: "Pending"
-        }], { session });
 
         const sandbox = await Sandbox.create();
         let passedCount = 0;

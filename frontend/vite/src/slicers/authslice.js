@@ -2,8 +2,9 @@ import { createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import axiosClient from '../utils/axiosClient';
 const getErrorMessage = (err) => {
     return (
+        err.response?.data?.error || 
         err.response?.data?.message || 
-        err.response?.data ||          
+        (typeof err.response?.data === 'string' ? err.response?.data : null) ||          
         err.message ||                
         'Some error has occurred'
     );

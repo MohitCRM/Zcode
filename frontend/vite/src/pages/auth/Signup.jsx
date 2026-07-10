@@ -100,7 +100,7 @@ export default function Signup() {
               <input 
                 {...register("firstName")}
                 type="text" 
-                placeholder="Superman"
+                placeholder="abc"
                 className="w-full bg-[#070C15] border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-mono text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/30 transition-all duration-150"
               />
               {errors.firstName && (

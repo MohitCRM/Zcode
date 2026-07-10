@@ -32,7 +32,7 @@ const register = async (req,res)=>{
         }
         //Creating a JWT when a user is registered at the time , also can do later when login in if not here
         const token = jwt.sign(
-            { _id: newUser._id, emailId: newUser.emailId, role: 'user' },
+            { _id: newUser._id, emailId: newUser.emailId, role: 'user', jti: Date.now() },
             process.env.JWT_KEY,
             { expiresIn: "24h" }
         );
@@ -50,6 +50,9 @@ const register = async (req,res)=>{
         });
     }
     catch(err){
+        if (err.code === 11000 && err.keyPattern && err.keyPattern.firstName) {
+            return res.status(400).json({ error: "That name is already taken. Please choose a different name." });
+        }
         res.status(400).json({error : err.message});
     }
 }
@@ -82,12 +85,12 @@ const login = async (req,res)=>{
         }
 
         //generating a jwt token to relogin later
-        const token = jwt.sign({_id:usr._id , emailId:emailId, role : usr.role},process.env.JWT_KEY, {expiresIn : "24h"});
+        const token = jwt.sign({_id:usr._id , emailId:emailId, role : usr.role, jti: Date.now()},process.env.JWT_KEY, {expiresIn : "24h"});
         res.cookie('token', token , {
             httpOnly: true,
             secure: true,
             sameSite: 'none',
-            maxAge : 24*60*60 * 1000
+            maxAge : 24*60*60*1000
         });
         res.status(200).json({
             user: reply,
@@ -140,7 +143,7 @@ const guestregister = async (req, res) => {
 
         // 3. Generate the token
         const token = jwt.sign(
-            { _id: newUser._id, role: 'guest' },
+            { _id: newUser._id, role: 'guest', jti: Date.now() },
             process.env.JWT_KEY,
             { expiresIn: "24h" }
         );
@@ -162,6 +165,9 @@ const guestregister = async (req, res) => {
         });
     }
     catch (err) {
+        if (err.code === 11000 && err.keyPattern && err.keyPattern.firstName) {
+            return res.status(400).json({ error: "That name is already taken. Please choose a different name." });
+        }
         res.status(400).json({ error: err.message });
     }
 }

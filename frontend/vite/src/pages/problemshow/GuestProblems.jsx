@@ -55,7 +55,7 @@ export default function GuestProblems() {
           </div>
           <div className="flex gap-2">
             <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">
-              Guest Sandbox
+              Guest Mode
             </span>
           </div>
         </div>

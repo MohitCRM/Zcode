@@ -143,7 +143,7 @@ const problemSchema = new Schema({
     },
     inputConstraints: {
         type: String, 
-        default: "2 <= nums.length <= 10^4, -10^9 <= nums[i] <= 10^9"
+        default: ""
     }
 },
     

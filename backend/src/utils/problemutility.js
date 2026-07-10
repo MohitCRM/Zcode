@@ -30,7 +30,6 @@ const generateCppFullCode = (code, drivercode) => {
 using json = nlohmann::json;
 using namespace std;
 
-// --- DATA STRUCTURE DEFINITIONS ---
 struct ListNode {
     int val;
     ListNode *next;
@@ -48,7 +47,6 @@ struct TreeNode {
     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
 };
 
-// --- UNIVERSAL BRIDGE FUNCTIONS ---
 std::vector<int> jsonToVector(const json& j) { return j.get<std::vector<int>>(); }
 
 ListNode* jsonToList(const json& j) {
@@ -68,7 +66,7 @@ json listToJson(ListNode* head) {
     return j;
 }
 
-// Converts JSON array (Level Order) to Binary Tree
+// Converts JSON array  to Binary Tree
 TreeNode* jsonToTree(const json& j) {
     if (j.is_null() || j.empty() || j[0].is_null()) return nullptr;
     TreeNode* root = new TreeNode(j[0]);
@@ -126,7 +124,6 @@ std::vector<std::vector<char>> jsonToGrid(const json& j) {
     return grid;
 }
 
-// --- USER SOLUTION ---
 ${code}
 
 int main() {
