@@ -26,12 +26,9 @@ const getleaderboard = async (req, res) => {
     try {
         const { sid } = req.params;
 
-        // 1. Validate ObjectId for the Season
         if (!mongoose.Types.ObjectId.isValid(sid)) {
             return res.status(400).json({ error: "Invalid Season ID format" });
         }
-
-        // 2. Fetch the full season document to get the human-readable seasonId (Number)
         const seasonDoc = await Season.findById(sid);
         if (!seasonDoc) {
             return res.status(404).json({ error: "Season not found" });
@@ -39,12 +36,9 @@ const getleaderboard = async (req, res) => {
 
         const numericSeasonId = seasonDoc.seasonId;
 
-        // 3. Pagination setup
         let page = Math.max(1, parseInt(req.query.page) || 1);
         let limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
         const skipoffset = (page - 1) * limit;
-
-        // 4. Query Leaderboard using the numeric seasonId
         const totalplayers = await Leaderboard.countDocuments({ seasonId: numericSeasonId });
         const totalpages = Math.ceil(totalplayers / limit);
 
@@ -59,8 +53,6 @@ const getleaderboard = async (req, res) => {
             const wrong = stat.wrongSubmissionsCount || 0;
             const totalSubmissions = accepted + wrong;
 
-            // Calculate accuracy safely preventing division by zero. 
-            // Fixed to 1 decimal place to perfectly match your new front-end UI layout.
             const accuracy = totalSubmissions > 0
                 ? parseFloat(((accepted / totalSubmissions) * 100).toFixed(1))
                 : 0.0;
@@ -70,9 +62,9 @@ const getleaderboard = async (req, res) => {
                 userId: stat.userId ? stat.userId._id : null,
                 name: stat.userId ? stat.userId.firstName : "Unknown person",
                 elo: stat.elo,
-                rankTier: stat.tierDetails, // Accesses your mongoose virtual
+                rankTier: stat.tierDetails, // Accessesing mongoose virtual
                 accuracy: accuracy,         // e.g., 85.4
-                solved: stat.problemsSolved ? stat.problemsSolved.length : 0 // Size of array matching layout data tracking
+                solved: stat.problemsSolved ? stat.problemsSolved.length : 0 
             };
         });
 
@@ -157,27 +149,20 @@ const manipulateGuestStats = async (req, res) => {
 
         const { elo, acceptedSubmissionsCount, wrongSubmissionsCount } = req.body;
 
-        // 1. Validate inputs using utility function
         try {
             validateGuestStats(elo, acceptedSubmissionsCount, wrongSubmissionsCount);
         } catch (validationError) {
             return res.status(400).json({ error: validationError.message });
         }
 
-        // 2. Prepare update query
         const updateQuery = {};
         if (elo !== undefined) updateQuery.elo = elo;
         if (acceptedSubmissionsCount !== undefined) updateQuery.acceptedSubmissionsCount = acceptedSubmissionsCount;
         if (wrongSubmissionsCount !== undefined) updateQuery.wrongSubmissionsCount = wrongSubmissionsCount;
 
-        // 3. Find and update the leaderboard entry for the guest
-        // Ensure to trigger 'save' middleware if we were using .save(), but with findOneAndUpdate 
-        // the tier details are re-calculated. Let's do findOne, modify, and save to trigger the pre-save hook.
-
         let stat = await Leaderboard.findOne({ userId: userId, seasonId: currentSeason.seasonId });
 
         if (!stat) {
-            // Create one if they don't have stats yet
             stat = new Leaderboard({
                 userId: userId,
                 seasonId: currentSeason.seasonId,
@@ -191,7 +176,7 @@ const manipulateGuestStats = async (req, res) => {
             if (wrongSubmissionsCount !== undefined) stat.wrongSubmissionsCount = wrongSubmissionsCount;
         }
 
-        await stat.save(); // This triggers the pre-save hook to update the rank string based on new Elo
+        await stat.save();
 
         const totalSubmissions = stat.acceptedSubmissionsCount + stat.wrongSubmissionsCount;
         const calculatedAccuracy = totalSubmissions > 0

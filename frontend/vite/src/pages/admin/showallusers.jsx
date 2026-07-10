@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import axiosClient from "../../utils/axiosClient";
 
 export default function ShowallUsers() {
+  const currentUser = useSelector((state) => state.auth.user);
   const [users, setUsers] = useState([]);
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1 });
   const [page, setPage] = useState(1);
@@ -65,7 +67,6 @@ export default function ShowallUsers() {
       </div>
       
       <div className="bg-[#0C1220] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl py-4">
-        {/* Table Header (Optional, but good for context) */}
         <div className="flex items-center justify-between px-8 py-3 border-b border-slate-800/50 text-xs font-semibold text-slate-500 uppercase tracking-wider">
           <div className="w-48">User</div>
           <div className="w-24 text-center">Solved</div>
@@ -74,12 +75,10 @@ export default function ShowallUsers() {
           <div className="w-56 text-right">Actions</div>
         </div>
 
-        {/* User Rows */}
         <div className="flex flex-col">
           {users.map((user) => (
             <div key={user._id} className="flex items-center justify-between py-4 px-8 border-b border-slate-800/30 hover:bg-[#121826]/60 transition-all group">
               
-              {/* Avatar & Name */}
               <div className="flex items-center gap-4 w-48">
                 <div className="w-10 h-10 rounded-full bg-indigo-900/40 text-indigo-400 flex items-center justify-center font-bold text-sm border border-indigo-500/20 shrink-0">
                   {user.firstName.substring(0, 2).toUpperCase()}
@@ -87,32 +86,31 @@ export default function ShowallUsers() {
                 <span className="font-semibold text-slate-200 truncate">{user.firstName}</span>
               </div>
               
-              {/* Problems Solved */}
               <div className="text-indigo-400 font-bold text-sm w-24 text-center">
                 {user.problemsolved?.length || 0}
               </div>
 
-              {/* Joined Date */}
               <div className="text-slate-400 text-sm w-32 text-center">
                 {new Date(user.createdAt).toLocaleDateString('en-GB')}
               </div>
 
-              {/* Role */}
               <div className={`text-xs font-bold uppercase tracking-wider w-24 text-center ${
+                user.role === 'owner' ? 'text-white bg-black border border-slate-600 px-2 py-1 rounded-md shadow-[0_0_10px_rgba(255,255,255,0.1)]' :
                 user.role === 'admin' ? 'text-emerald-500' : 
                 user.role === 'guest' ? 'text-amber-500' : 'text-slate-500'
               }`}>
                 {user.role}
               </div>
 
-              {/* Actions */}
               <div className="flex items-center gap-3 w-56 justify-end opacity-80 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => toggleAdmin(user._id, user.role)}
-                  className="px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition-colors border border-indigo-500/20 whitespace-nowrap"
-                >
-                  {user.role === "admin" ? "Remove Admin" : "Make Admin"}
-                </button>
+                {currentUser?.role === 'owner' && (
+                  <button
+                    onClick={() => toggleAdmin(user._id, user.role)}
+                    className="px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition-colors border border-indigo-500/20 whitespace-nowrap"
+                  >
+                    {user.role === "admin" ? "Remove Admin" : "Make Admin"}
+                  </button>
+                )}
                 <button
                   onClick={() => deleteUser(user._id)}
                   className="px-4 py-1.5 rounded-full text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors border border-rose-500/20 whitespace-nowrap"
@@ -128,7 +126,6 @@ export default function ShowallUsers() {
           )}
         </div>
 
-        {/* Pagination Controls */}
         {pagination.totalPages > 1 && (
           <div className="flex justify-between items-center mt-4 px-8 pt-4 border-t border-slate-800/50">
             <span className="text-sm text-slate-400">

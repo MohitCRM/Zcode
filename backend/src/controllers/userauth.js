@@ -9,17 +9,15 @@ const jwt = require("jsonwebtoken");
 
 const register = async (req,res)=>{
     try{
-        //validating the message sent by user
         validate(req.body);
         const {firstName, emailId, password} = req.body;
         req.body.role = 'user';
-        //checking if emailId alredy exists
+
         const isExisting = await User.exists({ emailId });
         if (isExisting) {
             throw new Error("Email Id already exists");
         }
 
-        //Bcrypting hash
         req.body.password = await bcrypt.hash(password,10);
 
         const newUser = await User.create(req.body);
@@ -30,7 +28,6 @@ const register = async (req,res)=>{
             _id : newUser._id,
             role : newUser.role
         }
-        //Creating a JWT when a user is registered at the time , also can do later when login in if not here
         const token = jwt.sign(
             { _id: newUser._id, emailId: newUser.emailId, role: 'user', jti: Date.now() },
             process.env.JWT_KEY,
@@ -61,7 +58,6 @@ const login = async (req,res)=>{
     try{
         const {emailId,password} = req.body;
 
-        //validating details given by user
         if(!emailId)
             throw new Error("Invalid Credentials");
         if(!password)
@@ -71,7 +67,6 @@ const login = async (req,res)=>{
         if(!usr)
             throw new Error("Invalid Credentials");
 
-        //Checking password given by user and database password
         const match = await bcrypt.compare(password,usr.password);
 
         if(!match)
@@ -84,7 +79,6 @@ const login = async (req,res)=>{
             role : usr.role
         }
 
-        //generating a jwt token to relogin later
         const token = jwt.sign({_id:usr._id , emailId:emailId, role : usr.role, jti: Date.now()},process.env.JWT_KEY, {expiresIn : "24h"});
         res.cookie('token', token , {
             httpOnly: true,
@@ -104,7 +98,6 @@ const login = async (req,res)=>{
 
 const logout = async (req,res)=>{
     try{
-        //validate the token->already done in user auth middleware
         const {token} = req.cookies;
 
         const payload = jwt.decode(token);
@@ -141,7 +134,6 @@ const guestregister = async (req, res) => {
 
         const newUser = await User.create(guestData);
 
-        // 3. Generate the token
         const token = jwt.sign(
             { _id: newUser._id, role: 'guest', jti: Date.now() },
             process.env.JWT_KEY,
@@ -197,12 +189,10 @@ const exitguestmode = async (req, res) => {
             return res.status(403).json({ error: "Only guest users can exit guest mode" });
         }
 
-        // Delete from all collections
         await User.findByIdAndDelete(userid);
         await Submission.deleteMany({ userId: userid });
         await Leaderboard.deleteMany({ userId: userid });
 
-        // Logout logic
         const { token } = req.cookies;
         if (token) {
             const payload = jwt.decode(token);
@@ -227,10 +217,9 @@ const checkauth = async (req, res) => {
     try {
         const userId = req.result._id;
 
-        // Fetch all seasonal records for this user
         const participationHistory = await Leaderboard.find({ userId: userId })
             .select("seasonId elo rank acceptedSubmissionsCount")
-            .sort({ seasonId: -1 }); // Latest seasons first
+            .sort({ seasonId: -1 }); 
 
         const reply = {
             firstName: req.result.firstName,

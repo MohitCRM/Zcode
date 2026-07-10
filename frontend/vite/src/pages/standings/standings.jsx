@@ -17,9 +17,8 @@ export default function Standings() {
         }
         const fetchSeasons = async () => {
             try {
-                // Ensure your backend endpoint returns the seasons array
                 const response = await axiosClient.get('/seasons/getallseasons');
-                console.log(response.data.seasons)
+
                 setSeasons(response.data.seasons);
             } catch (err) {
                 console.error("Failed to fetch seasons:", err);
@@ -28,7 +27,6 @@ export default function Standings() {
         fetchSeasons();
     }, []);
 
-    // Add this check inside your return statement, before the main div
     if (seasons.length === 0) {
         return (
             <div className="min-h-screen bg-[#090D16] flex items-center justify-center text-slate-500">
@@ -38,8 +36,6 @@ export default function Standings() {
     }
 
     return (
-        // Adding min-h-screen and the dark background color here ensures 
-        // the background covers the entire page, matching your other routes.
         <div className="min-h-screen bg-[#090D16] py-12">
             <div className="mx-auto max-w-7xl px-6">
                 <div className="mb-8">
@@ -50,14 +46,12 @@ export default function Standings() {
                 </div>
 
                 <div className="flex flex-col gap-y-3 w-full">
-                    {/* Header Row */}
                     <div className="bg-[#121826]/40 border border-slate-800/40 rounded-xl px-6 py-3.5 grid grid-cols-[1fr_200px_200px] gap-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
                         <div>Season</div>
                         <div className="text-center">Status</div>
                         <div className="text-right">Ranking</div>
                     </div>
 
-                    {/* Season Rows */}
                     {seasons.map((season) => (
                         <div
                             key={season.seasonId}

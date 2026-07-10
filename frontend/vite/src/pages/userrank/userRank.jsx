@@ -107,8 +107,7 @@ function MouseTooltip({ tooltip, userStats, currentRankIdx }) {
   const rank = tooltip.rank;
   const isUnlocked = userStats.elo >= rank.minElo;
   const isActive = rank.id - 1 === currentRankIdx;
-  
-  // Calculate dynamic data on hover frame using user metrics
+
   const dynamicRequirements = rank.getRequirements(userStats);
 
   const tooltipWidth = 256;
@@ -148,7 +147,6 @@ function MouseTooltip({ tooltip, userStats, currentRankIdx }) {
         </div>
         <p className="text-[11px] text-slate-500 italic mb-3 leading-relaxed">&ldquo;{rank.tagline}&rdquo;</p>
         
-        {/* Dynamic Requirements Mapping */}
         <div className="space-y-1.5 mb-3">
           {dynamicRequirements.map((req) => (
             <div key={req.label} className="flex items-center justify-between">
@@ -189,7 +187,6 @@ function MouseTooltip({ tooltip, userStats, currentRankIdx }) {
   );
 }
 
-// ── SVG Icon Shapes ────────────────────────────────────────────
 
 function Star4({ cx, cy, size: s, color }) {
   return (
@@ -261,7 +258,6 @@ function StarShape({ cx, cy, size, color, rank }) {
   return icons[rank] ?? null;
 }
 
-// ── Constellation SVG Map ──────────────────────────────────────
 
 function ConstellationMap({ onHover, currentElo, currentRankIdx }) {
   const svgRef = useRef(null);
@@ -291,7 +287,6 @@ function ConstellationMap({ onHover, currentElo, currentRankIdx }) {
         })}
       </defs>
 
-      {/* Connection lines */}
       {connections.map(([a, b]) => {
         const ra = RANKS[a], rb = RANKS[b], unlocked = currentElo >= rb.minElo;
         const x1 = nodeX(ra.cx), y1 = nodeY(ra.cy), x2 = nodeX(rb.cx), y2 = nodeY(rb.cy);
@@ -306,7 +301,6 @@ function ConstellationMap({ onHover, currentElo, currentRankIdx }) {
         );
       })}
 
-      {/* Rank nodes */}
       {RANKS.map((rank, i) => {
         const x = nodeX(rank.cx), y = nodeY(rank.cy);
         const isUnlocked = currentElo >= rank.minElo;
@@ -346,13 +340,11 @@ function ConstellationMap({ onHover, currentElo, currentRankIdx }) {
   );
 }
 
-// ── Page ───────────────────────────────────────────────────────
 
 export default function RanksPage() {
   const [tooltip, setTooltip] = useState({ rank: null, x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(true);
   
-  // Keep standard structured metric fields as fallbacks
   const [userStats, setUserStats] = useState({
     elo: 0,
     accuracy: null,
@@ -362,7 +354,7 @@ export default function RanksPage() {
 
   const { data: seasonData, loading: seasonLoading } = useSelector(state => state.season);
   const seasonId = seasonData?.seasonId;
-  console.log(seasonData);
+
   const [offSeasonMessage, setOffSeasonMessage] = useState(null);
 
   useEffect(() => {
@@ -377,7 +369,7 @@ export default function RanksPage() {
     axiosClient.get(`/leaderboard/mystats/${seasonId}`)
       .then(res => {
          if (res.data.mystats) {
-          console.log(res.data.mystats)
+
             setUserStats({
               elo: res.data.mystats.elo || 0,
               accuracy: res.data.mystats.accuracy || 0,
@@ -390,7 +382,6 @@ export default function RanksPage() {
       .catch(err => {
          console.error(err);
          if (err.response?.status === 403 && err.response?.data?.error === "Action Forbidden") {
-           // Gracefully handle OffSeason by setting default stats and showing a message
            setUserStats({
              elo: 100,
              accuracy: 100,
@@ -433,8 +424,7 @@ export default function RanksPage() {
       <div className="absolute inset-0 opacity-25 pointer-events-none" style={{ backgroundImage: `linear-gradient(to right, rgba(30,41,59,0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(30,41,59,0.3) 1px, transparent 1px)`, backgroundSize: "4rem 4rem" }} />
       <StarField />
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99,102,241,0.07) 0%, transparent 70%)" }} />
-      
-      {/* Pass full state payload down to the tooltips */}
+
       <MouseTooltip tooltip={tooltip} userStats={userStats} currentRankIdx={currentRankIdx} />
 
       <main className="mx-auto max-w-5xl px-6 py-14 relative z-10">

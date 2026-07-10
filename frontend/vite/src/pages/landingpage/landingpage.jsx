@@ -49,7 +49,6 @@ export default function Landingpage() {
 
   return (
     <div className="min-h-screen bg-[#070C15] text-slate-200 antialiased flex flex-col selection:bg-indigo-500/30">
-      {/* Background Grid Pattern Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#161F30_1px,transparent_1px),linear-gradient(to_bottom,#161F30_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none z-0"></div>
 
       <nav className="border-b border-slate-800/80 bg-[#0B111E]/40 backdrop-blur-md px-6 py-4 flex items-center justify-between relative z-10">

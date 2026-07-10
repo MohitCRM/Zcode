@@ -4,7 +4,6 @@ const TIERS = [
         minElo: 0,
         maxElo: 399,
         color: "#94a3b8", 
-        badgeUrl: "/assets/badges/newbie.png",
         req: (elo, acc, probs) => elo >= 0
     },
     {
@@ -12,7 +11,6 @@ const TIERS = [
         minElo: 400,
         maxElo: 899,
         color: "#10b981", 
-        badgeUrl: "/assets/badges/adept.png",
         req: (elo, acc, probs) => elo >= 400
     },
     {
@@ -20,7 +18,6 @@ const TIERS = [
         minElo: 900,
         maxElo: 1499,
         color: "#6366f1",
-        badgeUrl: "/assets/badges/expert.png",
         req: (elo, acc, probs) => elo >= 900
     },
     {
@@ -28,7 +25,6 @@ const TIERS = [
         minElo: 1500,
         maxElo: 2199,
         color: "#a855f7", 
-        badgeUrl: "/assets/badges/honoured.png",
         req: (elo, acc, probs) => elo >= 1500
     },
     {
@@ -36,7 +32,6 @@ const TIERS = [
         minElo: 2200,
         maxElo: 3499,
         color: "#d97706", 
-        badgeUrl: "/assets/badges/monarch.png",
         req: (elo, acc, probs) => elo >= 2200 && acc > 85
     },
     {
@@ -44,7 +39,6 @@ const TIERS = [
         minElo: 3500,
         maxElo: 9999, 
         color: "#06b6d4", 
-        badgeUrl: "/assets/badges/god.png",
         req: (elo, acc, probs) => elo >= 3500 && acc > 95 && probs >= 35
     }
 ];
@@ -52,7 +46,6 @@ const TIERS = [
 const tierdata = (currelo, accuracy = 0, problemsSolved = 0) =>{
     let currtierindex = 0;
     
-    // Evaluate from highest to lowest rank
     for (let i = TIERS.length - 1; i >= 0; i--) {
         if (TIERS[i].req(currelo, accuracy, problemsSolved)) {
             currtierindex = i;

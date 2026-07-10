@@ -22,7 +22,6 @@ export default function ShowAllProblems() {
                 setProblems(response.data.problems || []);
                 setPagination(response.data.pagination || {});
             } catch (err) {
-                // Ignore errors caused by aborting the request
                 if (err.name !== 'CanceledError') {
                     console.error("Failed to fetch problems:", err.message);
                 }
@@ -109,7 +108,6 @@ export default function ShowAllProblems() {
                                         </button>
                                     </div>
                                 </div>
-                                {/* Metadata Grid */}
                                     <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400 bg-[#090D16] p-3 rounded-lg border border-slate-700/30">
                                         <div className="flex flex-col">
                                             <span className="text-slate-500 uppercase">Difficulty</span>
@@ -128,8 +126,6 @@ export default function ShowAllProblems() {
                                             <span className="font-semibold text-rose-400">{problem.penaltyWrongAnswer}</span>
                                         </div>
                                     </div>
-
-                                    {/* Tags Section */}
                                     <div className="flex flex-wrap gap-1 mt-1">
                                         {problem.tags.slice(0, 3).map((tag, i) => (
                                             <span key={i} className="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded text-[9px]">
@@ -146,7 +142,6 @@ export default function ShowAllProblems() {
                         ))}
                     </div>
 
-                    {/* Pagination Controls */}
                     <div className="flex justify-center items-center gap-4 mt-8">
                         <button 
                             disabled={!pagination.hasPrevPage}

@@ -154,7 +154,7 @@ const authslicer = createSlice({
         })
         .addCase(checkauth.rejected, (state,action)=>{
             state.loading = false;
-            state.error = null; // Do not show 'Token doesn't exist' as a global error
+            state.error = null; 
             state.isauth = false;
             state.user = null;
         })

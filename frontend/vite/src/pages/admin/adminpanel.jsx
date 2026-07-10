@@ -1,7 +1,9 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export default function AdminPanel() {
-  // Helper for active link styling
+  const { user } = useSelector((state) => state.auth);
+
   const navClass = ({ isActive }) =>
     `px-4 py-3 rounded-lg transition-all flex items-center gap-3 font-medium ${
       isActive 
@@ -11,7 +13,6 @@ export default function AdminPanel() {
 
   return (
     <div className="flex min-h-screen bg-[#090D16] text-slate-200">
-      {/* Sidebar Navigation */}
       <aside className="w-64 border-r border-slate-800 p-6 flex flex-col">
         <h2 className="text-xl font-bold text-white mb-8 px-2">Admin Dashboard</h2>
         
@@ -29,13 +30,14 @@ export default function AdminPanel() {
             <span>👥</span> Users
           </NavLink>
 
+          {user?.role === 'owner' && (
             <NavLink to="settime" className={navClass}>
-                <span>📅</span> Set Time
+                <span>⏰</span> Set Time
             </NavLink>
+          )}
         </nav>
       </aside>
 
-      {/* Content Area */}
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>

@@ -51,14 +51,12 @@ export default function Problems() {
               </span>
             </div>
           </h1>
-          {/* The Day Counter */}
           {data.currentSeasonDay !== null && (
           <div className="text-3xl font-bold text-slate-500 border-l border-slate-800 pl-6">
               Day <span className="text-white">{data.currentSeasonDay}</span>
               </div>
             )}
         </div>
-          {/* Conditional Content */}
             {errorState ? (
               <div className="bg-[#121826] border border-amber-500/20 p-12 rounded-2xl text-center flex flex-col items-center gap-4 shadow-2xl">
                 <div className="text-4xl">🔓</div>

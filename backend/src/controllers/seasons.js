@@ -89,7 +89,6 @@ const deleteseason = async (req, res) => {
 
 const getcurrentseason = async (req,res)=>{
     try{
-        // Soft check to see if the user is a guest without throwing errors for unauthenticated users
         const { token } = req.cookies;
         if (token) {
             try {
@@ -103,7 +102,6 @@ const getcurrentseason = async (req,res)=>{
                     }
                 }
             } catch (e) {
-                // Ignore token errors and fall back to public active season logic
             }
         }
 

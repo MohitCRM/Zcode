@@ -62,7 +62,7 @@ const onSubmit = async (data) => {
         }
     } catch (err) {
         console.error("Submission failed:", err.response?.data?.message || err.message);
-        console.log("Submission failed:", err.response?.data?.message || err.message);
+
         alert(err.response?.data?.message || "Failed to create season");
     }
 }
@@ -72,7 +72,6 @@ const onSubmit = async (data) => {
         <h2 className="text-2xl font-bold text-white mb-6">Create New Season</h2>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Season ID & Active Status */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Season ID</label>
@@ -100,18 +99,15 @@ const onSubmit = async (data) => {
             </div>
           </div>
 
-          {/* Season Timeline */}
           <div className="space-y-4">
             <h3 className="block text-xs font-semibold text-slate-500 uppercase">Season Timeline</h3>
             
             <div className="grid grid-cols-2 gap-4">
-              {/* Launch Date */}
               <div className="col-span-2">
                 <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Launch Date</label>
                 <input type="datetime-local" {...register("launchDate")} className="w-full bg-[#121826] border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-300" />
               </div>
 
-              {/* Rounds */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Round 1 Start</label>
                 <input type="datetime-local" {...register("round1Start")} className="w-full bg-[#121826] border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-300" />

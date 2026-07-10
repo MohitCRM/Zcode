@@ -56,19 +56,16 @@ const submitcode = async (req, res) => {
         try {
             const fullCode = generateCppFullCode(code, problem.drivercode);
             
-            // 1. Atomic Sync: Ensure library and code are present
             await Promise.all([
                 sandbox.files.write('/home/user/main.cpp', fullCode),
                 sandbox.files.write('/home/user/json.hpp', jsonLib)
             ]);
 
-            // 2. Compilation
             const compile = await sandbox.commands.run("cd /home/user && g++ -O2 -std=c++17 main.cpp -o main 2>&1");
             if (compile.exitCode !== 0) {
                 status = "Compilation Error";
                 errorMessage = compile.stdout;
             } else {
-                // 3. Execution Loop with Normalization
                 for (const tc of totalTestCases) {
                     await sandbox.files.write('/home/user/input.txt', tc.input);
                     const run = await sandbox.commands.run(`cd /home/user && timeout -k 0.5s ${timeLimit}s ./main < input.txt`);
@@ -79,7 +76,6 @@ const submitcode = async (req, res) => {
                         break;
                     }
 
-                    // Normalized Comparison
                     const actual = JSON.parse(run.stdout.trim());
                     const expected = JSON.parse(tc.output.trim());
 
@@ -101,33 +97,29 @@ const submitcode = async (req, res) => {
             await sandbox.kill();
         }
 
-        // Database updates (Elo, Leaderboard, etc.) remains the same
         const isAccepted = status === "Accepted";
         const alreadySolved = user.problemsolved.some(id => id.toString() === pid.toString());
+        const isSameDaySolve = req.season?.getActiveSeasonDay() === problem.releaseDay;
+        
         let eloChange = 0;
-
-        if(!alreadySolved){
-        eloChange = isAccepted ? (problem.baseEloReward + (req.season?.getActiveSeasonDay() === problem.releaseDay ? (problem.baseEloReward * 0.3) : 0)) : -problem.penaltyWrongAnswer;
+        if (!alreadySolved) {
+            eloChange = isAccepted ? (problem.baseEloReward + (isSameDaySolve ? (problem.baseEloReward * 0.3) : 0)) : -problem.penaltyWrongAnswer;
         }
 
        await session.withTransaction(async () => {
-            // 1. ALWAYS save the submission record
             await Submission.updateOne({ _id: pendingSubmission._id }, { 
                 $set: { 
                     status, 
-                    errorMessage, 
                     eloChange, 
                     passedTestCases: passedCount, 
-                    totalTestCases: totalTestCases.length 
+                    totalTestCases: totalTestCases.length,
+                    errorMessage,
+                    wasSameDaySolve: isAccepted ? isSameDaySolve : false
                 } 
             }, { session });
 
-            // 2. Determine if this submission is a success or failure for stats
             const isAccepted = status === "Accepted";
 
-            // 3. Update User/Leaderboard
-            // We update stats regardless of whether it's already solved, 
-            // but we only add to 'problemsSolved' array if it's a NEW solve.
             const updateQuery = {
                 $inc: { 
                     elo: eloChange,
@@ -147,7 +139,6 @@ const submitcode = async (req, res) => {
                 { session, upsert: true, returnDocument: 'after' }
             );
 
-            // 4. Refresh Rank
             const totalSubmissions = updatedLB.acceptedSubmissionsCount + updatedLB.wrongSubmissionsCount;
             const accuracy = totalSubmissions > 0 ? (updatedLB.acceptedSubmissionsCount / totalSubmissions) * 100 : 0;
             const problemsSolvedCount = updatedLB.problemsSolved ? updatedLB.problemsSolved.length : 0;
@@ -193,7 +184,6 @@ const runcode = async (req, res) => {
                 sandbox.files.write('/home/user/main.cpp', fullCode)
             ]);
 
-            // Add -fsanitize=address for better debug info on SIGSEGV
             const compile = await sandbox.commands.run("cd /home/user && g++ -O2 -std=c++17 main.cpp -o main 2>&1");
             if (compile.exitCode !== 0) {
                 return res.status(200).json({ 
@@ -208,8 +198,6 @@ const runcode = async (req, res) => {
                 await sandbox.files.write('/home/user/input.txt', tc.input);
                 const run = await sandbox.commands.run(`cd /home/user && timeout -k 0.5s ${timeLimit}s ./main < input.txt`);
 
-                // Distinguish Runtime Error types
-                // Distinguish Runtime Error types
                 if (run.exitCode !== 0) {
                     const { status, message } = getErrorMessage(run.exitCode, run.stderr, timeLimit);
                     results.push({ 
@@ -254,11 +242,9 @@ const runcode = async (req, res) => {
     if (err.name === 'CommandExitError') {
         let errorTitle = "Execution Error";
         
-        // Combine stdout and stderr to ensure we don't miss the error message
         const combinedOutput = (err.stderr || "") + "\n" + (err.stdout || "");
         let errorMessage = combinedOutput.trim() || "Process exited with code " + err.exitCode;
 
-        // 1. Check for compiler keywords in the combined output
         const isCompilationError = combinedOutput.toLowerCase().includes("error:") || 
                                    combinedOutput.toLowerCase().includes("fatal error:");
 
@@ -280,7 +266,6 @@ const runcode = async (req, res) => {
     }
 
 
-    // 3. Handle truly unexpected system failures
     res.status(500).json({ error: "Internal server error. Please try again."  + err});
 }
 };

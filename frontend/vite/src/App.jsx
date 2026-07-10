@@ -1,11 +1,10 @@
-import { Navigate, Route, Routes } from "react-router";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Problems from "./pages/problemshow/problems";
 import Standings from "./pages/standings/standings";
 import ThisSeason from "./pages/standings/eachseason";
 import Problemidsforsol from "./pages/solutions/problemidsforsol";
 import Solution from "./pages/solutions/solution";
 import UserRank from "./pages/userrank/userRank";
-import UserProfile from "./pages/userprofile/UserProfile";
 import AdminPanel from "./pages/admin/adminpanel";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
@@ -36,6 +35,9 @@ export default function App() {
   const { user, isauth, loading: authloading } = useSelector((state) => state.auth);
   const { loading: seasonloading } = useSelector((state) => state.season);
   const dispatch = useDispatch();
+  const location = useLocation();
+
+  const isEditorPage = location.pathname.startsWith('/dashboard/problems/');
 
   useEffect(() => {
     dispatch(checkauth()).then(() => {
@@ -52,65 +54,77 @@ export default function App() {
   }
 
   return (
-    <Routes>
-      {/* Public Pages */}
-      <Route path="/" element={<Landingpage />} />
-      <Route path="/login" element={isauth ? <Navigate to="/dashboard" /> : <Login />} />
-      <Route path="/signup" element={isauth ? <Navigate to="/dashboard" /> : <Signup />} />
-      <Route path="/guest-login" element={isauth ? <Navigate to="/dashboard" /> : <GuestLogin />} />
+    <>
+      <Routes>
+        <Route path="/" element={<Landingpage />} />
+        <Route path="/login" element={isauth ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/signup" element={isauth ? <Navigate to="/dashboard" /> : <Signup />} />
+        <Route path="/guest-login" element={isauth ? <Navigate to="/dashboard" /> : <GuestLogin />} />
 
-      {/*Guest Powers route*/}
-      <Route path="/dashboard/guestpowers" element={isauth ? <GuestPowers /> : <Navigate to="/login" />} />
+        <Route path="/dashboard/guestpowers" element={isauth ? <GuestPowers /> : <Navigate to="/login" />} />
 
-      {/* Global Protected Standalone Routes (Outside general dashboard layout framework) */}
-      <Route
-        path="/dashboard/solutions/:pid"
-        element={isauth ? <Solution /> : <Navigate to="/login" />}
-      />
-      <Route
-        path="/dashboard/problems/:problemId"
-        element={isauth ? <ProblemDetail /> : <Navigate to="/login" />}
-      />
+        <Route
+          path="/dashboard/solutions/:pid"
+          element={isauth ? <Solution /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/dashboard/problems/:problemId"
+          element={isauth ? <ProblemDetail /> : <Navigate to="/login" />}
+        />
 
-      {/* Primary Authenticated Workspace Layout Wrapper */}
-      <Route path="/dashboard" element={isauth ? <Layout /> : <Navigate to="/login" />}>
-        {/* Default route index loads announcements cleanly instead of self-redirecting */}
-        <Route index element={<Announcements />} />
+        <Route path="/dashboard" element={isauth ? <Layout /> : <Navigate to="/login" />}>
+          <Route index element={<Announcements />} />
 
-        <Route path="problems" element={<Problems />} />
+          <Route path="problems" element={<Problems />} />
 
-        <Route path="standings">
-          <Route index element={<Standings />} />
-          <Route path=":sid" element={<ThisSeason />} />
+          <Route path="standings">
+            <Route index element={<Standings />} />
+            <Route path=":sid" element={<ThisSeason />} />
+          </Route>
+
+          <Route path="solutions" element={<Problemidsforsol />} />
+          <Route path="user-rank" element={<UserRank />} />
+
+          <Route path="admin" element={<AdminPanel />}>
+            <Route path="showallproblems" element={<Showallproblems />} />
+            <Route path="showallannouncements" element={<Showallannouncements />} />
+            <Route path="showallseasons" element={<Showallseasons />} />
+            <Route path="showallusers" element={<ShowallUsers />} />
+
+            <Route path="create-announcement" element={<CreateAnnouncement />} />
+            <Route path="create-problem" element={<CreateProblem />} />
+            <Route path="create-season" element={<CreateSeason />} />
+
+            <Route path="upload-video/:pid" element={<Adminvideosolutionupload />} />
+
+            <Route path="update-announcement/:aid" element={<UpdateAnnouncement />} />
+            <Route path="update-problem/:pid" element={<UpdateProblem />} />
+            <Route path="update-season/:sid" element={<UpdateSeason />} />
+
+            <Route path="settime" element={<SetTime />} />
+          </Route>
         </Route>
 
-        <Route path="solutions" element={<Problemidsforsol />} />
-        <Route path="user-rank" element={<UserRank />} />
-        <Route path="profile" element={<UserProfile />} />
+        <Route path="*" element={<Navigate to={isauth ? "/dashboard" : "/"} replace />} />
+      </Routes>
 
-        {/* Nested Administrator Command Sub-System */}
-        <Route path="admin" element={<AdminPanel />}>
-          <Route path="showallproblems" element={<Showallproblems />} />
-          <Route path="showallannouncements" element={<Showallannouncements />} />
-          <Route path="showallseasons" element={<Showallseasons />} />
-          <Route path="showallusers" element={<ShowallUsers />} />
-
-          <Route path="create-announcement" element={<CreateAnnouncement />} />
-          <Route path="create-problem" element={<CreateProblem />} />
-          <Route path="create-season" element={<CreateSeason />} />
-
-          <Route path="upload-video/:pid" element={<Adminvideosolutionupload />} />
-
-          <Route path="update-announcement/:aid" element={<UpdateAnnouncement />} />
-          <Route path="update-problem/:pid" element={<UpdateProblem />} />
-          <Route path="update-season/:sid" element={<UpdateSeason />} />
-
-          <Route path="settime" element={<SetTime />} />
-        </Route>
-      </Route>
-
-      {/* Fallback Catch-All Redirect */}
-      <Route path="*" element={<Navigate to={isauth ? "/dashboard" : "/"} replace />} />
-    </Routes>
+      {!isEditorPage && (
+        <a
+          href="https://docs.google.com/forms/d/e/1FAIpQLSd75mSY9BGk0AIBWOV5aYWSP17DB4HQjkeTxIV4ovNhsokBjw/viewform"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group fixed bottom-6 right-6 z-[9999] flex items-center bg-amber-500 hover:bg-amber-400 text-slate-900 shadow-lg shadow-amber-500/20 rounded-full h-8 w-8 hover:w-[110px] transition-all duration-300 overflow-hidden border border-amber-400/50 px-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+          </svg>
+          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 font-sans text-[9px] font-bold tracking-widest uppercase transition-opacity duration-300 ml-1.5 delay-75">
+            Report Bug
+          </span>
+        </a>
+      )}
+    </>
   );
 }

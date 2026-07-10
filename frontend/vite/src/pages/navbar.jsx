@@ -11,7 +11,6 @@ const Navbar = () => {
   const [isExiting, setIsExiting] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -47,7 +46,6 @@ const Navbar = () => {
     <header className="border-b border-slate-800/80 bg-[#0C1220]/90 backdrop-blur-md sticky top-0 z-50 select-none">
       <div className="mx-auto flex max-w-7xl h-16 items-center justify-between px-6">
 
-        {/* Logo Section - Points directly to layout base root */}
         <div className="flex items-center gap-2.5 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 transition-transform group-hover:scale-105">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5">
@@ -57,19 +55,18 @@ const Navbar = () => {
           <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent font-mono">Zcode</span>
         </div>
 
-        {/* Navigation Links */}
         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400 font-mono uppercase tracking-wider text-[13px]">
           <Link to="/dashboard/" className="hover:text-white transition-colors">Announcements</Link>
           <Link to="/dashboard/problems" className="hover:text-white transition-colors">Problems</Link>
           <Link to="/dashboard/standings" className="hover:text-white transition-colors">Standings</Link>
           <Link to="/dashboard/solutions" className="hover:text-white transition-colors">Solutions</Link>
-          {/* Aligned path parameter with App.jsx -> path="user-rank" */}
           <Link to="/dashboard/user-rank" className="hover:text-white transition-colors">Elo</Link>
         </div>
 
         <div className="flex items-center gap-4">
           {user?.role && (
             <span className={`hidden sm:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md border ${
+              user.role === 'owner' ? 'bg-black text-white border-slate-600 shadow-[0_0_12px_rgba(255,255,255,0.15)]' :
               user.role === 'admin' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]' :
               user.role === 'guest' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' :
               'bg-slate-800/80 text-slate-400 border-slate-700'
@@ -77,7 +74,6 @@ const Navbar = () => {
               {user.role}
             </span>
           )}
-          {/* User Account Menu Trigger */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -92,13 +88,8 @@ const Navbar = () => {
             </svg>
           </button>
 
-          {/* User Options Dropdown Panel */}
           {isOpen && (
             <div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-800 bg-[#0C1220] p-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-100 font-mono text-xs uppercase tracking-wide">
-              {/* Aligned path parameter with App.jsx -> path="profile" */}
-              <Link to="/dashboard/profile" className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-[#161F30] transition-colors">
-                My Profile
-              </Link>
               {user?.role === 'admin' && (
                 <Link to="/dashboard/admin" className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-[#161F30] transition-colors">
                   Admin Panel

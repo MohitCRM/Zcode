@@ -66,7 +66,6 @@ export default function UpdateAnnouncement() {
       <div className="bg-[#0C1220] border border-slate-800 rounded-2xl p-8 shadow-2xl">
         <h2 className="text-xl font-bold text-white mb-6">Update Announcement</h2>
         
-        {/* Fixed ID Display */}
         <div className="mb-6">
             <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Announcement ID</label>
             <div className="w-full bg-[#121826] border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-500 font-mono">

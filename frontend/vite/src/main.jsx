@@ -5,7 +5,7 @@ import App from './App.jsx'
 import { BrowserRouter } from 'react-router'
 import {Provider} from "react-redux";
 import store from "./store/store.js";
-import ErrorBoundary from './components/ErrorBoundary.jsx';
+import ErrorBoundary from './pages/errorpage/ErrorBoundary.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

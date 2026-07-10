@@ -22,7 +22,6 @@ export default function Announcements() {
 
     return (
         <div className="min-h-screen bg-[#090D16] text-slate-200 p-6 md:p-12">
-            {/* Background Mesh Effect */}
             <div className="fixed inset-0 bg-[linear-gradient(to_right,#161F30_1px,transparent_1px),linear-gradient(to_bottom,#161F30_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30 pointer-events-none z-0"></div>
 
             <main className="relative z-10 mx-auto max-w-4xl">

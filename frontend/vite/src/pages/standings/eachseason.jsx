@@ -16,7 +16,7 @@ export default function ThisSeason() {
             setLoading(true);
             try {
                 const response = await axiosClient.get(`/leaderboard/${sid}?page=${page}&limit=20`);
-                console.log(response.data);
+
                 setData(response.data);
             } catch (err) {
                 console.error("Failed to fetch leaderboard:", err);
@@ -48,7 +48,6 @@ export default function ThisSeason() {
         );
     }
 
-    // Helper functions to accurately match the tier and rank color mechanics of image_09a4fa.png
     const getRankColor = (rank) => {
         if (rank === 1) return 'text-[#FFD700] drop-shadow-[0_0_8px_rgba(255,215,0,0.2)]';
         if (rank === 2) return 'text-[#E2E8F0]';
@@ -78,7 +77,6 @@ export default function ThisSeason() {
         <div className="min-h-screen bg-[#070C15] py-12 text-[#E2E8F0]">
             <div className="max-w-5xl mx-auto px-6 space-y-6">
                 
-                {/* Header Profile Title - Designed matching image_09a4fa.png */}
                 <div className="space-y-1">
                     <div className="flex items-center gap-3">
                         <div className="text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]">
@@ -96,10 +94,8 @@ export default function ThisSeason() {
                 </div>
 
                 {data.standings && data.standings.length > 0 ? (
-                    /* Unified Main Grid Board Container Frame */
                     <div className="bg-[#0B111E]/80 backdrop-blur-md border border-slate-800/80 rounded-xl overflow-hidden shadow-2xl">
                         
-                        {/* Table Structured Header Grid Column Element Row */}
                         <div className="px-6 py-4 grid grid-cols-[80px_1fr_120px_140px_100px] gap-4 text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-800/60 bg-[#121826]/30 font-mono">
                             <div>Rank</div>
                             <div>User</div>
@@ -108,7 +104,6 @@ export default function ThisSeason() {
                             <div className="text-right">Solved</div>
                         </div>
 
-                        {/* Leaderboard Stack Content Entries Matrix */}
                         <div className="divide-y divide-slate-800/40 relative">
                             {data.standings.map((u) => {
                                 const isCurrentUser = user && u.userId === user._id;
@@ -117,12 +112,10 @@ export default function ThisSeason() {
                                         key={u.userId}
                                         className={`px-6 py-3.5 grid grid-cols-[80px_1fr_120px_140px_100px] gap-4 items-center transition-all duration-150 ease-out ${isCurrentUser ? 'bg-indigo-500/10 border-l-2 border-indigo-500' : 'bg-transparent hover:bg-[#121826]/40'}`}
                                     >
-                                        {/* Rank Marker Layout */}
                                         <div className={`font-mono font-bold text-sm ${getRankColor(u.rank)}`}>
                                             #{u.rank}
                                         </div>
                                         
-                                        {/* User Block Matrix Badge Combination */}
                                         <div className="flex items-center gap-3 min-w-0">
                                             <span className={`font-mono text-sm truncate font-semibold ${isCurrentUser ? 'text-indigo-300' : 'text-slate-200'}`}>
                                                 {u.name}
@@ -133,17 +126,14 @@ export default function ThisSeason() {
                                             </span>
                                         </div>
                                         
-                                        {/* ELO Custom Render Metric */}
                                         <div className="text-right font-mono font-black text-sm text-cyan-400 drop-shadow-[0_0_6px_rgba(34,211,238,0.15)]">
                                             {u.elo}
                                         </div>
 
-                                        {/* System Accuracy Parameter */}
                                         <div className="text-right font-mono text-xs text-slate-400 font-medium">
                                             {u.accuracy}%
                                         </div>
 
-                                        {/* Solved Module Counter Value */}
                                         <div className="text-right font-mono text-xs text-slate-400 font-medium">
                                             {u.solved}
                                         </div>
@@ -179,7 +169,6 @@ export default function ThisSeason() {
                         </div>
                     </div>
                 ) : (
-                    /* Fallback Empty Table Frame Design */
                     <div className="flex flex-col items-center justify-center py-20 border border-dashed border-slate-800 rounded-xl bg-[#121826]/10 text-center">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900/50 text-slate-500 border border-slate-800/60 mb-3">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
@@ -191,7 +180,6 @@ export default function ThisSeason() {
                     </div>
                 )}
 
-                {/* Pagination Controls Matching Zcode Theme Structure */}
                 {data.standings && data.standings.length > 0 && (
                     <div className="flex justify-between items-center pt-4 border-t border-slate-800/40">
                         <button 

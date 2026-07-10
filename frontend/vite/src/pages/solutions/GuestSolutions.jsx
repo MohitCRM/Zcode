@@ -17,7 +17,6 @@ export default function GuestSolutions() {
     const [errorState, setErrorState] = useState(null);
     const navigate = useNavigate();
 
-    // Helper for difficulty styling
     const getDifficultyStyle = (difficulty) => {
         const diff = difficulty?.toLowerCase();
         if (diff === 'easy') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
@@ -54,7 +53,6 @@ export default function GuestSolutions() {
 
     return (
         <div className="min-h-screen bg-[#090D16] text-slate-200 py-12 px-6">
-            {/* Background Pattern */}
             <div className="fixed inset-0 bg-[linear-gradient(to_right,#161F30_1px,transparent_1px),linear-gradient(to_bottom,#161F30_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30 pointer-events-none z-0"></div>
 
             <main className="mx-auto max-w-7xl relative z-10">
@@ -79,7 +77,6 @@ export default function GuestSolutions() {
                     </div>
                 ) : (
                 <div role="table" className="flex flex-col gap-y-2.5 w-full">
-                    {/* Header Row */}
                     <div className="bg-[#121826]/40 border border-slate-800/40 rounded-xl px-6 py-3.5 grid grid-cols-[80px_1fr_200px_220px] gap-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
                         <div className="text-center">Season</div>
                         <div>Title</div>
@@ -87,7 +84,6 @@ export default function GuestSolutions() {
                         <div>Tags</div>
                     </div>
 
-                    {/* Problem Rows */}
                     <div className="flex flex-col gap-y-2">
                         {data.problems?.map((prob, index) => {
                             const isSolved = data.problemsSolved.some(s => s._id === prob._id);
@@ -142,7 +138,6 @@ export default function GuestSolutions() {
                         )}
                     </div>
 
-                    {/* Pagination Controls */}
                     {data.pagination?.totalpages > 1 && (
                         <div className="mt-8 flex justify-center items-center gap-4">
                             <button 

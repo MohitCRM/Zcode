@@ -45,21 +45,18 @@ export default function CreateAnnouncement() {
         <h2 className="text-xl font-bold text-white mb-6">Create New Announcement</h2>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Title */}
           <div>
             <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Title</label>
             <input {...register("title")} className="w-full bg-[#121826] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500" />
             {errors.title && <p className="text-rose-400 text-xs mt-1">{errors.title.message}</p>}
           </div>
 
-          {/* Content */}
           <div>
             <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Content</label>
             <textarea {...register("content")} rows={6} className="w-full bg-[#121826] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500" />
             {errors.content && <p className="text-rose-400 text-xs mt-1">{errors.content.message}</p>}
           </div>
 
-          {/* Row: Category & Pin */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Category</label>

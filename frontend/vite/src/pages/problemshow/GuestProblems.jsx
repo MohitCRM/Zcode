@@ -117,7 +117,6 @@ export default function GuestProblems() {
               )}
             </div>
 
-            {/* Pagination Controls */}
             {data.pagination?.totalpages > 1 && (
               <div className="mt-8 flex justify-center items-center gap-4">
                 <button 

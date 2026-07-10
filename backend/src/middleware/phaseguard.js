@@ -16,7 +16,6 @@ const restrictToPhase = (allowedPhases) => {
                 }
             }
             
-            // 3. Fallback check to prevent downstream null crashes
             if (!activeSeason) {
                 return res.status(500).json({
                     error: "Configuration Error",

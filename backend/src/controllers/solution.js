@@ -160,17 +160,14 @@ const guestgetallsolutions = async (req, res) => {
             return res.status(500).json({ error: "Configuration error: Season context missing." });
         }
 
-        // 1. Parse and sanitize pagination parameters from the query string
         const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-        const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 10)); // Caps maximum limit at 100 for safety
+        const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 10)); 
         const skip = (page - 1) * limit;
 
-        // 2. Fetch total count of problems for pagination calculations
         const totalProblemsCount = await Problem.countDocuments({
             seasonId: currentSeason.seasonId
         });
 
-        // 3. Fetch paginated data chunk
         const problems = await Problem.find({
             seasonId: currentSeason.seasonId
         })
@@ -179,7 +176,6 @@ const guestgetallsolutions = async (req, res) => {
         .skip(skip)
         .limit(limit);
 
-        // 4. Check user's individual seasonal progress
         const userSeasonalStats = await Leaderboard.findOne({
             userId: userId,
             seasonId: currentSeason.seasonId
@@ -189,12 +185,10 @@ const guestgetallsolutions = async (req, res) => {
             ? userSeasonalStats.problemsSolved.map(id => id.toString()) 
             : [];
         
-        // 5. Intersect solved items only out of the CURRENT page chunk
         const problemsSolved = problems.filter(problem => 
             solvedIds.includes(problem._id.toString())
         );
 
-        // 6. Assemble response data with navigation headers
         return res.status(200).json({
             seasonId: currentSeason.seasonId,
             pagination: {
@@ -225,7 +219,6 @@ const guestsolutionhub = async (req,res)=>{
             return res.status(500).json({ error: "Tournament context missing." });
         }
 
-        // 1. Fetch only the requested problem
         const problem = await Problem.findOne({ 
             _id: pid, 
         })
@@ -233,7 +226,6 @@ const guestsolutionhub = async (req,res)=>{
 
         if (!problem) return res.status(404).json({ error: "Problem not found or solution access denied." });
 
-        // 2. Fetch submissions for this specific problem
         const allguestSubmissions = await Submission.find({
             problemId: pid,
             status: "Accepted"
@@ -248,7 +240,6 @@ const guestsolutionhub = async (req,res)=>{
 
         const communitySubmissions = allguestSubmissions.filter(sub => sub.userId !== null);
 
-        // 3. Fetch user's own submissions
         const userSubmissions = await Submission.find({
             problemId: pid,
             userId: userId
@@ -256,7 +247,6 @@ const guestsolutionhub = async (req,res)=>{
         .select("language code createdAt status passedTestCases totalTestCases errorMessage eloChange")
         .sort({ createdAt: -1 });
 
-        // 4. Assemble the payload
         const solutionData = {
             problemId: problem._id,
             title: problem.title,

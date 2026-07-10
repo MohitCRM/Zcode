@@ -7,7 +7,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { registerUser } from "../../slicers/authslice";
 
-// Schema for sign up form validation
 const signupschema = z.object({
   firstName: z.string().min(3, "Name should contain at least 3 characters"),
   emailId: z.string().email("Please enter a valid email address"),
@@ -45,10 +44,8 @@ export default function Signup() {
 
   return (
     <div className="bg-[#070C15] min-h-screen text-slate-200 antialiased relative flex items-center justify-center p-4 overflow-hidden select-none">
-      {/* Dynamic Background Matrix Overlay Accent */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#161F30_1px,transparent_1px),linear-gradient(to_bottom,#161F30_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none z-0"></div>
 
-      {/* Back Button */}
       <Link 
         to="/"
         className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-[#121826]/80 hover:bg-indigo-500/20 border border-slate-800/80 hover:border-indigo-500/50 rounded-xl text-slate-400 hover:text-indigo-400 transition-all duration-300 backdrop-blur-md group shadow-lg"
@@ -59,10 +56,8 @@ export default function Signup() {
         <span className="font-semibold text-sm tracking-wide">Back to Home</span>
       </Link>
 
-      {/* Main Terminal Frame Container */}
       <div className="w-full max-w-4xl bg-[#0B111E]/80 backdrop-blur-md border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row relative z-10 min-h-[480px]">
         
-        {/* LEFT PANEL: Informational Welcome Panel */}
         <div className="w-full md:w-1/2 p-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-950/30 via-[#0B111E] to-[#070C15] flex flex-col justify-center border-b md:border-b-0 md:border-r border-slate-800/60">
           <div className="space-y-4">
             <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
@@ -79,7 +74,6 @@ export default function Signup() {
           </div>
         </div>
 
-        {/* RIGHT PANEL: Form Inputs Layer */}
         <form onSubmit={handleSubmit(onsubmit)} className="w-full md:w-1/2 p-10 flex flex-col justify-center bg-[#0C1220]/40 space-y-4">
           <div className="space-y-1">
             <h3 className="text-lg font-bold text-white tracking-wide">Create Account</h3>
@@ -94,7 +88,6 @@ export default function Signup() {
           )}
 
           <div className="space-y-3.5">
-            {/* Input Name field */}
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">Name</label>
               <input 
@@ -110,7 +103,6 @@ export default function Signup() {
               )}
             </div>
 
-            {/* Input Email field */}
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">Email</label>
               <input 
@@ -126,7 +118,6 @@ export default function Signup() {
               )}
             </div>
 
-            {/* Input Password field */}
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">Password</label>
               <div className="relative">
@@ -164,7 +155,6 @@ export default function Signup() {
             </div>
           </div>
 
-          {/* Bottom Action Trigger Row */}
           <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex flex-col space-y-1 text-center sm:text-left">
               <span className="text-xs text-slate-500 font-medium">
@@ -179,7 +169,7 @@ export default function Signup() {
               <span className="text-xs text-slate-500 font-medium">
                 Just looking around?{" "}
                 <Link 
-                  to="/guest-login" // Make sure this route matches your guest login path in App.js
+                  to="/guest-login" 
                   className="text-emerald-400 font-bold hover:text-emerald-300 transition-colors font-mono uppercase tracking-wide ml-0.5 underline underline-offset-4"
                 >
                   Enter as Guest

@@ -25,7 +25,6 @@ const generateuploadsignature = async (req,res)=>{
             public_id: publicId
         };
 
-        //generating digital signature , so i must also send uploadparams to verify
         const signature = cloudinary.utils.api_sign_request(
             uploadParams,
             process.env.CLOUDINARY_API_SECRET
@@ -59,7 +58,6 @@ const savevideometadata = async (req,res)=>{
 
         const userId = req.result._id;
 
-        //verifying the upload
         const cloudinaryresource = await cloudinary.api.resource(
             cloudinaryPublicId,
             {resource_type:'video'}
@@ -68,7 +66,6 @@ const savevideometadata = async (req,res)=>{
         if(!cloudinaryresource)
             return res.status(400).json({error : 'Video not found on Cloudinary'});
 
-        //checking if video already exists for this problem and user
         const existingvideo = await SolutionVideo.findOne({
             problemId,
             userId,
@@ -91,7 +88,6 @@ const savevideometadata = async (req,res)=>{
         const problem = await Problem.findById(problemId);
         const videotitle = problem ? `${problem.title} Solution` : 'Solution Video';
 
-        //creating video solution record
         const videoSolution = new SolutionVideo({
             problemId,
             userId,

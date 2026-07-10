@@ -33,11 +33,11 @@ const seasonschema = z.object({
 });
 
 export default function UpdateSeason() {
-  const { sid } = useParams(); // assuming pid is the _id
+  const { sid } = useParams(); 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(seasonschema) // Ensure your schema is imported
+    resolver: zodResolver(seasonschema) 
   });
 
   useEffect(() => {
@@ -46,7 +46,6 @@ export default function UpdateSeason() {
         const res = await axiosClient.get(`/seasons/getseasonbyid/${sid}`);
         const data = res.data.season;
 
-        // Helper to format Date to IST for datetime-local input
         const formatDate = (dateString) => {
             if (!dateString) return "";
             const d = new Date(dateString);
@@ -115,7 +114,7 @@ export default function UpdateSeason() {
               <input 
                 {...register("seasonId", { valueAsNumber: true })}
                 className="w-full bg-[#121826] border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-400 cursor-not-allowed"
-                readOnly // Fixed field
+                readOnly
               />
             </div>
             
@@ -139,13 +138,11 @@ export default function UpdateSeason() {
             <h3 className="block text-xs font-semibold text-slate-500 uppercase">Season Timeline</h3>
             
             <div className="grid grid-cols-2 gap-4">
-              {/* Launch Date */}
               <div className="col-span-2">
                 <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Launch Date</label>
                 <input type="datetime-local" {...register("launchDate")} className="w-full bg-[#121826] border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-300" />
               </div>
 
-              {/* Rounds */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Round 1 Start</label>
                 <input type="datetime-local" {...register("round1Start")} className="w-full bg-[#121826] border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-300" />

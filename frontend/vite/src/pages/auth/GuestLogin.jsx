@@ -29,7 +29,7 @@ export default function GuestLogin() {
     }, [isauth, navigate]);
     
     const onsubmit = (data) => {
-        console.log(data);
+
         dispatch(guestlogin(data))
           .unwrap()
           .then(() => {
@@ -42,10 +42,8 @@ export default function GuestLogin() {
 
     return (
         <div className="bg-[#070C15] min-h-screen text-slate-200 antialiased relative flex items-center justify-center p-4 overflow-hidden select-none">
-            {/* Dynamic Background Matrix Overlay Accent */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#161F30_1px,transparent_1px),linear-gradient(to_bottom,#161F30_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none z-0"></div>
 
-            {/* Back Button */}
             <Link 
                 to="/"
                 className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 bg-[#121826]/80 hover:bg-indigo-500/20 border border-slate-800/80 hover:border-indigo-500/50 rounded-xl text-slate-400 hover:text-indigo-400 transition-all duration-300 backdrop-blur-md group shadow-lg"
@@ -56,10 +54,8 @@ export default function GuestLogin() {
                 <span className="font-semibold text-sm tracking-wide">Back to Home</span>
             </Link>
 
-            {/* Main Container Split-Panel */}
             <div className="w-full max-w-4xl bg-[#0B111E]/80 backdrop-blur-md border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row relative z-10 min-h-[460px]">
                 
-                {/* LEFT PANEL: Form Inputs */}
                 <form onSubmit={handleSubmit(onsubmit)} className="w-full md:w-1/2 p-10 flex flex-col justify-center bg-[#0C1220]/40 space-y-6">
                     <div className="space-y-1 text-center md:text-left">
                         <h3 className="text-2xl font-black uppercase tracking-wider text-white">Guest Entry</h3>
@@ -74,7 +70,6 @@ export default function GuestLogin() {
                     )}
 
                     <div className="space-y-4">
-                        {/* Input First Name field */}
                         <div className="space-y-1.5">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">First Name / Alias</label>
                             <input 
@@ -91,7 +86,6 @@ export default function GuestLogin() {
                         </div>
                     </div>
 
-                    {/* Form Action Button Placement */}
                     <div className="pt-2 flex justify-center md:justify-start">
                         <button 
                             type="submit"
@@ -103,7 +97,6 @@ export default function GuestLogin() {
                     </div>
                 </form>
 
-                {/* RIGHT PANEL: Guest Welcome CTA Hero Panel */}
                 <div className="w-full md:w-1/2 p-10 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-indigo-950/30 via-[#0B111E] to-[#070C15] flex flex-col justify-center items-center text-center border-t md:border-t-0 md:border-l border-slate-800/60">
                     <div className="space-y-5 max-w-sm flex flex-col items-center">
                         <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
@@ -118,7 +111,6 @@ export default function GuestLogin() {
                             Experience the thrill of competitive programming without the commitment.
                         </p>
                         
-                        {/* Footer Navigation Link */}
                         <div className="pt-4 text-xs text-slate-500 font-medium">
                             Want to start your own journey?{" "}
                             <Link 
