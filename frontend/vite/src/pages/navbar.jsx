@@ -90,7 +90,7 @@ const Navbar = () => {
 
           {isOpen && (
             <div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-800 bg-[#0C1220] p-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-100 font-mono text-xs uppercase tracking-wide">
-              {user?.role === 'admin' && (
+              {(user?.role === 'admin' || user?.role === 'owner') && (
                 <Link to="/dashboard/admin" className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-[#161F30] transition-colors">
                   Admin Panel
                 </Link>

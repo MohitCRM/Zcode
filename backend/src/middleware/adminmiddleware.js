@@ -14,7 +14,7 @@ const adminauth = async (req,res,next)=>{
     if(!_id)
         throw new Error("ID is Missing");
 
-    if(payload.role != 'admin')
+    if(payload.role !== 'admin' && payload.role !== 'owner')
         throw new Error("Invalid token");
     
     const result = await User.findById(_id);
