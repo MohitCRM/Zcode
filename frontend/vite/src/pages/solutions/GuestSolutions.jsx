@@ -49,7 +49,7 @@ export default function GuestSolutions() {
         }
     };
 
-    if (loading) return <div className="min-h-screen bg-[#090D16] flex items-center justify-center text-slate-500">Loading sandbox solutions...</div>;
+    if (loading) return <div className="min-h-screen bg-[#090D16] flex items-center justify-center text-slate-500">Loading solutions...</div>;
 
     return (
         <div className="min-h-screen bg-[#090D16] text-slate-200 py-12 px-6">

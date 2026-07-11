@@ -107,18 +107,19 @@ const submitcode = async (req, res) => {
         }
 
        await session.withTransaction(async () => {
-            await Submission.updateOne({ _id: pendingSubmission._id }, { 
-                $set: { 
-                    status, 
-                    eloChange, 
-                    passedTestCases: passedCount, 
-                    totalTestCases: totalTestCases.length,
-                    errorMessage,
-                    wasSameDaySolve: isAccepted ? isSameDaySolve : false
-                } 
-            }, { session });
-
-            const isAccepted = status === "Accepted";
+            await Submission.create([{
+                userId: userid,
+                problemId: pid,
+                seasonId: targetSeasonId,
+                language,
+                code,
+                status, 
+                eloChange, 
+                passedTestCases: passedCount, 
+                totalTestCases: totalTestCases.length,
+                errorMessage,
+                wasSameDaySolve: isAccepted ? isSameDaySolve : false
+            }], { session });
 
             const updateQuery = {
                 $inc: { 

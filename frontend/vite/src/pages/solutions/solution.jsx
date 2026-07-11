@@ -41,7 +41,7 @@ const formatExampleData = (dataString) => {
   }
 };
 
-function CustomVideoPlayer({ url, poster }) {
+function CustomVideoPlayer({ url, poster, onError }) {
   const playerRef = useRef(null);
   const wrapperRef = useRef(null);
 
@@ -65,7 +65,13 @@ function CustomVideoPlayer({ url, poster }) {
     return `${mm}:${ss}`;
   };
 
-  const videoUrl = url && !url.match(/\.(mp4|webm|ogg)$/i) ? `${url}.mp4` : url;
+  const videoUrl = url 
+    ? (url.match(/\.(mp4|webm|ogg)$/i) 
+        ? url 
+        : (url.match(/\.[a-zA-Z0-9]+$/) 
+            ? url.replace(/\.[a-zA-Z0-9]+$/, ".mp4") 
+            : `${url}.mp4`))
+    : url;
 
   useEffect(() => {
     if (playerRef.current) playerRef.current.volume = volume;
@@ -166,6 +172,7 @@ function CustomVideoPlayer({ url, poster }) {
           onTimeUpdate={handleTimeUpdate}
           onLoadedMetadata={handleLoadedMetadata}
           onEnded={() => setIsPlaying(false)}
+          onError={onError}
         />
       </div>
 
@@ -567,6 +574,12 @@ export default function Solution() {
                     <CustomVideoPlayer
                       url={problemData.videoSolution.secureUrl}
                       poster={problemData.videoSolution.thumbnailUrl}
+                      onError={() => {
+                        setProblemData(prev => ({
+                          ...prev,
+                          videoSolution: null
+                        }));
+                      }}
                     />
                   ) : (
                     <div className="group bg-[#121826]/30 backdrop-blur-sm rounded-xl border border-dashed border-slate-800/80 p-6 text-center transition-all">
