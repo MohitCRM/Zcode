@@ -5,14 +5,12 @@ const restrictToPhase = (allowedPhases) => {
         try {
             const isGuest = req.result && req.result.role === 'guest';
             let activeSeason;
-
-            if (isGuest) {
+             if (isGuest) {
                 activeSeason = await Season.findOne({ isGuestSeason: true });
-            } else {
-                activeSeason = await Season.findOne({ isActive: true });
-
+             } else {
+                activeSeason = await Season.findOne({ isActive: true, isGuestSeason: { $ne: true } });
                 if (!activeSeason) {
-                    activeSeason = await Season.findOne().sort({ seasonId: -1 });
+                    activeSeason = await Season.findOne({ isGuestSeason: { $ne: true } }).sort({ seasonId: -1 });
                 }
             }
             

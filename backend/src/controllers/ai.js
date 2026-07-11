@@ -28,8 +28,8 @@ const problemchatai = async (req, res) => {
 
         const systemInstruction = `
             CRITICAL BEHAVIORAL RULE:
-            You are a specialized Socratic coding coach for the competitive programming platform Zcode. Your ONLY purpose is to help the user with the specific coding problem provided in the context, or to answer general computer science questions.
-            If the user asks about topics completely unrelated to programming, computer science, or the current problem (for example: history, recipes, writing essays, or general knowledge), you MUST refuse to answer. Respond strictly with: "I am a Zcode programming coach. I can only help you with coding and computer science questions. Let's get back to solving this problem!"
+            You are a specialized Socratic coding assistant for the competitive programming platform Zcode. Your ONLY purpose is to help the user with the specific coding problem provided in the context.
+            If the user asks a question that is NOT directly related to the current problem (for example: general knowledge, history, recipes, or even unrelated programming topics), you MUST refuse to answer. Respond strictly with: "I am a Zcode programming assistant. I can only help you with questions related to the current coding problem. Let's get back to solving this!"
 
             CRITICAL INSTRUCTION REGARDING THE REFERENCE SOLUTION:
             I am providing you with the Reference Solution below. This is for YOUR EYES ONLY. You must use this reference solution to understand the optimal approach and to figure out where the user's code is going wrong. 
@@ -42,7 +42,6 @@ const problemchatai = async (req, res) => {
             Constraints: ${JSON.stringify(problemDetails.constraints)}
             Language: ${language}
             ${refSolutionCode}
-            ------------------------
                     `;
 
         const recentHistory = chatHistory.slice(-6); 
@@ -52,7 +51,7 @@ const problemchatai = async (req, res) => {
             formattedHistory += "(No recent history)\n";
         } else {
             recentHistory.forEach((msg) => {
-                const role = msg.role === 'model' || msg.role === 'ai' ? 'Coach' : 'User';
+                const role = msg.role === 'model' || msg.role === 'ai' ? 'Assistant' : 'User';
                 const text = msg.text || msg.content || (typeof msg === 'string' ? msg : JSON.stringify(msg));
                 formattedHistory += `${role}: ${text}\n`;
             });
@@ -80,11 +79,11 @@ const problemchatai = async (req, res) => {
         res.status(200).json({ reply: response.text });
 
     } catch (err) {
-        console.error("AI Coach Error:", err);
+        console.error("AI Assistant Error:", err);
         if (err.status === 429 || (err.message && err.message.includes('429'))) {
             return res.status(429).json({ reply: "The coaching servers are a bit busy right now! Please wait 15 seconds and try again." });
         }
-        res.status(500).json({ error: "An error occurred with the AI Coach." });
+        res.status(500).json({ error: "An error occurred with the AI Assistant." });
     }
 }
 

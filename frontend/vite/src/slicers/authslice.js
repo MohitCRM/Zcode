@@ -168,9 +168,27 @@ const authslicer = createSlice({
             state.loading = false;
             state.isauth = false;
             state.error = null;
-            state.user = {};
+            state.user = null;
         })
         .addCase(logoutUser.rejected, (state,action)=>{
+            state.loading = false;
+            state.error = action.payload || 'Some error has occured';
+            state.isauth = false;
+            state.user = null;
+        })
+
+        //exit guest cases
+        .addCase(ExitUser.pending, (state)=>{
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(ExitUser.fulfilled , (state,action)=>{
+            state.loading = false;
+            state.isauth = false;
+            state.error = null;
+            state.user = null;
+        })
+        .addCase(ExitUser.rejected, (state,action)=>{
             state.loading = false;
             state.error = action.payload || 'Some error has occured';
             state.isauth = false;

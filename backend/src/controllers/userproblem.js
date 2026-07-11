@@ -399,7 +399,7 @@ const problemfetch = async (req, res) => {
 
 const allproblemfetch = async (req, res) => {
   try {
-    const currentSeason = req.seasonConfig || req.season;
+    const currentSeason = req.season;
     if (!currentSeason) {
       return res
         .status(500)

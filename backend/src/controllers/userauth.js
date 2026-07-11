@@ -129,7 +129,8 @@ const guestregister = async (req, res) => {
 
         const guestData = {
             firstName: firstName.trim(),
-            role: 'guest'
+            role: 'guest',
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
         };
 
         const newUser = await User.create(guestData);

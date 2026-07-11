@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const {Schema} = mongoose;
+const { Schema } = mongoose;
 const Seasonalstats = require('./leaderboard');
 
 const userSchema = new Schema({
@@ -8,8 +8,8 @@ const userSchema = new Schema({
         trim: true,
         minLength: 3,
         maxLength: 20,
-        required : true,
-        unique : true
+        required: true,
+        unique: true
     },
 
     emailId: {
@@ -17,17 +17,17 @@ const userSchema = new Schema({
         trim: true,
         lowercase: true,
         immutable: true,
-        sparse : true,
+        sparse: true,
         unique: true
     },
     age: {
         type: Number,
-        min: 5,   
-        max: 80   
+        min: 5,
+        max: 80
     },
     role: {
         type: String,
-        enum: ['user', 'admin','guest','owner'],
+        enum: ['user', 'admin', 'guest', 'owner'],
         default: 'user'
     },
     password: {
@@ -37,6 +37,10 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'problem'
     }],
+    expiresAt: {
+        type: Date,
+        default: null
+    }
 }, {
     timestamps: true
 });
