@@ -2,6 +2,9 @@
 
 **Live Demo:** [https://zcode-five.vercel.app/](https://zcode-five.vercel.app/)
 
+> [!WARNING]
+> **Browser Compatibility:** Zcode uses highly secure `httpOnly` cookies for authentication. Because the frontend and backend are currently hosted on separate domains (Vercel and Render), Safari's default privacy settings block these cookies. **For the best experience, please use Google Chrome or Microsoft Edge.**
+
 Zcode is a full-stack, secure, and competitive programming platform with isolated code execution, a dynamic seasonal structure, Elo-based ranking, and seamless video solutions. Designed for both authenticated users and guests, Zcode provides a competitive and educational environment for tackling algorithmic challenges.
 
 ## 🌟 Key Features
